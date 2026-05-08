@@ -1,64 +1,3 @@
-<?php
-// 1. DATA MERCHANT (Isi dengan data LIVE Mas)
-$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa';
-$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD';
-$merchantCode = 'K50087'; // Ganti ke K50087 sesuai merchant aktif Mas
-
-// Cek apakah ada kiriman data dari tombol bayar
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $amount = $_POST['nominal']; // Mengambil angka yang diketik pelanggan
-    $merchantRef = 'GRAB-' . time(); // Membuat nomor referensi otomatis
-
-    $data = [
-        'method'         => 'QRIS', // Pakai QRIS agar semua aplikasi bisa scan
-        'merchant_ref'   => $merchantRef,
-        'amount'         => $amount,
-        'customer_name'  => 'Pelanggan Grabndeso',
-        'customer_email' => 'pelanggan@grabndeso.com',
-        'customer_phone' => '081234567890',
-        'order_items'    => [
-            [
-                'sku'      => 'PROMO-01',
-                'name'     => 'Bayar Jasa Grabndeso',
-                'price'    => $amount,
-                'quantity' => 1,
-            ]
-        ],
-        'return_url'   => 'https://facebook.com/share/1EDAWQ2z2f/', // Balik ke FB Mas setelah bayar
-        'expired_time' => (time() + (24 * 60 * 60)), // Expired dalam 24 jam
-        'signature'    => hash_hmac('sha256', $merchantCode.$merchantRef.$amount, $privateKey)
-    ];
-
-    $curl = curl_init();
-
-    curl_setopt_array($curl, [
-        CURLOPT_FRESH_CONNECT  => true,
-        CURLOPT_URL            => 'https://tripay.co.id/api/transaction/create',
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HEADER         => false,
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer '.$apiKey],
-        CURLOPT_FAILONERROR    => false,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => http_build_query($data),
-        CURLOPT_IPRESOLVE      => CURL_IPRESOLVE_V4
-    ]);
-
-    $response = curl_exec($curl);
-    $error = curl_error($curl);
-    curl_close($curl);
-
-    $result = json_decode($response);
-
-    if ($result->success) {
-        // Jika berhasil, lempar pelanggan ke halaman QRIS TriPay
-        header('Location: ' . $result->data->checkout_url);
-        exit;
-    } else {
-        echo "<script>alert('Gagal: " . $result->message . "'); window.history.back();</script>";
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -66,28 +5,25 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grabndeso Payment</title>
     <style>
-        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 380px; text-align: center; border-top: 8px solid #00b14f; }
-        h1 { color: #00b14f; margin-bottom: 5px; font-size: 24px; }
-        .input-group { position: relative; margin: 25px 0; }
-        .input-group span { position: absolute; left: 15px; top: 12px; font-size: 20px; font-weight: bold; color: #00b14f; }
-        input { width: 100%; padding: 15px 15px 15px 50px; font-size: 22px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; outline: none; font-weight: bold; }
-        input:focus { border-color: #00b14f; }
-        button { width: 100%; padding: 18px; background: #00b14f; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
-        button:active { transform: scale(0.98); }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 90%; max-width: 400px; text-align: center; border-top: 10px solid #00b14f; }
+        h1 { color: #00b14f; margin-bottom: 10px; font-size: 28px; }
+        p { color: #666; margin-bottom: 30px; font-size: 15px; line-height: 1.6; }
+        .btn-bayar { background: #00b14f; color: white; padding: 18px 40px; text-decoration: none; border-radius: 15px; font-weight: bold; font-size: 18px; display: inline-block; transition: 0.3s; }
+        .btn-bayar:hover { background: #008f3f; transform: translateY(-3px); }
+        .footer { margin-top: 25px; font-size: 11px; color: #bbb; }
     </style>
 </head>
 <body>
     <div class="card">
         <h1>GRABNDESO</h1>
-        <p>Masukkan nominal bayar:</p>
-        <form method="POST">
-            <div class="input-group">
-                <span>Rp</span>
-                <input type="number" name="nominal" placeholder="0" required min="1000">
-            </div>
-            <button type="submit">BAYAR SEKARANG</button>
-        </form>
+        <p>Bayar jasa pengiriman jadi lebih mudah. Klik tombol di bawah, lalu <b>ketik nominal harga</b> pada kolom catatan saat checkout.</p>
+        
+        <a href="https://grapfood.olshopku.com/produk/jasa-pengiriman-3493258" class="btn-bayar">BAYAR SEKARANG</a>
+        
+        <div class="footer">
+            Sengkuni Net &bull; Basecamp Coffee &bull; 2026
+        </div>
     </div>
 </body>
 </html>
