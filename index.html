@@ -1,0 +1,81 @@
+<?php
+// DATA DARI DASHBOARD TRIPAY MAS EKO (SANDBOX)
+$merchantCode = 'T50087'; 
+$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa'; 
+$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD'; 
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nominal = $_POST['nominal'];
+    $reference = 'GRAB-' . time(); 
+    
+    $data = [
+        'method'         => 'QRIS2', // Di sandbox pakai QRIS2
+        'merchant_ref'   => $reference,
+        'amount'         => $nominal,
+        'customer_name'  => 'Pelanggan Grabndeso', 
+        'customer_email' => 'pelanggan@grabndeso.com', 
+        'order_items'    => [
+            [
+                'name'     => 'Bayar Grabndeso',
+                'price'    => $nominal,
+                'quantity' => 1,
+            ]
+        ],
+        'signature'    => hash_hmac('sha256', $merchantCode.$reference.$nominal, $privateKey)
+    ];
+
+    $curl = curl_init();
+    curl_setopt_array($curl, [
+        CURLOPT_URL            => 'https://tripay.co.id/api-sandbox/transaction/create',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_POST           => true,
+        CURLOPT_POSTFIELDS     => http_build_query($data),
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $apiKey]
+    ]);
+
+    $response = curl_exec($curl);
+    $result = json_decode($response);
+    
+    if ($result && isset($result->success) && $result->success) {
+        // Langsung lempar ke halaman bayar TriPay
+        header('Location: ' . $result->data->checkout_url);
+        exit;
+    } else {
+        $msg = isset($result->message) ? $result->message : 'Gagal Mas, cek kodingan!';
+        echo "<script>alert('$msg'); window.history.back();</script>";
+    }
+}
+?>
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Grabndeso Payment</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; width: 90%; max-width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid #00b14f; }
+        h1 { color: #00b14f; margin: 0; font-size: 24px; }
+        p { color: #666; font-size: 14px; }
+        .input-box { margin: 25px 0; position: relative; }
+        .input-box span { position: absolute; left: 15px; top: 12px; font-weight: bold; color: #00b14f; font-size: 20px; }
+        input { width: 100%; padding: 12px 12px 12px 50px; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-weight: bold; outline: none; }
+        input:focus { border-color: #00b14f; }
+        button { width: 100%; padding: 15px; background: #00b14f; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <h1>GRABNDESO</h1>
+        <p>Ketik jumlah bayar di bawah:</p>
+        <form method="POST">
+            <div class="input-box">
+                <span>Rp</span>
+                <input type="number" name="nominal" placeholder="0" required min="1000">
+            </div>
+            <button type="submit">GAS BAYAR!</button>
+        </form>
+    </div>
+</body>
+</html>
