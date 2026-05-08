@@ -1,32 +1,45 @@
 <?php
-// DATA DARI DASHBOARD TRIPAY MAS EKO (SANDBOX)
-$merchantCode = 'T50087'; 
-$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa'; 
-$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD'; 
+/**
+ * GRABNDESO - SISTEM PEMBAYARAN HARGA BEBAS
+ * Integrasi API TriPay Mode LIVE
+ */
+
+// 1. DATA MERCHANT (Pastikan ambil dari menu LIVE di Dashboard TriPay)
+$merchantCode = 'K50087'; // <-- WAJIB GANTI: Masukkan kode merchant awalan K Mas
+$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa'; //
+$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD'; //
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nominal = $_POST['nominal'];
-    $reference = 'GRAB-' . time(); 
+    
+    // Validasi minimal pembayaran TriPay biasanya Rp 1.000
+    if ($nominal < 1000) {
+        echo "<script>alert('Minimal pembayaran Rp 1.000 Mas!'); window.history.back();</script>";
+        exit;
+    }
+
+    $reference = 'GRAB-' . time(); // Kode unik transaksi
     
     $data = [
-        'method'         => 'QRIS2', // Di sandbox pakai QRIS2
+        'method'         => 'QRIS', // Metode QRIS paling cocok untuk harga bebas
         'merchant_ref'   => $reference,
         'amount'         => $nominal,
         'customer_name'  => 'Pelanggan Grabndeso', 
         'customer_email' => 'pelanggan@grabndeso.com', 
         'order_items'    => [
             [
-                'name'     => 'Bayar Grabndeso',
+                'name'     => 'Bayar Jasa Grabndeso',
                 'price'    => $nominal,
                 'quantity' => 1,
             ]
         ],
+        // Pembuatan Signature untuk keamanan transaksi
         'signature'    => hash_hmac('sha256', $merchantCode.$reference.$nominal, $privateKey)
     ];
 
     $curl = curl_init();
     curl_setopt_array($curl, [
-        CURLOPT_URL            => 'https://tripay.co.id/api-sandbox/transaction/create',
+        CURLOPT_URL            => 'https://tripay.co.id/api/transaction/create', // URL LIVE
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => http_build_query($data),
@@ -37,12 +50,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $result = json_decode($response);
     
     if ($result && isset($result->success) && $result->success) {
-        // Langsung lempar ke halaman bayar TriPay
+        // Jika sukses, lempar pelanggan ke halaman pembayaran (Checkout URL)
         header('Location: ' . $result->data->checkout_url);
         exit;
     } else {
-        $msg = isset($result->message) ? $result->message : 'Gagal Mas, cek kodingan!';
-        echo "<script>alert('$msg'); window.history.back();</script>";
+        // Tampilkan pesan error jika gagal (misal: API Key salah atau Merchant belum aktif)
+        $error_msg = isset($result->message) ? $result->message : 'Gagal terhubung ke TriPay';
+        echo "<script>alert('Gagal Mas: $error_msg'); window.history.back();</script>";
     }
 }
 ?>
@@ -51,31 +65,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Grabndeso Payment</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pembayaran Grabndeso</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .card { background: white; width: 90%; max-width: 350px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.1); text-align: center; border-top: 8px solid #00b14f; }
-        h1 { color: #00b14f; margin: 0; font-size: 24px; }
-        p { color: #666; font-size: 14px; }
-        .input-box { margin: 25px 0; position: relative; }
-        .input-box span { position: absolute; left: 15px; top: 12px; font-weight: bold; color: #00b14f; font-size: 20px; }
-        input { width: 100%; padding: 12px 12px 12px 50px; font-size: 22px; border: 2px solid #ddd; border-radius: 10px; box-sizing: border-box; font-weight: bold; outline: none; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .payment-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; border-top: 10px solid #00b14f; }
+        h2 { color: #00b14f; margin-bottom: 5px; font-size: 28px; }
+        p { color: #777; margin-bottom: 30px; }
+        .input-wrapper { position: relative; margin-bottom: 25px; }
+        .input-wrapper span { position: absolute; left: 20px; top: 12px; font-size: 24px; font-weight: bold; color: #00b14f; }
+        input[type="number"] { width: 100%; padding: 15px 15px 15px 60px; font-size: 26px; border: 2px solid #eee; border-radius: 15px; outline: none; transition: 0.3s; box-sizing: border-box; font-weight: bold; }
         input:focus { border-color: #00b14f; }
-        button { width: 100%; padding: 15px; background: #00b14f; color: white; border: none; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        button { width: 100%; background: #00b14f; color: white; border: none; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #008f3f; transform: translateY(-2px); }
+        .footer-note { margin-top: 20px; font-size: 12px; color: #bbb; }
     </style>
 </head>
 <body>
-    <div class="card">
-        <h1>GRABNDESO</h1>
-        <p>Ketik jumlah bayar di bawah:</p>
-        <form method="POST">
-            <div class="input-box">
-                <span>Rp</span>
-                <input type="number" name="nominal" placeholder="0" required min="1000">
-            </div>
-            <button type="submit">GAS BAYAR!</button>
-        </form>
+
+<div class="payment-card">
+    <h2>GRABNDESO</h2>
+    <p>Silakan masukkan nominal pembayaran</p>
+    
+    <form method="POST">
+        <div class="input-wrapper">
+            <span>Rp</span>
+            <input type="number" name="nominal" placeholder="0" required min="1000">
+        </div>
+        <button type="submit">BAYAR SEKARANG</button>
+    </form>
+    
+    <div class="footer-note">
+        Powered by TriPay &bull; &copy; 2026 Grabndeso
     </div>
+</div>
+
 </body>
 </html>
