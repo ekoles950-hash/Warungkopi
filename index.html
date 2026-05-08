@@ -1,62 +1,60 @@
 <?php
-/**
- * GRABNDESO - SISTEM PEMBAYARAN HARGA BEBAS
- * Integrasi API TriPay Mode LIVE
- */
+// 1. DATA MERCHANT (Isi dengan data LIVE Mas)
+$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa';
+$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD';
+$merchantCode = 'K50087'; // Ganti ke K50087 sesuai merchant aktif Mas
 
-// 1. DATA MERCHANT (Pastikan ambil dari menu LIVE di Dashboard TriPay)
-$merchantCode = 'K50087'; // <-- WAJIB GANTI: Masukkan kode merchant awalan K Mas
-$apiKey       = 'bSrDF334jdWc4lXe9qG4sv4yrAObg4a3DrN4gdfa'; //
-$privateKey   = 'yeWc9-WhNoH-hfryc-pwOsl-oM1PD'; //
-
+// Cek apakah ada kiriman data dari tombol bayar
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nominal = $_POST['nominal'];
-    
-    // Validasi minimal pembayaran TriPay biasanya Rp 1.000
-    if ($nominal < 1000) {
-        echo "<script>alert('Minimal pembayaran Rp 1.000 Mas!'); window.history.back();</script>";
-        exit;
-    }
+    $amount = $_POST['nominal']; // Mengambil angka yang diketik pelanggan
+    $merchantRef = 'GRAB-' . time(); // Membuat nomor referensi otomatis
 
-    $reference = 'GRAB-' . time(); // Kode unik transaksi
-    
     $data = [
-        'method'         => 'QRIS', // Metode QRIS paling cocok untuk harga bebas
-        'merchant_ref'   => $reference,
-        'amount'         => $nominal,
-        'customer_name'  => 'Pelanggan Grabndeso', 
-        'customer_email' => 'pelanggan@grabndeso.com', 
+        'method'         => 'QRIS', // Pakai QRIS agar semua aplikasi bisa scan
+        'merchant_ref'   => $merchantRef,
+        'amount'         => $amount,
+        'customer_name'  => 'Pelanggan Grabndeso',
+        'customer_email' => 'pelanggan@grabndeso.com',
+        'customer_phone' => '081234567890',
         'order_items'    => [
             [
+                'sku'      => 'PROMO-01',
                 'name'     => 'Bayar Jasa Grabndeso',
-                'price'    => $nominal,
+                'price'    => $amount,
                 'quantity' => 1,
             ]
         ],
-        // Pembuatan Signature untuk keamanan transaksi
-        'signature'    => hash_hmac('sha256', $merchantCode.$reference.$nominal, $privateKey)
+        'return_url'   => 'https://facebook.com/share/1EDAWQ2z2f/', // Balik ke FB Mas setelah bayar
+        'expired_time' => (time() + (24 * 60 * 60)), // Expired dalam 24 jam
+        'signature'    => hash_hmac('sha256', $merchantCode.$merchantRef.$amount, $privateKey)
     ];
 
     $curl = curl_init();
+
     curl_setopt_array($curl, [
-        CURLOPT_URL            => 'https://tripay.co.id/api/transaction/create', // URL LIVE
+        CURLOPT_FRESH_CONNECT  => true,
+        CURLOPT_URL            => 'https://tripay.co.id/api/transaction/create',
         CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HEADER         => false,
+        CURLOPT_HTTPHEADER     => ['Authorization: Bearer '.$apiKey],
+        CURLOPT_FAILONERROR    => false,
         CURLOPT_POST           => true,
         CURLOPT_POSTFIELDS     => http_build_query($data),
-        CURLOPT_HTTPHEADER     => ['Authorization: Bearer ' . $apiKey]
+        CURLOPT_IPRESOLVE      => CURL_IPRESOLVE_V4
     ]);
 
     $response = curl_exec($curl);
+    $error = curl_error($curl);
+    curl_close($curl);
+
     $result = json_decode($response);
-    
-    if ($result && isset($result->success) && $result->success) {
-        // Jika sukses, lempar pelanggan ke halaman pembayaran (Checkout URL)
+
+    if ($result->success) {
+        // Jika berhasil, lempar pelanggan ke halaman QRIS TriPay
         header('Location: ' . $result->data->checkout_url);
         exit;
     } else {
-        // Tampilkan pesan error jika gagal (misal: API Key salah atau Merchant belum aktif)
-        $error_msg = isset($result->message) ? $result->message : 'Gagal terhubung ke TriPay';
-        echo "<script>alert('Gagal Mas: $error_msg'); window.history.back();</script>";
+        echo "<script>alert('Gagal: " . $result->message . "'); window.history.back();</script>";
     }
 }
 ?>
@@ -66,39 +64,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Pembayaran Grabndeso</title>
+    <title>Grabndeso Payment</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .payment-card { background: white; padding: 40px; border-radius: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; border-top: 10px solid #00b14f; }
-        h2 { color: #00b14f; margin-bottom: 5px; font-size: 28px; }
-        p { color: #777; margin-bottom: 30px; }
-        .input-wrapper { position: relative; margin-bottom: 25px; }
-        .input-wrapper span { position: absolute; left: 20px; top: 12px; font-size: 24px; font-weight: bold; color: #00b14f; }
-        input[type="number"] { width: 100%; padding: 15px 15px 15px 60px; font-size: 26px; border: 2px solid #eee; border-radius: 15px; outline: none; transition: 0.3s; box-sizing: border-box; font-weight: bold; }
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 90%; max-width: 380px; text-align: center; border-top: 8px solid #00b14f; }
+        h1 { color: #00b14f; margin-bottom: 5px; font-size: 24px; }
+        .input-group { position: relative; margin: 25px 0; }
+        .input-group span { position: absolute; left: 15px; top: 12px; font-size: 20px; font-weight: bold; color: #00b14f; }
+        input { width: 100%; padding: 15px 15px 15px 50px; font-size: 22px; border: 2px solid #ddd; border-radius: 12px; box-sizing: border-box; outline: none; font-weight: bold; }
         input:focus { border-color: #00b14f; }
-        button { width: 100%; background: #00b14f; color: white; border: none; padding: 18px; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        button:hover { background: #008f3f; transform: translateY(-2px); }
-        .footer-note { margin-top: 20px; font-size: 12px; color: #bbb; }
+        button { width: 100%; padding: 18px; background: #00b14f; color: white; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:active { transform: scale(0.98); }
     </style>
 </head>
 <body>
-
-<div class="payment-card">
-    <h2>GRABNDESO</h2>
-    <p>Silakan masukkan nominal pembayaran</p>
-    
-    <form method="POST">
-        <div class="input-wrapper">
-            <span>Rp</span>
-            <input type="number" name="nominal" placeholder="0" required min="1000">
-        </div>
-        <button type="submit">BAYAR SEKARANG</button>
-    </form>
-    
-    <div class="footer-note">
-        Powered by TriPay &bull; &copy; 2026 Grabndeso
+    <div class="card">
+        <h1>GRABNDESO</h1>
+        <p>Masukkan nominal bayar:</p>
+        <form method="POST">
+            <div class="input-group">
+                <span>Rp</span>
+                <input type="number" name="nominal" placeholder="0" required min="1000">
+            </div>
+            <button type="submit">BAYAR SEKARANG</button>
+        </form>
     </div>
-</div>
-
 </body>
 </html>
