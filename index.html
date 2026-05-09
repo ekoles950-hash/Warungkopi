@@ -3,20 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Grab Ndeso - PPOB Simulator</title>
+    <title>Grab Ndeso - E-Wallet Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; margin: 0; padding-bottom: 100px; }
-        .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; border-radius: 1.5rem; padding: 18px; outline: none; width: 100%; transition: 0.3s; }
-        .input-dark:focus { border-color: #3B82F6; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-        .card-nominal { background: #1E293B; border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; text-align: left; }
+        .card-nominal { background: #1E293B; border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
         .card-nominal:active { transform: scale(0.95); background: #1E40AF; border-color: #3B82F6; }
         header { background: #0F172A; padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .nav-bawah { position: fixed; bottom: 0; left: 0; right: 0; background: #1E293B; padding: 15px; display: flex; justify-content: space-around; border-top: 1px solid #334155; max-width: 450px; margin: auto; border-radius: 25px 25px 0 0; z-index: 1000; }
-        #toast-global { visibility: hidden; background: #3B82F6; color: white; padding: 12px 25px; position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); border-radius: 50px; font-weight: bold; z-index: 9999; font-size: 12px; box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
+        #toast-global { visibility: hidden; background: #3B82F6; color: white; padding: 12px 25px; position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); border-radius: 50px; font-weight: bold; z-index: 9999; font-size: 12px; }
         #toast-global.show { visibility: visible; animation: fadeInUp 0.4s; }
         @keyframes fadeInUp { from { opacity:0; transform: translate(-50%, 20px); } to { opacity:1; transform: translate(-50%, 0); } }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: flex-end; justify-content: center; z-index: 5000; }
@@ -33,33 +31,28 @@
     </header>
 
     <div class="max-w-md mx-auto p-5">
-        <!-- KATEGORI UTAMA -->
         <div class="flex gap-3 mb-8">
-            <button onclick="loadMenu()" class="flex-1 py-4 bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest transition active:scale-95">🍱 Makanan</button>
-            <button onclick="loadMenuPPOB()" class="flex-1 py-4 bg-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest transition active:scale-95 shadow-lg shadow-blue-900/20">📱 Top Up Dana</button>
+            <button onclick="loadMenu()" class="flex-1 py-4 bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition">🍱 Makan</button>
+            <button onclick="loadMenuPPOB()" class="flex-1 py-4 bg-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-lg shadow-blue-900/20">📱 E-Wallet</button>
         </div>
 
         <div id="konten-menu" class="grid grid-cols-2 gap-4">
-            <!-- Produk akan muncul di sini -->
-        </div>
+            </div>
     </div>
 
-    <!-- MODAL KONFIRMASI (REFERENSI GOJEK) -->
     <div id="modal-checkout" class="modal">
         <div class="modal-content">
-            <h3 class="text-xl font-black mb-6 italic uppercase tracking-tighter">Konfirmasi Pembayaran</h3>
-            <div id="detail-checkout" class="space-y-4 mb-8">
-                <!-- Rincian Pembelian -->
-            </div>
+            <h3 class="text-xl font-black mb-6 italic uppercase">Konfirmasi Top Up</h3>
+            <div id="detail-checkout" class="space-y-4 mb-8"></div>
             <button onclick="prosesKeKasir()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase italic shadow-xl active:scale-95 transition">Bayar Sekarang</button>
             <button onclick="tutupModal()" class="w-full mt-3 py-2 text-slate-500 font-bold text-sm">Batal</button>
         </div>
     </div>
 
     <nav class="nav-bawah">
-        <button onclick="location.reload()" class="text-center"><span class="text-xl">🏠</span><br><span class="text-[9px] font-bold text-blue-500">Beranda</span></button>
-        <button onclick="showToast('Fitur Lacak Aktif!')" class="text-center opacity-40"><span class="text-xl">🔍</span><br><span class="text-[9px] font-bold text-slate-500">Lacak</span></button>
-        <button onclick="showToast('Chat Admin Mas Eko')" class="text-center opacity-40"><span class="text-xl">💬</span><br><span class="text-[9px] font-bold text-slate-500">Chat</span></button>
+        <button onclick="location.reload()" class="text-center">🏠<br><span class="text-[9px] font-bold text-blue-500">Beranda</span></button>
+        <button onclick="showToast('Fitur Lacak Aktif!')" class="text-center opacity-40">🔍<br><span class="text-[9px] font-bold text-slate-500">Lacak</span></button>
+        <button onclick="showToast('Hubungi Mas Eko')" class="text-center opacity-40">💬<br><span class="text-[9px] font-bold text-slate-500">Chat</span></button>
     </nav>
 
     <script>
@@ -75,68 +68,65 @@
             setTimeout(() => t.classList.remove("show"), 3000);
         }
 
-        // --- LOAD MENU MAKANAN ---
         async function loadMenu() {
             const container = document.getElementById('konten-menu');
-            container.innerHTML = '<p class="col-span-2 text-center text-[10px] opacity-40 py-10">Memuat Menu...</p>';
+            container.innerHTML = '<p class="col-span-2 text-center text-[10px] opacity-40 py-10 text-white">Memuat Makanan...</p>';
             const { data } = await sb.from('menu_makanan').select('*').eq('stok_tersedia', true);
             container.innerHTML = '';
             data.forEach(item => {
                 container.innerHTML += `
                     <div class="bg-slate-800/50 p-3 rounded-[2.5rem] border border-white/5 flex flex-col">
                         <img src="${item.foto_url}" class="w-full h-32 object-cover rounded-[1.8rem] mb-4">
-                        <p class="text-[9px] font-black uppercase px-2 mb-1 truncate">${item.nama_makanan}</p>
+                        <p class="text-[9px] font-black uppercase px-2 mb-1 truncate text-white">${item.nama_makanan}</p>
                         <p class="text-green-500 font-black text-sm px-2 mb-4">Rp ${item.harga.toLocaleString('id-ID')}</p>
-                        <button onclick="beliItem('${item.nama_makanan}', ${item.harga}, 'FOOD')" class="w-full bg-white/5 py-4 rounded-[1.5rem] text-[9px] font-black uppercase transition active:bg-green-600">Beli</button>
+                        <button onclick="showToast('Segera Hadir!')" class="w-full bg-white/5 py-4 rounded-[1.5rem] text-[9px] font-black uppercase text-white">Beli</button>
                     </div>`;
             });
         }
 
-        // --- LOAD MENU PPOB (DANA SIMULATOR) ---
         function loadMenuPPOB() {
             const container = document.getElementById('konten-menu');
-            const daftarDana = [
-                { nominal: 'Dana 1.000', harga: 1200, sku: 'D1000' },
-                { nominal: 'Dana 2.000', harga: 2200, sku: 'D2000' },
-                { nominal: 'Dana 5.000', harga: 5200, sku: 'D5000' },
-                { nominal: 'Dana 10.000', harga: 10200, sku: 'D10000' }
+            // GABUNGAN DANA & GOPAY (Contoh SKU: D1000 untuk Dana, G1000 untuk Gopay)
+            const daftarProduk = [
+                { nama: 'DANA 1.000', harga: 1200, sku: 'D1000', provider: 'DANA' },
+                { nama: 'DANA 2.000', harga: 2200, sku: 'D2000', provider: 'DANA' },
+                { nama: 'GOPA 1.000', harga: 2000, sku: 'G2000', provider: 'GOPAY' },
+                { nama: 'GOPAY 5.000', harga: 5500, sku: 'G5000', provider: 'GOPAY' }
             ];
 
             container.innerHTML = `
-                <div class="col-span-2 bg-slate-800 p-6 rounded-[2.5rem] border border-blue-500/20 mb-2">
-                    <p class="text-[9px] font-black text-slate-500 uppercase mb-3 tracking-widest">Nomor HP Dana</p>
-                    <input type="number" id="no-tujuan" class="w-full bg-[#0F172A] p-5 rounded-2xl text-white font-black text-lg outline-none border border-white/5 focus:border-blue-600 transition" placeholder="Contoh: 0822...">
+                <div class="col-span-2 bg-slate-800 p-6 rounded-[2.5rem] border border-blue-500/20 mb-2 text-left">
+                    <p class="text-[9px] font-black text-slate-500 uppercase mb-3 tracking-widest">Nomor HP E-Wallet</p>
+                    <input type="number" id="no-tujuan" class="w-full bg-[#0F172A] p-5 rounded-2xl text-white font-black text-lg outline-none border border-white/5 focus:border-blue-600 transition text-left" placeholder="08xxxxxxxx">
                 </div>
             `;
 
-            daftarDana.forEach(item => {
+            daftarProduk.forEach(item => {
                 container.innerHTML += `
-                    <div onclick="pilihNominalDana('${item.nominal}', ${item.harga}, '${item.sku}')" class="card-nominal">
-                        <p class="text-sm font-black text-white uppercase mb-1">${item.nominal}</p>
-                        <p class="text-[8px] text-slate-500 font-bold uppercase mb-3">Top Up Saldo Dana</p>
-                        <p class="text-blue-500 font-black text-sm italic">Rp ${item.harga.toLocaleString('id-ID')}</p>
+                    <div onclick="pilihEwallet('${item.nama}', ${item.harga}, '${item.sku}', '${item.provider}')" class="card-nominal text-left">
+                        <p class="text-[10px] bg-blue-900/30 text-blue-400 w-fit px-2 py-0.5 rounded mb-2 font-bold">${item.provider}</p>
+                        <p class="text-sm font-black text-white uppercase mb-1">${item.nama}</p>
+                        <p class="text-green-500 font-black text-sm italic">Rp ${item.harga.toLocaleString('id-ID')}</p>
                     </div>`;
             });
         }
 
-        function pilihNominalDana(nama, harga, sku) {
+        function pilihEwallet(nama, harga, sku, provider) {
             const no = document.getElementById('no-tujuan').value;
-            if(!no || no.length < 10) return showToast("⚠️ Masukkan Nomor HP dulu!");
+            if(!no || no.length < 10) return showToast("⚠️ Isi Nomor HP E-Wallet!");
             
-            dataTransaksi = { nama: nama, harga: harga, target: no, sku: sku, tipe: 'PPOB' };
+            dataTransaksi = { nama: nama, harga: harga, target: no, sku: sku, tipe: 'PPOB', prov: provider };
             
             document.getElementById('detail-checkout').innerHTML = `
                 <div class="bg-[#0F172A] p-6 rounded-3xl border border-white/5">
-                    <div class="flex justify-between items-center mb-4">
-                        <p class="text-[10px] text-slate-500 font-bold uppercase">Layanan</p>
-                        <p class="text-[10px] bg-blue-600 px-2 py-1 rounded-md font-black italic">DANA</p>
-                    </div>
-                    <p class="font-black text-white text-lg">${dataTransaksi.nama}</p>
-                    <p class="text-slate-400 text-xs mt-1">Target: ${dataTransaksi.target}</p>
-                    <div class="my-5 border-t border-dashed border-white/10"></div>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">E-Wallet</p>
+                    <p class="font-black text-white text-lg mb-4">${dataTransaksi.prov}</p>
+                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Nomor Tujuan</p>
+                    <p class="font-black text-blue-500 text-lg mb-4">${dataTransaksi.target}</p>
+                    <hr class="border-white/5 my-4">
                     <div class="flex justify-between items-center">
-                        <p class="text-xs font-bold text-slate-400 uppercase">Total Bayar</p>
-                        <p class="font-black text-white text-2xl tracking-tighter italic">Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</p>
+                        <p class="text-xs font-bold text-slate-400">Total Tagihan</p>
+                        <p class="font-black text-white text-xl">Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</p>
                     </div>
                 </div>
             `;
@@ -144,16 +134,14 @@
         }
 
         function prosesKeKasir() {
-            showToast("🚀 Menghubungkan ke TriPay Sandbox...");
+            showToast("🚀 Menuju Kasir...");
             setTimeout(() => {
-                // KIRIM DATA KE KASIR PHP INFINITYFREE (SANDBOX MODE)
                 window.location.href = `https://grabndeso.wuaze.com/index.php?harga=${dataTransaksi.harga}&wa=${dataTransaksi.target}&sku=${dataTransaksi.sku}`;
-            }, 2000);
+            }, 1500);
         }
 
         function tutupModal() { document.getElementById('modal-checkout').style.display = 'none'; }
-
-        // Jalankan Menu Makanan saat pertama buka
+        
         loadMenu();
     </script>
 </body>
