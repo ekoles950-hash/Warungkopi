@@ -10,13 +10,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; margin: 0; padding-bottom: 100px; }
-        .card-nominal { background: #1E293B; border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+        .card-nominal { background: #1E293B; border-radius: 24px; padding: 20px; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; text-align: left; }
         .card-nominal:active { transform: scale(0.95); background: #1E40AF; border-color: #3B82F6; }
         header { background: #0F172A; padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .nav-bawah { position: fixed; bottom: 0; left: 0; right: 0; background: #1E293B; padding: 15px; display: flex; justify-content: space-around; border-top: 1px solid #334155; max-width: 450px; margin: auto; border-radius: 25px 25px 0 0; z-index: 1000; }
-        #toast-global { visibility: hidden; background: #3B82F6; color: white; padding: 12px 25px; position: fixed; bottom: 120px; left: 50%; transform: translateX(-50%); border-radius: 50px; font-weight: bold; z-index: 9999; font-size: 12px; }
-        #toast-global.show { visibility: visible; animation: fadeInUp 0.4s; }
-        @keyframes fadeInUp { from { opacity:0; transform: translate(-50%, 20px); } to { opacity:1; transform: translate(-50%, 0); } }
         .modal { position: fixed; inset: 0; background: rgba(0,0,0,0.85); display: none; align-items: flex-end; justify-content: center; z-index: 5000; }
         .modal-content { background: #1E293B; width: 100%; max-width: 450px; border-radius: 35px 35px 0 0; padding: 35px; animation: slideUp 0.3s; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -24,125 +20,60 @@
 </head>
 <body>
 
-    <div id="toast-global"></div>
-
     <header>
         <h1 class="text-xl font-black italic tracking-[0.2em]">GRAB<span class="text-green-500">NDESO</span></h1>
     </header>
 
     <div class="max-w-md mx-auto p-5">
-        <div class="flex gap-3 mb-8">
-            <button onclick="loadMenu()" class="flex-1 py-4 bg-slate-800 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition">🍱 Makan</button>
-            <button onclick="loadMenuPPOB()" class="flex-1 py-4 bg-blue-600 rounded-2xl text-[10px] font-black uppercase tracking-widest active:scale-95 transition shadow-lg shadow-blue-900/20">📱 E-Wallet</button>
-        </div>
-
         <div id="konten-menu" class="grid grid-cols-2 gap-4">
+            <div class="col-span-2 bg-slate-800 p-6 rounded-[2.5rem] border border-blue-500/20 mb-2">
+                <p class="text-[9px] font-black text-slate-500 uppercase mb-3 tracking-widest">Nomor HP E-Wallet</p>
+                <input type="number" id="no-tujuan" class="w-full bg-[#0F172A] p-5 rounded-2xl text-white font-black text-lg outline-none border border-white/5 focus:border-blue-600 transition" placeholder="08xxxxxxxx">
             </div>
+            <!-- Produk sesuai kode OkeConnect Mas Eko -->
+            <div onclick="pilihEwallet('DANA 1.000', 1200, 'D1', 'DANA')" class="card-nominal">
+                <p class="text-[10px] bg-blue-900/30 text-blue-400 w-fit px-2 py-0.5 rounded mb-2 font-bold">DANA</p>
+                <p class="text-sm font-black text-white uppercase mb-1">DANA 1.000</p>
+                <p class="text-green-500 font-black text-sm italic">Rp 1.200</p>
+            </div>
+            <div onclick="pilihEwallet('GOPAY 1.000', 2000, 'GPY1', 'GOPAY')" class="card-nominal">
+                <p class="text-[10px] bg-green-900/30 text-green-400 w-fit px-2 py-0.5 rounded mb-2 font-bold">GOPAY</p>
+                <p class="text-sm font-black text-white uppercase mb-1">GOPAY 1.000</p>
+                <p class="text-green-500 font-black text-sm italic">Rp 2.000</p>
+            </div>
+        </div>
     </div>
 
     <div id="modal-checkout" class="modal">
         <div class="modal-content">
             <h3 class="text-xl font-black mb-6 italic uppercase">Konfirmasi Top Up</h3>
-            <div id="detail-checkout" class="space-y-4 mb-8"></div>
+            <div id="detail-checkout" class="bg-[#0F172A] p-6 rounded-3xl border border-white/5 mb-8"></div>
             <button onclick="prosesKeKasir()" class="w-full bg-blue-600 py-5 rounded-2xl font-black uppercase italic shadow-xl active:scale-95 transition">Bayar Sekarang</button>
             <button onclick="tutupModal()" class="w-full mt-3 py-2 text-slate-500 font-bold text-sm">Batal</button>
         </div>
     </div>
 
-    <nav class="nav-bawah">
-        <button onclick="location.reload()" class="text-center">🏠<br><span class="text-[9px] font-bold text-blue-500">Beranda</span></button>
-        <button onclick="showToast('Fitur Lacak Aktif!')" class="text-center opacity-40">🔍<br><span class="text-[9px] font-bold text-slate-500">Lacak</span></button>
-        <button onclick="showToast('Hubungi Mas Eko')" class="text-center opacity-40">💬<br><span class="text-[9px] font-bold text-slate-500">Chat</span></button>
-    </nav>
-
     <script>
-        const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
         let dataTransaksi = {};
-
-        function showToast(msg) {
-            const t = document.getElementById("toast-global");
-            t.innerText = msg; t.classList.add("show");
-            setTimeout(() => t.classList.remove("show"), 3000);
-        }
-
-        async function loadMenu() {
-            const container = document.getElementById('konten-menu');
-            container.innerHTML = '<p class="col-span-2 text-center text-[10px] opacity-40 py-10 text-white">Memuat Makanan...</p>';
-            const { data } = await sb.from('menu_makanan').select('*').eq('stok_tersedia', true);
-            container.innerHTML = '';
-            data.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-slate-800/50 p-3 rounded-[2.5rem] border border-white/5 flex flex-col">
-                        <img src="${item.foto_url}" class="w-full h-32 object-cover rounded-[1.8rem] mb-4">
-                        <p class="text-[9px] font-black uppercase px-2 mb-1 truncate text-white">${item.nama_makanan}</p>
-                        <p class="text-green-500 font-black text-sm px-2 mb-4">Rp ${item.harga.toLocaleString('id-ID')}</p>
-                        <button onclick="showToast('Segera Hadir!')" class="w-full bg-white/5 py-4 rounded-[1.5rem] text-[9px] font-black uppercase text-white">Beli</button>
-                    </div>`;
-            });
-        }
-
-        function loadMenuPPOB() {
-            const container = document.getElementById('konten-menu');
-            // GABUNGAN DANA & GOPAY (Contoh SKU: D1000 untuk Dana, G1000 untuk Gopay)
-            const daftarProduk = [
-                { nama: 'DANA 1.000', harga: 1200, sku: 'D1000', provider: 'DANA' },
-                { nama: 'DANA 2.000', harga: 2200, sku: 'D2000', provider: 'DANA' },
-                { nama: 'GOPAY 1.000', harga: 2000, sku: 'GPY1', provider: 'GOPAY' },
-                { nama: 'GOPAY 5.000', harga: 5500, sku: 'G5000', provider: 'GOPAY' }
-            ];
-
-            container.innerHTML = `
-                <div class="col-span-2 bg-slate-800 p-6 rounded-[2.5rem] border border-blue-500/20 mb-2 text-left">
-                    <p class="text-[9px] font-black text-slate-500 uppercase mb-3 tracking-widest">Nomor HP E-Wallet</p>
-                    <input type="number" id="no-tujuan" class="w-full bg-[#0F172A] p-5 rounded-2xl text-white font-black text-lg outline-none border border-white/5 focus:border-blue-600 transition text-left" placeholder="08xxxxxxxx">
-                </div>
-            `;
-
-            daftarProduk.forEach(item => {
-                container.innerHTML += `
-                    <div onclick="pilihEwallet('${item.nama}', ${item.harga}, '${item.sku}', '${item.provider}')" class="card-nominal text-left">
-                        <p class="text-[10px] bg-blue-900/30 text-blue-400 w-fit px-2 py-0.5 rounded mb-2 font-bold">${item.provider}</p>
-                        <p class="text-sm font-black text-white uppercase mb-1">${item.nama}</p>
-                        <p class="text-green-500 font-black text-sm italic">Rp ${item.harga.toLocaleString('id-ID')}</p>
-                    </div>`;
-            });
-        }
 
         function pilihEwallet(nama, harga, sku, provider) {
             const no = document.getElementById('no-tujuan').value;
-            if(!no || no.length < 10) return showToast("⚠️ Isi Nomor HP E-Wallet!");
-            
-            dataTransaksi = { nama: nama, harga: harga, target: no, sku: sku, tipe: 'PPOB', prov: provider };
-            
+            if(!no || no.length < 10) return alert("Isi Nomor HP!");
+            dataTransaksi = { nama, harga, target: no, sku, prov: provider };
             document.getElementById('detail-checkout').innerHTML = `
-                <div class="bg-[#0F172A] p-6 rounded-3xl border border-white/5">
-                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">E-Wallet</p>
-                    <p class="font-black text-white text-lg mb-4">${dataTransaksi.prov}</p>
-                    <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Nomor Tujuan</p>
-                    <p class="font-black text-blue-500 text-lg mb-4">${dataTransaksi.target}</p>
-                    <hr class="border-white/5 my-4">
-                    <div class="flex justify-between items-center">
-                        <p class="text-xs font-bold text-slate-400">Total Tagihan</p>
-                        <p class="font-black text-white text-xl">Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</p>
-                    </div>
-                </div>
+                <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">${dataTransaksi.prov}</p>
+                <p class="font-black text-white text-lg mb-4">${dataTransaksi.target}</p>
+                <p class="text-xs font-bold text-slate-400">Total: Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</p>
             `;
             document.getElementById('modal-checkout').style.display = 'flex';
         }
 
         function prosesKeKasir() {
-            showToast("🚀 Menuju Kasir...");
-            setTimeout(() => {
-                window.location.href = `https://grabndeso.wuaze.com/index.php?harga=${dataTransaksi.harga}&wa=${dataTransaksi.target}&sku=${dataTransaksi.sku}`;
-            }, 1500);
+            // URL diarahkan ke hosting InfinityFree Mas
+            window.location.href = `https://grabndeso.wuaze.com/index.php?harga=${dataTransaksi.harga}&wa=${dataTransaksi.target}&sku=${dataTransaksi.sku}`;
         }
 
         function tutupModal() { document.getElementById('modal-checkout').style.display = 'none'; }
-        
-        loadMenu();
     </script>
 </body>
 </html>
