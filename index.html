@@ -17,83 +17,59 @@
     </style>
 </head>
 <body>
-
     <header class="p-6 text-center">
-        <h1 class="text-xl font-black italic tracking-widest text-white">GRAB<span class="text-green-500">NDESO</span></h1>
+        <h1 class="text-xl font-black italic tracking-widest">GRAB<span class="text-green-500">NDESO</span></h1>
     </header>
 
-    <div class="max-w-md mx-auto p-5 text-left">
+    <div class="max-w-md mx-auto p-5">
         <div class="input-box mb-6">
             <label class="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-2 block">Nomor HP Tujuan</label>
             <input type="number" id="no-tujuan" class="w-full bg-transparent text-white font-black text-xl outline-none" placeholder="08xxxxxxxxxx">
         </div>
 
-        <h2 class="font-black text-sm uppercase mb-4 text-slate-400">Pilih E-Wallet</h2>
+        <h2 class="font-black text-sm uppercase mb-4 text-slate-400 text-left">Pilih E-Wallet</h2>
         <div class="grid grid-cols-2 gap-4">
-            <div onclick="pilihProduk('DANA 1.000', 1200, 'D1', 'DANA')" class="card-nominal">
-                <p class="text-[9px] font-bold text-blue-400 uppercase mb-1">DANA</p>
-                <p class="text-sm font-black mb-1">DANA 1.000</p>
-                <p class="text-green-500 font-black">Rp 1.200</p>
-            </div>
-            <div onclick="pilihProduk('GOPAY 1.000', 2000, 'GPY1', 'GOPAY')" class="card-nominal">
+            <div onclick="pilihProduk('GOPAY 1.000', 2000, 'GPY1', 'GOPAY')" class="card-nominal text-left">
                 <p class="text-[9px] font-bold text-green-400 uppercase mb-1">GOPAY</p>
                 <p class="text-sm font-black mb-1">GOPAY 1.000</p>
                 <p class="text-green-500 font-black">Rp 2.000</p>
             </div>
-        </div>
+            </div>
     </div>
 
     <div id="modal-checkout" class="modal">
         <div class="modal-content text-left">
             <h3 class="text-lg font-black mb-6 uppercase italic">Detail Transaksi</h3>
             <div id="detail-checkout" class="bg-[#0F172A] p-5 rounded-2xl mb-8"></div>
-            <button onclick="bayarSekarang()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase italic shadow-lg active:scale-95 transition">Konfirmasi Bayar</button>
+            <button onclick="bayarSekarang()" class="w-full bg-blue-600 py-4 rounded-xl font-black uppercase italic shadow-lg active:scale-95">Konfirmasi Bayar</button>
             <button onclick="tutupModal()" class="w-full mt-4 text-slate-500 font-bold text-sm">Batal</button>
         </div>
     </div>
 
     <script>
-        // --- DATA MERCHANT MAS EKO (VERSI TERBARU) ---
         const MERCHANT_CODE = 'T50086';
         const API_KEY       = 'DEV-1umLxK4aar0mC0gNkNq8BVJ2FyQ7L9LQss9pZhVW';
-        
         let dataTransaksi = {};
 
         function pilihProduk(nama, harga, sku, provider) {
             const no = document.getElementById('no-tujuan').value;
             if(!no || no.length < 10) return alert("Nomor HP Belum Benar!");
-            
             dataTransaksi = { nama, harga, target: no, sku, prov: provider };
-            
             document.getElementById('detail-checkout').innerHTML = `
-                <div class="flex justify-between mb-2">
-                    <span class="text-slate-400 text-xs uppercase font-bold">Produk</span>
-                    <span class="font-black text-white">${dataTransaksi.nama}</span>
-                </div>
-                <div class="flex justify-between mb-2">
-                    <span class="text-slate-400 text-xs uppercase font-bold">Nomor HP</span>
-                    <span class="font-black text-blue-400">${dataTransaksi.target}</span>
-                </div>
+                <div class="flex justify-between mb-2"><span>Produk</span><span class="font-bold">${dataTransaksi.nama}</span></div>
+                <div class="flex justify-between mb-2"><span>Nomor</span><span class="font-bold text-blue-400">${dataTransaksi.target}</span></div>
                 <hr class="border-white/5 my-3">
-                <div class="flex justify-between">
-                    <span class="text-slate-400 text-xs uppercase font-bold">Total Tagihan</span>
-                    <span class="font-black text-green-500 text-lg">Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</span>
-                </div>
-            `;
+                <div class="flex justify-between"><span>Total</span><span class="font-black text-green-500 text-lg">Rp ${dataTransaksi.harga.toLocaleString('id-ID')}</span></div>`;
             document.getElementById('modal-checkout').style.display = 'flex';
         }
 
         function bayarSekarang() {
-            // Mengarahkan ke file index.php di Hosting InfinityFree
             const urlPHP = "https://grabndeso.wuaze.com/index.php";
             const params = `?harga=${dataTransaksi.harga}&wa=${dataTransaksi.target}&sku=${dataTransaksi.sku}&mcode=${MERCHANT_CODE}&apikey=${API_KEY}`;
-            
             window.location.href = urlPHP + params;
         }
 
-        function tutupModal() {
-            document.getElementById('modal-checkout').style.display = 'none';
-        }
+        function tutupModal() { document.getElementById('modal-checkout').style.display = 'none'; }
     </script>
 </body>
 </html>
