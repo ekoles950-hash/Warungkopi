@@ -1,6 +1,6 @@
 <?php
 $user_id  = "ekolestiyo"; 
-$pin_qios = 123456; // TANPA TANDA PETIK (Kirim sebagai angka murni)
+$pin_qios = 123456 // TANPA TANDA PETIK (Kirim sebagai angka murni)
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nomor = $_POST['nomor_hp'];
