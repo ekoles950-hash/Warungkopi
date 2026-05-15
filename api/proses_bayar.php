@@ -1,6 +1,6 @@
 <?php
 // Data Akun Mas Eko
-$my_id  = "082243047166"; 
+$my_id  = "ekolestiyo"; 
 $my_pin = "9503"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
