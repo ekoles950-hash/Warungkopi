@@ -1,6 +1,6 @@
 <?php
-$user_id  = "ekolestiyo"; 
-$pin_qios = "123456"; 
+$user_id  = "OK2302353"; 
+$pin_qios = "1234"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Fungsi trim() buat hapus spasi "setan" di depan/belakang
@@ -8,7 +8,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sku   = trim($_POST['sku']);
     $ref   = 'GRAB' . date('His');
     
-    $url = "https://qiospay.id/api/h2h/trx"; 
+    $url = "https://h2h.okeconnect.com/trx"; 
     
     $payload = [
         'user_id' => $user_id,
