@@ -1,6 +1,6 @@
 <?php
 $user_id  = "ekolestiyo"; 
-$pin_qios = "123456"; 
+$pin_qios = 123456; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Kita bersihkan spasi yang nggak sengaja ketik (trim)
