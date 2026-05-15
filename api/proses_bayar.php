@@ -1,6 +1,6 @@
 <?php
 // Data dari screenshot panel integrasi Mas Eko
-$memberID = "ekolestiyo"; 
+$memberID = "082243047166"; 
 $pin      = "9503"; 
 $password = "Banjarnegara"; // Sesuai screenshot password di panel Mas
 
