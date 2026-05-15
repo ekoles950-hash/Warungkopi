@@ -1,7 +1,7 @@
 <?php
 // Data Akun Mas Eko
 $my_id  = "082243047166"; 
-$my_pin = "123456"; 
+$my_pin = "9503"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nomor = trim($_POST['nomor_hp']);
