@@ -1,49 +1,56 @@
 <?php
 $user_id  = "ekolestiyo"; 
-$pin_qios = 123456; 
+$pin_qios = "123456"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    // Kita bersihkan spasi yang nggak sengaja ketik (trim)
     $nomor = trim($_POST['nomor_hp']);
     $sku   = trim($_POST['sku']);
     $ref   = 'GRAB' . date('His');
     
     $url = "https://qiospay.id/api/h2h/trx"; 
     
+    // Sesuaikan variabel dengan standar H2H Qiospay
     $payload = [
         'user_id' => $user_id,
         'pin'     => $pin_qios,
         'nomor'   => $nomor,
-        'produk'  => $sku,
+        'produk'  => $sku, // Pastikan di index.php value-nya beneran GPY1
         'm_reff'  => $ref
     ];
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    // Balik ke http_build_query (format form)
     curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload)); 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     
     $response = curl_exec($ch);
     $hasil = json_decode($response, true);
     curl_close($ch);
 
     echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.tailwindcss.com'></script></head>
-    <body class='bg-slate-900 text-white flex items-center justify-center min-h-screen p-6 font-sans'>";
-    echo "<div class='bg-slate-800 p-8 rounded-3xl border border-slate-700 text-center w-full max-w-sm shadow-2xl'>";
+    <body class='bg-white text-black flex items-center justify-center min-h-screen p-4 font-sans'>";
     
-    if (isset($hasil['status']) && ($hasil['status'] == 'success' || $hasil['status'] == 'PENDING')) {
-        echo "<h2 class='text-green-500 font-black text-xl uppercase italic'>SUKSES!</h2>";
-        echo "<p class='text-xs mt-2'>".$hasil['message']."</p>";
+    echo "<div class='w-full max-w-md bg-white border border-slate-200 rounded-xl p-6 shadow-sm'>";
+    
+    // Jika Qiospay membalas dengan data (seperti di screenshot Mas)
+    if ($hasil) {
+        echo "<pre class='text-[12px] text-slate-700 bg-slate-50 p-4 rounded-lg border border-slate-100 overflow-auto leading-relaxed'>";
+        // Menampilkan JSON persis seperti screenshot BukaOlshop Mas
+        echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        echo "</pre>";
+        
+        // Tombol Kembali ala Aplikasi
+        echo "<button onclick='window.location.href=\"/\"' class='w-full mt-4 py-3 bg-blue-600 text-white rounded-lg font-bold text-sm'>OK</button>";
     } else {
-        echo "<h2 class='text-yellow-500 font-bold uppercase mb-2 text-sm'>STATUS TRANSAKSI</h2>";
-        echo "<div class='bg-black p-4 rounded-xl text-left border border-slate-700'>";
-        echo "<p class='text-[10px] text-yellow-500 font-mono'>RESPON: " . ($response ? htmlspecialchars($response) : "Qiospay Menolak (Cek IP)") . "</p>";
+        // Jika mental atau kosong
+        echo "<div class='text-center py-10'>";
+        echo "<p class='text-red-500 font-bold'>Gagal terhubung ke server Qiospay</p>";
+        echo "<p class='text-[10px] text-slate-400 mt-2'>Respon: ".htmlspecialchars($response)."</p>";
+        echo "<button onclick='window.location.href=\"/\"' class='w-full mt-6 py-3 bg-slate-200 text-slate-700 rounded-lg font-bold text-sm'>KEMBALI</button>";
         echo "</div>";
-        echo "<p class='text-[9px] text-slate-500 mt-4 italic'>Mencoba SKU: $sku ke $nomor</p>";
     }
-    echo "<button onclick='window.location.href=\"/\"' class='bg-blue-600 w-full py-4 rounded-2xl font-black mt-6 text-xs uppercase tracking-widest'>Kembali</button></div></body></html>";
+
+    echo "</div></body></html>";
 }
 ?>
