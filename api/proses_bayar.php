@@ -3,13 +3,13 @@ $user_id  = "ekolestiyo";
 $pin_qios = "123456"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Fungsi trim() buat hapus spasi "setan" di depan/belakang
     $nomor = trim($_POST['nomor_hp']);
     $sku   = trim($_POST['sku']);
     $ref   = 'GRAB' . date('His');
     
     $url = "https://qiospay.id/api/h2h/trx"; 
     
-    // Kirim data mentah (raw data)
     $payload = [
         'user_id' => $user_id,
         'pin'     => $pin_qios,
@@ -28,7 +28,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $hasil = json_decode($response, true);
     curl_close($ch);
 
-    // TAMPILAN PUTIH BERSIH ALA BUKAOLSHOP
     header('Content-Type: text/html');
     ?>
     <!DOCTYPE html>
@@ -36,9 +35,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { background: #f4f4f4; font-family: monospace; padding: 20px; }
-            .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
-            pre { white-space: pre-wrap; word-wrap: break-word; color: #333; font-size: 13px; }
+            body { background: #f5f5f5; font-family: monospace; padding: 20px; display: flex; justify-content: center; }
+            .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border: 1px solid #eee; }
+            pre { white-space: pre-wrap; word-wrap: break-word; color: #333; font-size: 14px; margin: 0; line-height: 1.6; }
         </style>
     </head>
     <body>
