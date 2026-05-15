@@ -45,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
         // TAMPILKAN IP VERCEL MAS DI SINI
         echo "<div class='bg-blue-900/30 p-3 rounded-lg border border-blue-500 mb-4'>";
-        echo "<p class='text-[10px] text-blue-300 font-bold mb-1'>IP VERCEL MAS SAAT INI:</p>";
+        echo "<p class='text-[10px] text-blue-300 font-bold mb-1'>IP 18.143.125.10,3.93.184.101,76.76.21.21:</p>";
         echo "<p class='text-lg font-mono text-white tracking-widest'>$ip_saya</p>";
         echo "</div>";
         echo "<p class='text-[8px] text-slate-500'>Salin IP di atas ke panel Qiospay!</p>";
