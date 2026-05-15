@@ -297,7 +297,7 @@
                     tampilkanHalamanTracking(data[0].id, 'pending'); 
                     setTimeout(() => {
                         // Kirim total harga + nomor WA ke sistem kasir PHP
-                        window.location.href = `https://grabndeso.wuaze.com/index.php?harga=${totalFix}&wa=${w}`;
+                        window.location.href = `http://localhost:6060/index.php?harga=${totalFix}&wa=${w}`;
                     }, 2000);
                 } else {
                     tampilkanHalamanTracking(data[0].id, 'pending'); 
