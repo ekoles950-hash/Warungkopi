@@ -1,70 +1,75 @@
-<?php
-$user_id  = "OK2302353"; 
-$pin_oke  = "1234"; 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basecamp Coffee - Top Up</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        input:checked + label {
+            border-color: #00b894;
+            background-color: #f0fff4;
+            color: #00816a;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex items-center justify-center min-h-screen p-4">
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nomor = trim($_POST['nomor_hp']);
-    $sku   = trim($_POST['sku']); 
-    $ref   = 'OKE' . date('His');
-    
-    $url = "https://h2h.okeconnect.com/trx"; 
-    
-    $payload = [
-        'user_id' => $user_id,
-        'pin'     => $pin_oke,
-        'produk'  => $sku,
-        'nomor'   => $nomor,
-        'm_reff'  => $ref
-    ];
-
-    $ch = curl_init($url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    
-    // PERUBAHAN DISINI: Kirim mentah JSON + Header Lengkap
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload)); 
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Accept: application/json',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    ]);
-    
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    
-    $response = curl_exec($ch);
-    $hasil = json_decode($response, true);
-    curl_close($ch);
-
-    header('Content-Type: text/html');
-    ?>
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body { background: #f4f7f6; font-family: monospace; padding: 20px; display: flex; justify-content: center; }
-            .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; border: 1px solid #e0e0e0; }
-            pre { white-space: pre-wrap; word-wrap: break-word; color: #2d3436; font-size: 13px; line-height: 1.6; margin: 0; }
-            .header { border-bottom: 2px solid #00b894; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; color: #00b894; text-transform: uppercase; }
-            .btn { display: block; text-align: center; margin-top: 20px; padding: 12px; background: #00b894; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-family: sans-serif; }
-        </style>
-    </head>
-    <body>
-        <div class="card">
-            <div class="header">STATUS TRANSAKSI</div>
-            <pre><?php 
-            if($hasil) {
-                echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            } else {
-                // Jika masih dapet pesan "Not Allowed", tampilkan respon aslinya
-                echo $response ? htmlspecialchars($response) : "Server OkeConnect tidak merespon.";
-            }
-            ?></pre>
-            <a href="/" class="btn">KEMBALI</a>
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl overflow-hidden border border-slate-200">
+        <div class="bg-[#00b894] p-8 text-white text-center">
+            <h1 class="text-2xl font-black italic tracking-tighter">BASECAMP TOPUP</h1>
+            <p class="text-[10px] opacity-90 uppercase tracking-[0.2em] mt-1 font-bold">Jalur OkeConnect OK2302353</p>
         </div>
-    </body>
-    </html>
-    <?php
-}
-?>
+
+        <form action="api/proses_bayar.php" method="POST" class="p-8 space-y-8">
+            
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1 tracking-widest">Nomor HP Tujuan</label>
+                <input type="number" name="nomor_hp" placeholder="08xxxxxxxxxx" required
+                    class="w-full p-5 bg-slate-50 border-2 border-slate-100 focus:border-[#00b894] focus:bg-white rounded-2xl outline-none transition-all font-black text-xl tracking-wider text-slate-700">
+            </div>
+
+            <div>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-4 ml-1 tracking-widest">Pilih Layanan</label>
+                <div class="grid grid-cols-1 gap-4">
+                    
+                    <div class="relative">
+                        <input type="radio" name="sku" value="GPY1" id="gpy1" class="hidden" required>
+                        <label for="gpy1" class="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all font-bold">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] uppercase opacity-50">Gopay</span>
+                                <span class="text-lg">1.000</span>
+                            </div>
+                            <span class="text-[#00b894] font-black">Rp 2.050</span>
+                        </label>
+                    </div>
+
+                    <div class="relative opacity-50">
+                        <input type="radio" name="sku" value="DANA1" id="dana1" class="hidden">
+                        <label for="dana1" class="flex items-center justify-between p-5 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all font-bold">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] uppercase opacity-50">Dana</span>
+                                <span class="text-lg">1.000</span>
+                            </div>
+                            <span class="text-slate-400 font-black">Rp 2.000</span>
+                        </label>
+                    </div>
+
+                </div>
+            </div>
+
+            <button type="submit" 
+                class="w-full bg-[#00b894] hover:bg-[#00a383] text-white py-6 rounded-2xl font-black text-sm uppercase tracking-[0.2em] shadow-xl shadow-green-100 transition-all active:scale-95">
+                Beli Sekarang
+            </button>
+
+            <div class="pt-4 border-t border-slate-100 text-center">
+                <p class="text-[9px] text-slate-300 uppercase font-black tracking-widest">Sengkuni Net & PT FAMILI</p>
+            </div>
+        </form>
+    </div>
+
+</body>
+</html>
