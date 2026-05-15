@@ -9,6 +9,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $url = "https://qiospay.id/api/h2h/trx"; 
     
+    // Kirim data mentah (raw data)
     $payload = [
         'user_id' => $user_id,
         'pin'     => $pin_qios,
@@ -24,26 +25,34 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
     
     $response = curl_exec($ch);
+    $hasil = json_decode($response, true);
     curl_close($ch);
 
-    echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.tailwindcss.com'></script></head>
-    <body class='bg-slate-100 flex items-center justify-center min-h-screen p-4 font-sans'>";
-    
-    echo "<div class='w-full max-w-md bg-white border border-slate-200 rounded-xl p-6 shadow-sm'>";
-    
-    // TAMPILKAN DATA YANG DIKIRIM (CEK DI SINI MAS!)
-    echo "<h2 class='text-[10px] font-bold mb-2 text-blue-500 uppercase'>Data yang Mas Kirim:</h2>";
-    echo "<div class='bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4 text-[11px] font-mono text-blue-800'>";
-    echo "ID: $user_id | PIN: $pin_qios | SKU: $sku | NO: $nomor";
-    echo "</div>";
-
-    // TAMPILKAN JAWABAN ASLI QIOSPAY
-    echo "<h2 class='text-[10px] font-bold mb-2 text-slate-400 uppercase'>Jawaban Asli Qiospay:</h2>";
-    echo "<div class='bg-slate-900 p-4 rounded-lg font-mono text-[12px] text-yellow-500 mb-4'>";
-    echo $response ? htmlspecialchars($response) : "KOSONG (Server Mati)";
-    echo "</div>";
-    
-    echo "<button onclick='window.location.href=\"/\"' class='w-full py-3 bg-slate-200 text-slate-700 rounded-lg font-bold text-sm'>KEMBALI</button>";
-    echo "</div></body></html>";
+    // TAMPILAN PUTIH BERSIH ALA BUKAOLSHOP
+    header('Content-Type: text/html');
+    ?>
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+            body { background: #f4f4f4; font-family: monospace; padding: 20px; }
+            .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); max-width: 500px; margin: auto; }
+            pre { white-space: pre-wrap; word-wrap: break-word; color: #333; font-size: 13px; }
+        </style>
+    </head>
+    <body>
+        <div class="box">
+            <pre><?php 
+            if($hasil) {
+                echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            } else {
+                echo "{\n  \"status\": \"ERROR\",\n  \"message\": \"$response\"\n}";
+            }
+            ?></pre>
+        </div>
+    </body>
+    </html>
+    <?php
 }
 ?>
