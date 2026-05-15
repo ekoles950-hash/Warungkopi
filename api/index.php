@@ -39,7 +39,7 @@
                         <input type="radio" name="sku" value="GPY1" id="gpy1" class="hidden" required>
                         <label for="gpy1" class="flex flex-col items-center justify-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all">
                             <span class="text-[10px] font-bold opacity-50 uppercase">Gopay</span>
-                            <span class="text-lg font-black">1.000</span>
+                            <span class="text-lg font-black">1.950</span>
                         </label>
                     </div>
 
