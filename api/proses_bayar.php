@@ -1,60 +1,57 @@
 <?php
-// Data Akun Terbaru Mas Eko
-$my_id  = "ekolestiyo"; 
-$my_pin = "9503"; 
+// Data dari screenshot panel integrasi Mas Eko
+$memberID = "ekolestiyo"; 
+$pin      = "9503"; 
+$password = "Banjarnegar"; // Sesuai screenshot password di panel Mas
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $nomor = trim($_POST['nomor_hp']);
-    $sku   = trim($_POST['sku']);
-    $reff  = 'BSCP' . date('His');
+    $nomor   = trim($_POST['nomor_hp']);
+    $produk  = trim($_POST['sku']);
+    $refID   = 'BSCP' . date('His');
     
+    // URL API Qiospay sesuai dokumen
     $url = "https://qiospay.id/api/h2h/trx"; 
     
-    // Variabel sesuai dokumen resmi Qiospay
+    // Variabel WAJIB sesuai screenshot dokumen (huruf kecil-besar pengaruh)
     $params = [
-        'ID'      => $my_id,
-        'PIN'     => $my_pin,
-        'PRODUK'  => $sku,
-        'NOMOR'   => $nomor,
-        'ID_REFF' => $reff
+        'product'  => $produk,
+        'dest'     => $nomor,
+        'refID'    => $refID,
+        'memberID' => $memberID,
+        'pin'      => $pin,
+        'password' => $password
     ];
 
-    $ch = curl_init($url);
+    // Kirim pakai GET sesuai contoh "GET - Transaksi" di dokumen
+    $full_url = $url . "?" . http_build_query($params);
+
+    $ch = curl_init($full_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($params)); 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
     
     $response = curl_exec($ch);
-    $hasil = json_decode($response, true);
     curl_close($ch);
 
     header('Content-Type: text/html');
     ?>
     <!DOCTYPE html>
-    <html lang="id">
+    <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <style>
-            body { background: #0f172a; font-family: 'Courier New', monospace; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
-            .box { background: #ffffff; padding: 30px; border-radius: 24px; shadow: 0 25px 50px -12px rgba(0,0,0,0.5); width: 100%; max-width: 400px; border-top: 6px solid #3b82f6; }
-            pre { white-space: pre-wrap; word-wrap: break-word; color: #1e293b; font-size: 14px; background: #f8fafc; padding: 20px; border-radius: 15px; border: 1px solid #e2e8f0; margin: 15px 0; }
-            .label { font-size: 11px; color: #64748b; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
-            .btn { display: block; text-align: center; padding: 16px; background: #3b82f6; color: white; text-decoration: none; border-radius: 14px; font-family: sans-serif; font-weight: 900; font-size: 14px; transition: 0.3s; }
-            .btn:hover { background: #2563eb; }
-        </style>
+        <script src="https://cdn.tailwindcss.com"></script>
     </head>
-    <body>
-        <div class="box">
-            <span class="label">Status Transaksi:</span>
-            <pre><?php 
-            if($hasil) {
-                echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            } else {
-                echo htmlspecialchars($response) ?: "Koneksi Gagal ke Qiospay";
-            }
-            ?></pre>
-            <a href="/" class="btn">KEMBALI KE BERANDA</a>
+    <body class="bg-[#0f172a] flex items-center justify-center min-h-screen p-4">
+        <div class="w-full max-w-md bg-white rounded-[2rem] p-8 shadow-2xl">
+            <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Respon Server Qiospay</h2>
+            <div class="bg-slate-50 border-2 border-slate-100 rounded-2xl p-5 mb-6">
+                <p class="font-mono text-sm text-slate-800 break-words">
+                    <?php echo $response ?: "Tidak ada respon dari server"; ?>
+                </p>
+            </div>
+            <a href="/" class="block w-full py-4 bg-blue-600 text-white text-center rounded-xl font-bold hover:bg-blue-700 transition-all">
+                KEMBALI
+            </a>
         </div>
     </body>
     </html>
