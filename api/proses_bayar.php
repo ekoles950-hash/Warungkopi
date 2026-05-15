@@ -9,28 +9,22 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
     $url = "https://h2h.okeconnect.com/trx"; 
     
-    $payload = [
-        'user_id' => $user_id,
-        'pin'     => $pin_oke,
-        'produk'  => $sku,
-        'nomor'   => $nomor,
-        'm_reff'  => $ref
-    ];
+    // Kirim pakai format STRING (Metode paling ampuh buat server rewel)
+    $fields = "user_id=$user_id&pin=$pin_oke&produk=$sku&nomor=$nomor&m_reff=$ref";
 
-    $ch = curl_init($url);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    
-    // PERUBAHAN DISINI: Kirim mentah JSON + Header Lengkap
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload)); 
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Accept: application/json',
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
-    ]);
-    
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
+    curl_setopt($ch, CURLOPT_POSTFIELDS, $fields); // Kirim string mentah
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_TIMEOUT, 30);
+    
+    // Paksa pake Header Chrome biar gak diblokir firewall mereka
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Content-Type: application/x-www-form-urlencoded',
+        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    ]);
     
     $response = curl_exec($ch);
     $hasil = json_decode($response, true);
@@ -43,25 +37,24 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
-            body { background: #f4f7f6; font-family: monospace; padding: 20px; display: flex; justify-content: center; }
-            .card { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); width: 100%; max-width: 450px; border: 1px solid #e0e0e0; }
-            pre { white-space: pre-wrap; word-wrap: break-word; color: #2d3436; font-size: 13px; line-height: 1.6; margin: 0; }
-            .header { border-bottom: 2px solid #00b894; padding-bottom: 10px; margin-bottom: 15px; font-weight: bold; color: #00b894; text-transform: uppercase; }
-            .btn { display: block; text-align: center; margin-top: 20px; padding: 12px; background: #00b894; color: white; text-decoration: none; border-radius: 8px; font-weight: bold; font-family: sans-serif; }
+            body { background: white; font-family: monospace; padding: 20px; }
+            .box { border: 2px solid black; padding: 15px; max-width: 400px; margin: auto; }
+            pre { white-space: pre-wrap; font-size: 14px; color: red; font-weight: bold; }
         </style>
     </head>
     <body>
-        <div class="card">
-            <div class="header">STATUS TRANSAKSI</div>
+        <div class="box">
+            <h2 style="font-size: 12px; border-bottom: 1px solid #000; padding-bottom: 5px;">RESPON SERVER:</h2>
             <pre><?php 
             if($hasil) {
-                echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                echo json_encode($hasil, JSON_PRETTY_PRINT);
             } else {
-                // Jika masih dapet pesan "Not Allowed", tampilkan respon aslinya
-                echo $response ? htmlspecialchars($response) : "Server OkeConnect tidak merespon.";
+                echo $response ? htmlspecialchars($response) : "SERVER OKE CONNECT MATI/BLOKIR IP";
             }
             ?></pre>
-            <a href="/" class="btn">KEMBALI</a>
+            <hr>
+            <p style="font-size: 10px;">Data: ID:<?php echo $user_id; ?> | PIN:<?php echo $pin_oke; ?> | SKU:<?php echo $sku; ?></p>
+            <a href="/" style="display:block; text-align:center; background: black; color: white; padding: 10px; text-decoration: none; font-weight: bold;">KEMBALI</a>
         </div>
     </body>
     </html>
