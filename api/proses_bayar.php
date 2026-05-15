@@ -1,38 +1,28 @@
 <?php
-$user_id  = "OK2302353"; 
-$pin_oke  = "1234"; 
+$user_id  = "ekolestiyo"; 
+$pin_qios = "123456"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // Fungsi trim() buat hapus spasi "setan" di depan/belakang
     $nomor = trim($_POST['nomor_hp']);
-    $sku   = trim($_POST['sku']); 
-    $ref   = 'OKE' . date('His');
+    $sku   = trim($_POST['sku']);
+    $ref   = 'GRAB' . date('His');
     
-    $url = "https://h2h.okeconnect.com/trx"; 
+    $url = "https://qiospay.id/api/h2h/trx"; 
     
-    // Data dijadikan JSON murni
-    $payload = json_encode([
+    $payload = [
         'user_id' => $user_id,
-        'pin'     => $pin_oke,
-        'produk'  => $sku,
+        'pin'     => $pin_qios,
         'nomor'   => $nomor,
+        'produk'  => $sku,
         'm_reff'  => $ref
-    ]);
+    ];
 
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    curl_setopt($ch, CURLOPT_POSTFIELDS, $payload); // Kirim JSON Mentah
-    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-    curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-    
-    // HEADER PALING LENGKAP: Biar dikira akses resmi
-    curl_setopt($ch, CURLOPT_HTTPHEADER, [
-        'Content-Type: application/json',
-        'Content-Length: ' . strlen($payload),
-        'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Origin: https://okeconnect.com',
-        'Referer: https://okeconnect.com/integrasi/trx'
-    ]);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload)); 
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
     
     $response = curl_exec($ch);
     $hasil = json_decode($response, true);
@@ -44,28 +34,21 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <html>
     <head>
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <script src="https://cdn.tailwindcss.com"></script>
+        <style>
+            body { background: #f5f5f5; font-family: monospace; padding: 20px; display: flex; justify-content: center; }
+            .box { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; border: 1px solid #eee; }
+            pre { white-space: pre-wrap; word-wrap: break-word; color: #333; font-size: 14px; margin: 0; line-height: 1.6; }
+        </style>
     </head>
-    <body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
-        <div class="w-full max-w-sm bg-slate-800 rounded-3xl p-6 border border-slate-700 shadow-2xl">
-            <h2 class="text-center text-xs font-black uppercase tracking-widest text-slate-500 mb-4 italic">Hasil Eksekusi</h2>
-            
-            <div class="bg-black rounded-2xl p-4 border border-slate-700 mb-6 overflow-auto">
-                <pre class="text-[12px] font-mono text-green-400"><?php 
-                if($hasil) {
-                    echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                } else {
-                    // Kalo dapet teks "Not Allowed", kita bersihkan tag HTML-nya
-                    echo strip_tags($response) ?: "KONEKSI TIME OUT";
-                }
-                ?></pre>
-            </div>
-
-            <a href="/" class="block w-full py-4 bg-blue-600 hover:bg-blue-500 text-center rounded-2xl font-black uppercase text-xs tracking-widest transition-all">ULANGI</a>
-            
-            <div class="mt-4 text-center">
-                <p class="text-[9px] text-slate-600 italic">ID: <?php echo $user_id; ?> | SKU: <?php echo $sku; ?></p>
-            </div>
+    <body>
+        <div class="box">
+            <pre><?php 
+            if($hasil) {
+                echo json_encode($hasil, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            } else {
+                echo "{\n  \"status\": \"ERROR\",\n  \"message\": \"$response\"\n}";
+            }
+            ?></pre>
         </div>
     </body>
     </html>
