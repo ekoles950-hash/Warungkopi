@@ -3,40 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GRABNDESO - Top Up</title>
+    <title>Warung Basecamp Coffee</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        input:checked + label {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+            color: #1e40af;
+        }
+    </style>
 </head>
-<body class="bg-slate-900 text-white flex items-center justify-center min-h-screen p-4">
-    <div class="max-w-md w-full bg-slate-800 p-8 rounded-3xl shadow-2xl border border-slate-700">
-        <div class="text-center mb-8">
-            <h1 class="text-3xl font-black italic tracking-tighter uppercase">Grab<span class="text-green-500">ndeso</span></h1>
-            <p class="text-[10px] text-slate-400 mt-1 uppercase tracking-widest text-blue-400 font-bold">Vercel Serverless</p>
+<body class="bg-slate-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="w-full max-w-md bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+        <div class="bg-blue-600 p-6 text-white text-center">
+            <h1 class="text-2xl font-black italic tracking-tighter">BASECAMP COFFEE</h1>
+            <p class="text-xs opacity-80 uppercase tracking-widest mt-1">Topup Otomatis Qiospay</p>
         </div>
-        
-        <form action="/proses" method="POST">
-            <div class="mb-6">
-                <label class="block text-[10px] font-bold text-slate-500 mb-2 tracking-widest uppercase">Nomor HP Tujuan</label>
-                <input type="number" name="nomor_hp" placeholder="08xxxxxxxx" class="w-full bg-slate-900 border border-slate-700 rounded-2xl p-4 text-white focus:outline-none focus:border-green-500 font-mono" required>
+
+        <form action="api/proses_bayar.php" method="POST" class="p-6 space-y-6">
+            
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-2 ml-1">Nomor Tujuan (HP/Dana/Gopay)</label>
+                <input type="number" name="nomor_hp" placeholder="08xxxxxxxxxx" required
+                    class="w-full p-4 bg-slate-100 border-2 border-transparent focus:border-blue-500 focus:bg-white rounded-2xl outline-none transition-all font-bold text-lg">
             </div>
 
-            <div class="mb-8">
-                <label class="block text-[10px] font-bold text-slate-500 mb-2 tracking-widest uppercase">Pilih Saldo</label>
-                <div class="grid grid-cols-1 gap-3">
-                    <label class="flex items-center p-4 bg-slate-900 border border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500">
-                        <input type="radio" name="sku" value="GPY1" class="w-4 h-4 text-green-500" required>
-                        <span class="ml-4 font-bold text-sm uppercase">Gopay 2.050</span>
-                        <span class="ml-auto font-bold text-green-500 text-sm">Rp 2.050</span>
-                    </label>
-                    <label class="flex items-center p-4 bg-slate-900 border border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500">
-                        <input type="radio" name="sku" value="DANA1" class="w-4 h-4 text-blue-500">
-                        <span class="ml-4 font-bold text-sm uppercase">Dana 1.000</span>
-                        <span class="ml-auto font-bold text-blue-500 text-sm">Rp 2.000</span>
-                    </label>
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 uppercase mb-3 ml-1">Pilih Nominal</label>
+                <div class="grid grid-cols-2 gap-3">
+                    
+                    <div class="relative">
+                        <input type="radio" name="sku" value="GPY1" id="gpy1" class="hidden" required>
+                        <label for="gpy1" class="flex flex-col items-center justify-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all">
+                            <span class="text-[10px] font-bold opacity-50 uppercase">Gopay</span>
+                            <span class="text-lg font-black">1.000</span>
+                        </label>
+                    </div>
+
+                    <div class="relative">
+                        <input type="radio" name="sku" value="DANA1" id="dana1" class="hidden">
+                        <label for="dana1" class="flex flex-col items-center justify-center p-4 border-2 border-slate-100 rounded-2xl cursor-pointer hover:bg-slate-50 transition-all">
+                            <span class="text-[10px] font-bold opacity-50 uppercase">Dana</span>
+                            <span class="text-lg font-black">1.000</span>
+                        </label>
+                    </div>
+
                 </div>
             </div>
 
-            <button type="submit" class="w-full bg-green-600 hover:bg-green-500 text-white font-black py-4 rounded-2xl transition shadow-lg uppercase tracking-widest text-sm">Bayar Sekarang</button>
+            <button type="submit" 
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest shadow-lg shadow-blue-200 transition-all active:scale-95">
+                Bayar Sekarang
+            </button>
+
+            <p class="text-center text-[9px] text-slate-300 uppercase font-bold tracking-tighter">Powered by PT FAMILI - Qiospay H2H</p>
         </form>
     </div>
+
 </body>
 </html>
