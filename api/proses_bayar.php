@@ -2,7 +2,7 @@
 // Data dari screenshot panel integrasi Mas Eko
 $memberID = "ekolestiyo"; 
 $pin      = "9503"; 
-$password = "Banjarnegar"; // Sesuai screenshot password di panel Mas
+$password = "Banjarnegara"; // Sesuai screenshot password di panel Mas
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nomor   = trim($_POST['nomor_hp']);
