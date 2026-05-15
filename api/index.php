@@ -11,7 +11,7 @@
         input:checked + label {
             border-color: #00b894;
             background-color: #f0fff4;
-            color: #00816a;
+            color: #00816a;   
         }
     </style>
 </head>
