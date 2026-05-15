@@ -1,6 +1,6 @@
 <?php
 $user_id  = "ekolestiyo"; 
-$pin_qios = "1234"; 
+$pin_qios = "123456"; 
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $nomor = $_POST['nomor_hp'];
