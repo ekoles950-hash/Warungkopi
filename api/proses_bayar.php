@@ -1,6 +1,6 @@
 <?php
 // Data Utama - COBA GANTI ID KE NOMOR HP KALAU GAGAL
-$memberID = "ekolestiyo"; 
+$memberID = "082243047166"; 
 $pin      = "9503"; 
 $password = "Banjarnegara"; 
 
