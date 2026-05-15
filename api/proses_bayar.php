@@ -20,32 +20,30 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $ch = curl_init($url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_POST, true);
-    // INI BEDANYA: Kirim sebagai JSON, bukan form biasa
-    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($payload)); 
-    curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+    curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($payload)); 
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); 
     
     $response = curl_exec($ch);
-    $hasil = json_decode($response, true);
     curl_close($ch);
 
     echo "<!DOCTYPE html><html><head><meta name='viewport' content='width=device-width, initial-scale=1.0'><script src='https://cdn.tailwindcss.com'></script></head>
-    <body class='bg-white flex items-center justify-center min-h-screen p-4 font-sans'>";
+    <body class='bg-slate-100 flex items-center justify-center min-h-screen p-4 font-sans'>";
     
     echo "<div class='w-full max-w-md bg-white border border-slate-200 rounded-xl p-6 shadow-sm'>";
     
-    if ($response) {
-        // Tampilkan jawaban ASLI dari server Qiospay biar Mas percaya
-        echo "<h2 class='text-xs font-bold mb-2 text-slate-400'>RESPON ASLI DARI QIOSPAY:</h2>";
-        echo "<pre class='text-[12px] text-yellow-600 bg-slate-900 p-4 rounded-lg overflow-auto font-mono'>";
-        echo htmlspecialchars($response);
-        echo "</pre>";
-        
-        echo "<button onclick='window.location.href=\"/\"' class='w-full mt-4 py-3 bg-blue-600 text-white rounded-lg font-bold text-sm'>COBA LAGI</button>";
-    } else {
-        echo "<p class='text-red-500'>Tidak ada respon dari server Qiospay. Cek IP di panel.</p>";
-    }
+    // TAMPILKAN DATA YANG DIKIRIM (CEK DI SINI MAS!)
+    echo "<h2 class='text-[10px] font-bold mb-2 text-blue-500 uppercase'>Data yang Mas Kirim:</h2>";
+    echo "<div class='bg-blue-50 p-3 rounded-lg border border-blue-100 mb-4 text-[11px] font-mono text-blue-800'>";
+    echo "ID: $user_id | PIN: $pin_qios | SKU: $sku | NO: $nomor";
+    echo "</div>";
 
+    // TAMPILKAN JAWABAN ASLI QIOSPAY
+    echo "<h2 class='text-[10px] font-bold mb-2 text-slate-400 uppercase'>Jawaban Asli Qiospay:</h2>";
+    echo "<div class='bg-slate-900 p-4 rounded-lg font-mono text-[12px] text-yellow-500 mb-4'>";
+    echo $response ? htmlspecialchars($response) : "KOSONG (Server Mati)";
+    echo "</div>";
+    
+    echo "<button onclick='window.location.href=\"/\"' class='w-full py-3 bg-slate-200 text-slate-700 rounded-lg font-bold text-sm'>KEMBALI</button>";
     echo "</div></body></html>";
 }
 ?>
