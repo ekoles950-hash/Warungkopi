@@ -24,7 +24,7 @@
                 <div class="grid grid-cols-1 gap-3">
                     <label class="flex items-center p-4 bg-slate-900 border border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500">
                         <input type="radio" name="sku" value="GPY1" class="w-4 h-4 text-green-500" required>
-                        <span class="ml-4 font-bold text-sm uppercase">Gopay 1.000</span>
+                        <span class="ml-4 font-bold text-sm uppercase">Gopay 2.050</span>
                         <span class="ml-auto font-bold text-green-500 text-sm">Rp 2.000</span>
                     </label>
                     <label class="flex items-center p-4 bg-slate-900 border border-slate-700 rounded-2xl cursor-pointer hover:border-blue-500">
