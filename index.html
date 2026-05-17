@@ -23,30 +23,42 @@
     </div>
 
     <script>
-        // Kredensial Supabase Anda
+        // Kredensial Supabase
         const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
         const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Link Spreadsheet CSV Anda
-        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv';
+        // Link Spreadsheet asli Anda
+        const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv';
+        
+        // Menggunakan Proxy agar tidak diblokir oleh Google (CORS)
+        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(originalCsvUrl);
 
-        // Fungsi mengambil dan membaca CSV
         async function fetchSheetData() {
             try {
-                const response = await fetch(csvUrl);
+                // Ambil data melalui proxy
+                const response = await fetch(proxyUrl);
+                
+                if (!response.ok) throw new Error('Gagal terhubung ke Spreadsheet');
+                
                 const csvText = await response.text();
                 
-                // Memisahkan baris berdasarkan enter
+                // Pisahkan baris
                 const rows = csvText.split('\n');
                 const container = document.getElementById('client-list');
-                container.innerHTML = '';
+                
+                // Jika sheet kosong
+                if (rows.length <= 1) {
+                    container.innerHTML = '<p>Data tidak ditemukan atau spreadsheet kosong.</p>';
+                    return;
+                }
 
-                // Mulai dari i=1 untuk melewati baris pertama (Header/Judul Kolom)
+                container.innerHTML = ''; // Bersihkan tulisan "Memuat..."
+
+                // Mulai i=1 untuk melewati header
                 for (let i = 1; i < rows.length; i++) {
-                    if (!rows[i].trim()) continue; // Lewati baris kosong
+                    if (!rows[i] || rows[i].trim() === '') continue; 
                     
-                    // Memisahkan kolom berdasarkan koma
                     const cols = rows[i].split(',');
                     const nama = cols[0] ? cols[0].trim() : 'Tanpa Nama';
                     const tagihan = cols[1] ? cols[1].trim() : '0';
@@ -63,11 +75,14 @@
                     container.appendChild(div);
                 }
             } catch (error) {
-                document.getElementById('client-list').innerHTML = 'Gagal memuat data: ' + error.message;
+                // Tampilkan pesan error di layar jika gagal
+                document.getElementById('client-list').innerHTML = `
+                    <div style="color: red; border: 1px solid red; padding: 10px; border-radius: 5px;">
+                        <b>Error:</b> ${error.message}. <br>Pastikan Spreadsheet sudah di-Publish ke Web!
+                    </div>`;
             }
         }
 
-        // Fungsi mengirim data ke Supabase
         async function laporKeSupabase(btnElement, nama, tagihan) {
             btnElement.disabled = true;
             btnElement.innerText = 'Mengirim...';
@@ -81,17 +96,16 @@
                 }]);
             
             if (error) {
-                alert('Gagal mengirim: ' + error.message);
+                alert('Gagal mengirim ke database: ' + error.message);
                 btnElement.disabled = false;
                 btnElement.innerText = 'Lapor';
             } else {
-                alert('Data ' + nama + ' berhasil dilaporkan!');
                 btnElement.innerText = 'Terkirim';
                 btnElement.style.background = '#28a745';
             }
         }
 
-        // Jalankan saat web dibuka
+        // Mulai ambil data
         fetchSheetData();
     </script>
 </body>
