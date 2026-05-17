@@ -3,40 +3,44 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tagihan Sengkuni Net - Basecamp Coffee</title>
+  <title>Tagihan Sengkuni Net</title>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4ece1; padding: 15px; margin: 0; color: #3e2723; }
-    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 20px rgba(93, 64, 55, 0.1); border-top: 5px solid #8B5A2B; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; margin: 0; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #1a1a1a; margin-bottom: 20px; border-bottom: 3px solid #25D366; padding-bottom: 10px; }
     
-    h2 { text-align: center; color: #5d4037; margin-bottom: 20px; border-bottom: 3px solid #8B5A2B; padding-bottom: 10px; }
-    
-    .summary-box { background: #d7ccc8; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #bcaaa4; text-align: center; }
-    .summary-box span { display: block; font-size: 14px; color: #5d4037; font-weight: bold; }
-    .summary-box #totalDisplay { font-size: 24px; color: #3e2723; }
+    .summary-box { background: #e8f5e9; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 1px solid #c8e6c9; text-align: center; }
+    .summary-box span { display: block; font-size: 14px; color: #2e7d32; font-weight: bold; }
+    .summary-box #totalDisplay { font-size: 24px; color: #1b5e20; }
 
     .form-group { margin-bottom: 15px; }
-    label { font-weight: bold; display: block; margin-bottom: 5px; color: #5d4037; font-size: 14px; }
-    select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #d7ccc8; font-size: 16px; outline: none; box-sizing: border-box; background: #fff; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; font-size: 14px; }
+    select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; outline: none; box-sizing: border-box; background: #fff; }
     
-    .item { border-bottom: 1px solid #efebe9; padding: 15px 0; }
-    .nama { font-weight: bold; font-size: 18px; color: #3e2723; text-transform: capitalize; }
-    .detail { font-size: 14px; color: #6d4c41; margin-top: 3px; margin-bottom: 10px; display: block;}
+    .item { border-bottom: 1px solid #eee; padding: 15px 0; }
+    .nama { font-weight: bold; font-size: 17px; color: #222; text-transform: capitalize; }
+    .detail { font-size: 14px; color: #666; margin-top: 3px; margin-bottom: 10px; display: block; }
     
+    /* Layout grid untuk 4 tombol */
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .btn { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; color: white; transition: 0.2s; text-align: center; outline: none; }
+    .btn { border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; color: white; transition: 0.2s; text-align: center; outline: none; }
     
-    .btn-wa { background-color: #25D366; }
-    /* Warna tombol diganti agar beda dari telegram sebelumnya */
-    .btn-lapor { background-color: #6d4c41; } 
+    .btn-fonnte { background-color: #00a884; }
     .btn-lunas { background-color: #007bff; }
+    .btn-lapor { background-color: #f39c12; }
+    .btn-wa { background-color: #25D366; }
+    
+    /* [BARU] Warna tombol untuk Supabase */
+    .btn-supabase { background-color: #8e44ad; } 
     
     .btn:active { transform: scale(0.95); opacity: 0.9; }
-    .btn:disabled { background-color: #bcaaa4; cursor: not-allowed; }
-    #loading { text-align: center; color: #8d6e63; font-style: italic; margin-top: 20px; }
+    .btn:disabled { background-color: #ccc; cursor: not-allowed; }
+    #loading { text-align: center; color: #888; font-style: italic; margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -44,12 +48,8 @@
   <div class="container">
     <h2>Tagihan Sengkuni Net</h2>
     
-    <div style="background: #efebe9; padding: 12px; border-radius: 8px; margin-bottom: 15px; border-left: 4px solid #795548; font-size: 15px; font-weight: bold; color: #4e342e; text-align: center;">
-      Pilih bulan & tanggal tempo, lalu klik tombol untuk mengirim tagihan atau sinkronisasi data.
-    </div>
-
     <div class="summary-box">
-      <span>TOTAL GABUNGAN HARI INI (DIKIRIM KE SUPABASE):</span>
+      <span>TOTAL GABUNGAN HARI INI:</span>
       <strong id="totalDisplay">Rp 0</strong>
     </div>
 
@@ -62,12 +62,6 @@
         <option value="April">April</option>
         <option value="Mei">Mei</option>
         <option value="Juni" selected>Juni</option>
-        <option value="Juli">Juli</option>
-        <option value="Agustus">Agustus</option>
-        <option value="September">September</option>
-        <option value="Oktober">Oktober</option>
-        <option value="November">November</option>
-        <option value="Desember">Desember</option>
       </select>
     </div>
 
@@ -76,25 +70,26 @@
       <input type="number" id="tglTempo" value="4">
     </div>
 
-    <div id="loading">Menyeduh data pelanggan... ☕</div>
+    <div id="loading">Memuat data pelanggan...</div>
     <div id="listPelanggan"></div>
   </div>
 
   <script>
-    // --- KONFIGURASI API & SUPABASE ---
+    // --- KONFIGURASI API ASLI ---
     const TOKEN_FONNTE = "CEjeWxk7WvpFJaNL94Km";
+    const TELEGRAM_TOKEN = "8669839359:AAGPkRpOiLlYoBc3t4IgxcAGSgKFC8v1SwU";
+    const TELEGRAM_CHAT_ID = "7933777456";
     
-    // Kredensial Supabase (Web 1)
-    const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
-    const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
-    
-    // Script Google
+    // --- Konfigurasi Script Bendahara ASLI ---
     const SCRIPT_FIRMAN = "https://script.google.com/macros/s/AKfycbwpSA_UfqSUzK6JFZkvJkrftgOqRjKL-HzA8OLtfAQEaOM3iC3H90YjXv6pI3D-kGQ/exec";
     const SCRIPT_RENDI = "https://script.google.com/macros/s/LINK_SCRIPT_RENDI_DI_SINI"; 
 
-    // URL Spreadsheet
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv";
+
+    // --- [BARU] KONFIGURASI SUPABASE ---
+    const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
+    const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
     let totalGabungan = 0;
 
@@ -119,6 +114,8 @@
         
         const div = document.createElement('div');
         div.className = 'item';
+        
+        // [MODIFIKASI KECIL]: Menambahkan tombol btn-supabase ke dalam grid
         div.innerHTML = `
           <div class="info">
             <span class="nama">${nama}</span>
@@ -126,22 +123,23 @@
           </div>
           <div class="actions">
             <button class="btn btn-wa" onclick="kirimFonnte('${nama}', '${noWa}', '${idPel}', '${harga}', this)">Kirim Tagihan</button>
-            <button class="btn btn-lapor" onclick="laporSupabase('${nama}', '${harga}', this)">Lapor Supabase</button>
-            <button class="btn btn-lunas" onclick="setLunas('${nama}', '${idPel}', '${harga}', '${petugas}', this)" style="grid-column: span 2;">Set Lunas</button>
+            <button class="btn btn-lapor" onclick="laporTelegram('${nama}', '${harga}', this)">Lapor Telegram</button>
+            <button class="btn btn-supabase" onclick="laporSupabase('${nama}', '${harga}', this)">Lapor Supabase</button>
+            <button class="btn btn-lunas" onclick="setLunas('${nama}', '${idPel}', '${harga}', '${petugas}', this)">Set Lunas</button>
           </div>
         `;
         container.appendChild(div);
       });
     }
 
-    // --- FUNGSI PESAN WA ---
+    // --- FUNGSI PESAN (TIDAK DIRUBAH) ---
     function buatPesan(nama, idPel, harga) {
       const bulan = document.getElementById('bulanSelect').value;
       const tgl = document.getElementById('tglTempo').value;
       return `sistem chat otomatis tidak perlu di balas❌\nPelanggan SENGKUNI NET\nYth. *${nama}*\nKami sampaikan tagihan layanan internet bulan *${bulan}.${new Date().getFullYear()}*\nDengan ID Pelanggan *${idPel}*\nSebesar *Rp ${parseInt(harga).toLocaleString('id-ID')}*\nPembayaran paling lambat di tanggal *${tgl}*\nPembayaran nunggu tukang narik\nAdmin bendahara : RENDI dan FIRMAN\nuntuk menghindari isolir kecepatan menurun otomatis di jaringan anda`;
     }
 
-    // --- FUNGSI KIRIM WA (FONNTE) ---
+    // --- FUNGSI KIRIM TAGIHAN FONNTE (TIDAK DIRUBAH) ---
     async function kirimFonnte(nama, noWa, idPel, harga, btn) {
       let hp = noWa.replace(/[^0-9]/g, '');
       if (hp.startsWith('0')) hp = '62' + hp.substring(1);
@@ -158,17 +156,27 @@
       } catch (e) { btn.innerText = "Gagal"; }
     }
 
-    // --- FUNGSI LAPOR KE SUPABASE (PENGGANTI TELEGRAM) ---
-    async function laporSupabase(nama, harga, btn) {
-      btn.innerText = "Proses...";
-      btn.disabled = true;
-
-      // Update total di layar Web 2
+    // --- FUNGSI LAPOR TELEGRAM (TIDAK DIRUBAH) ---
+    function laporTelegram(nama, harga, btn) {
       const nominal = parseInt(harga);
       totalGabungan += nominal;
       document.getElementById('totalDisplay').innerText = "Rp " + totalGabungan.toLocaleString('id-ID');
 
-      // Kirim data ke Supabase (Web 1)
+      const text = `💰 *LAPORAN MASUK*\n👤 Nama: *${nama}*\n💵 Nominal: *Rp ${nominal.toLocaleString('id-ID')}*\n📈 TOTAL: *Rp ${totalGabungan.toLocaleString('id-ID')}*\n⏰ ${new Date().toLocaleString('id-ID')}`;
+
+      fetch(`https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage?chat_id=${TELEGRAM_CHAT_ID}&text=${encodeURIComponent(text)}&parse_mode=Markdown`)
+      .then(() => {
+        btn.innerText = "Dilaporkan ✅";
+        btn.style.backgroundColor = "#7f8c8d";
+        btn.disabled = true;
+      });
+    }
+
+    // --- [BARU] FUNGSI KIRIM KE SUPABASE (WEB 1) ---
+    async function laporSupabase(nama, harga, btn) {
+      btn.innerText = "Proses...";
+      btn.disabled = true;
+
       const { data, error } = await supabase
         .from('laporan_tagihan')
         .insert([{ 
@@ -181,17 +189,13 @@
         alert("Gagal sinkronisasi Supabase: " + error.message);
         btn.innerText = "Lapor Supabase";
         btn.disabled = false;
-        
-        // Kurangi kembali total jika gagal kirim
-        totalGabungan -= nominal;
-        document.getElementById('totalDisplay').innerText = "Rp " + totalGabungan.toLocaleString('id-ID');
       } else {
         btn.innerText = "Supabase ✅";
         btn.style.backgroundColor = "#7f8c8d";
       }
     }
 
-    // --- FUNGSI SET LUNAS (APPS SCRIPT) ---
+    // --- FUNGSI SET LUNAS APPS SCRIPT (TIDAK DIRUBAH) ---
     async function setLunas(nama, id, harga, petugas, btn) {
       if(!confirm("Set Lunas untuk " + nama + "?")) return;
       
