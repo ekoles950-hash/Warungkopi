@@ -3,71 +3,80 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web 2 - Laporan Tagihan Klien</title>
+    <title>Warung Basecamp Coffee - Laporan Tagihan</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    
     <style>
-        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f9f9f9; }
+        /* Tema Visual Warung Basecamp Coffee */
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4ece1; color: #3e2723; margin: 0; }
         .container { max-width: 600px; margin: 0 auto; }
         
-        /* Instruksi ditempatkan di atas dengan ukuran teks lebih besar dan jelas */
-        .instruction-text { font-size: 18px; color: #444; margin-bottom: 20px; font-weight: bold; line-height: 1.4; }
+        h2 { color: #5d4037; text-align: center; font-size: 26px; margin-bottom: 5px; }
+        .subtitle { text-align: center; color: #795548; margin-top: 0; margin-bottom: 25px; font-size: 16px; }
         
-        .card { background: white; border: 1px solid #ddd; padding: 20px; margin-bottom: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; }
+        /* Instruksi ditempatkan di atas dengan ukuran teks lebih besar */
+        .instruction-text { font-size: 18px; color: #5d4037; margin-bottom: 25px; font-weight: bold; line-height: 1.5; text-align: center; border-bottom: 2px dashed #8d6e63; padding-bottom: 15px; }
         
-        /* Ukuran teks diperbesar */
-        .info h3 { margin: 0 0 8px 0; color: #333; font-size: 20px; }
-        .info p { margin: 0; color: #666; font-size: 18px; }
+        .card { background: #ffffff; border: 1px solid #d7ccc8; padding: 20px; margin-bottom: 15px; border-radius: 10px; box-shadow: 0 4px 6px rgba(93, 64, 55, 0.08); display: flex; justify-content: space-between; align-items: center; border-left: 6px solid #8B5A2B; }
         
-        button { padding: 12px 20px; background: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
-        button:hover { background: #0056b3; }
-        button:disabled { background: #ccc; cursor: not-allowed; }
+        /* Ukuran teks data diperbesar */
+        .info h3 { margin: 0 0 8px 0; color: #3e2723; font-size: 22px; }
+        .info p { margin: 0; color: #6d4c41; font-size: 18px; font-weight: bold; }
+        
+        button { padding: 14px 22px; background: #6d4c41; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; font-weight: bold; transition: background 0.3s; }
+        button:hover { background: #4e342e; }
+        button:disabled { background: #bcaaa4; cursor: not-allowed; }
+        
+        .error-box { color: #d32f2f; background: #ffcdd2; padding: 15px; border-radius: 8px; font-size: 16px; font-weight: bold; border: 1px solid #d32f2f; text-align: center; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Daftar Klien (Dari Spreadsheet)</h2>
-        <div class="instruction-text">Silakan klik tombol "Lapor" pada klien yang datanya ingin Anda kirimkan ke database utama.</div>
+        <h2>Warung Basecamp Coffee</h2>
+        <p class="subtitle">Sistem Pelaporan Tagihan Spreadsheet</p>
         
-        <div id="client-list" style="font-size: 18px; color: #666;">Sedang memuat data dari Google Sheets...</div>
+        <div class="instruction-text">Silakan periksa nama klien dan klik tombol "Lapor" untuk menyinkronkan data tagihan ke database utama.</div>
+        
+        <div id="client-list" style="font-size: 18px; color: #6d4c41; text-align: center; margin-top: 30px;">
+            Menyeduh data dari Google Sheets... ☕
+        </div>
     </div>
 
     <script>
-        // Kredensial Supabase
+        // Kredensial Supabase Anda
         const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
         const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
         const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-        // Link Spreadsheet Anda sudah dimasukkan langsung ke sini
-        const originalCsvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv';
-        
-        // Menggunakan perantara (Proxy) agar tidak diblokir Google
-        const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(originalCsvUrl);
+        // Link Spreadsheet CSV Anda
+        const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv';
 
-        async function fetchSheetData() {
-            try {
-                const response = await fetch(proxyUrl);
-                if (!response.ok) throw new Error('Gagal terhubung ke server');
-                
-                const csvText = await response.text();
-                const rows = csvText.split('\n');
+        // Membaca CSV menggunakan PapaParse
+        Papa.parse(csvUrl, {
+            download: true,
+            header: false,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const data = results.data;
                 const container = document.getElementById('client-list');
                 
-                if (rows.length <= 1) {
-                    container.innerHTML = '<p>Data tidak ditemukan di spreadsheet.</p>';
+                // Jika sheet kosong atau hanya ada header
+                if (data.length <= 1) {
+                    container.innerHTML = '<p>Data kosong atau belum ada tagihan yang dicatat.</p>';
                     return;
                 }
 
-                container.innerHTML = ''; // Hapus tulisan "Memuat..."
+                container.innerHTML = ''; // Menghapus teks loading
 
-                // Loop pembacaan data
-                for (let i = 1; i < rows.length; i++) {
-                    if (!rows[i] || rows[i].trim() === '') continue; 
+                // Mulai i=1 untuk melewati baris pertama (Header/Judul Kolom)
+                for (let i = 1; i < data.length; i++) {
+                    const row = data[i];
+                    const nama = row[0] ? row[0].trim() : 'Tanpa Nama';
                     
-                    const cols = rows[i].split(',');
-                    const nama = cols[0] ? cols[0].trim() : 'Tanpa Nama';
-                    
-                    // Membersihkan format angka (misal ada titik/koma di CSV)
-                    const rawTagihan = cols[1] ? cols[1].replace(/[^0-9]/g, '') : '0';
+                    // Membersihkan format angka dari karakter aneh/titik/koma
+                    const rawTagihan = row[1] ? String(row[1]).replace(/[^0-9]/g, '') : '0';
                     const tagihan = rawTagihan === '' ? '0' : rawTagihan;
 
                     const div = document.createElement('div');
@@ -81,13 +90,16 @@
                     `;
                     container.appendChild(div);
                 }
-            } catch (error) {
+            },
+            error: function(error) {
+                // Tampilan error jika CSV gagal dibaca
                 document.getElementById('client-list').innerHTML = `
-                    <div style="color: red; border: 1px solid red; padding: 15px; border-radius: 5px; font-size: 16px;">
-                        <b>Error:</b> ${error.message}
+                    <div class="error-box">
+                        Koneksi ke Spreadsheet Terputus!<br><br>
+                        Pesan: ${error.message}
                     </div>`;
             }
-        }
+        });
 
         async function laporKeSupabase(btnElement, nama, tagihan) {
             btnElement.disabled = true;
@@ -107,11 +119,10 @@
                 btnElement.innerText = 'Lapor';
             } else {
                 btnElement.innerText = 'Terkirim';
-                btnElement.style.background = '#28a745';
+                btnElement.style.background = '#4caf50'; // Ubah tombol jadi hijau saat sukses
+                btnElement.style.color = 'white';
             }
         }
-
-        fetchSheetData();
     </script>
 </body>
 </html>
