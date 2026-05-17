@@ -26,7 +26,6 @@
     .nama { font-weight: bold; font-size: 17px; color: #222; text-transform: capitalize; }
     .detail { font-size: 14px; color: #666; margin-top: 3px; margin-bottom: 10px; display: block; }
     
-    /* Layout grid untuk 4 tombol */
     .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .btn { border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; color: white; transition: 0.2s; text-align: center; outline: none; }
     
@@ -34,8 +33,6 @@
     .btn-lunas { background-color: #007bff; }
     .btn-lapor { background-color: #f39c12; }
     .btn-wa { background-color: #25D366; }
-    
-    /* [BARU] Warna tombol untuk Supabase */
     .btn-supabase { background-color: #8e44ad; } 
     
     .btn:active { transform: scale(0.95); opacity: 0.9; }
@@ -80,16 +77,16 @@
     const TELEGRAM_TOKEN = "8669839359:AAGPkRpOiLlYoBc3t4IgxcAGSgKFC8v1SwU";
     const TELEGRAM_CHAT_ID = "7933777456";
     
-    // --- Konfigurasi Script Bendahara ASLI ---
     const SCRIPT_FIRMAN = "https://script.google.com/macros/s/AKfycbwpSA_UfqSUzK6JFZkvJkrftgOqRjKL-HzA8OLtfAQEaOM3iC3H90YjXv6pI3D-kGQ/exec";
     const SCRIPT_RENDI = "https://script.google.com/macros/s/LINK_SCRIPT_RENDI_DI_SINI"; 
 
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv";
 
-    // --- [BARU] KONFIGURASI SUPABASE ---
+    // --- KONFIGURASI SUPABASE (NAMA VARIABEL SUDAH DIPERBAIKI) ---
     const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
     const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
-    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+    // Menggunakan window.supabase agar tidak bentrok
+    const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
     let totalGabungan = 0;
 
@@ -115,7 +112,6 @@
         const div = document.createElement('div');
         div.className = 'item';
         
-        // [MODIFIKASI KECIL]: Menambahkan tombol btn-supabase ke dalam grid
         div.innerHTML = `
           <div class="info">
             <span class="nama">${nama}</span>
@@ -132,14 +128,14 @@
       });
     }
 
-    // --- FUNGSI PESAN (TIDAK DIRUBAH) ---
+    // --- FUNGSI PESAN ---
     function buatPesan(nama, idPel, harga) {
       const bulan = document.getElementById('bulanSelect').value;
       const tgl = document.getElementById('tglTempo').value;
       return `sistem chat otomatis tidak perlu di balas❌\nPelanggan SENGKUNI NET\nYth. *${nama}*\nKami sampaikan tagihan layanan internet bulan *${bulan}.${new Date().getFullYear()}*\nDengan ID Pelanggan *${idPel}*\nSebesar *Rp ${parseInt(harga).toLocaleString('id-ID')}*\nPembayaran paling lambat di tanggal *${tgl}*\nPembayaran nunggu tukang narik\nAdmin bendahara : RENDI dan FIRMAN\nuntuk menghindari isolir kecepatan menurun otomatis di jaringan anda`;
     }
 
-    // --- FUNGSI KIRIM TAGIHAN FONNTE (TIDAK DIRUBAH) ---
+    // --- FUNGSI KIRIM TAGIHAN FONNTE ---
     async function kirimFonnte(nama, noWa, idPel, harga, btn) {
       let hp = noWa.replace(/[^0-9]/g, '');
       if (hp.startsWith('0')) hp = '62' + hp.substring(1);
@@ -156,7 +152,7 @@
       } catch (e) { btn.innerText = "Gagal"; }
     }
 
-    // --- FUNGSI LAPOR TELEGRAM (TIDAK DIRUBAH) ---
+    // --- FUNGSI LAPOR TELEGRAM ---
     function laporTelegram(nama, harga, btn) {
       const nominal = parseInt(harga);
       totalGabungan += nominal;
@@ -172,12 +168,13 @@
       });
     }
 
-    // --- [BARU] FUNGSI KIRIM KE SUPABASE (WEB 1) ---
+    // --- FUNGSI KIRIM KE SUPABASE (SUDAH DIPERBAIKI) ---
     async function laporSupabase(nama, harga, btn) {
       btn.innerText = "Proses...";
       btn.disabled = true;
 
-      const { data, error } = await supabase
+      // Menggunakan supabaseClient yang baru
+      const { data, error } = await supabaseClient
         .from('laporan_tagihan')
         .insert([{ 
           nama_klien: nama, 
@@ -195,7 +192,7 @@
       }
     }
 
-    // --- FUNGSI SET LUNAS APPS SCRIPT (TIDAK DIRUBAH) ---
+    // --- FUNGSI SET LUNAS APPS SCRIPT ---
     async function setLunas(nama, id, harga, petugas, btn) {
       if(!confirm("Set Lunas untuk " + nama + "?")) return;
       
