@@ -25,6 +25,7 @@
     .btn-lapor:disabled { background-color: #bcaaa4; cursor: not-allowed; }
     
     #loading { text-align: center; color: #8d6e63; font-style: italic; margin-top: 20px; font-weight: bold; }
+    #error-msg { color: #d32f2f; text-align: center; margin-top: 10px; font-weight: bold; display: none; background: #ffcdd2; padding: 10px; border-radius: 8px; }
   </style>
 </head>
 <body>
@@ -34,74 +35,102 @@
     <p class="subtitle">Kirim Data Spreadsheet ke Database Supabase</p>
     
     <div id="loading">Menyeduh data pelanggan... ☕</div>
+    <div id="error-msg"></div>
     <div id="listPelanggan"></div>
   </div>
 
   <script>
-    // --- KONFIGURASI SUPABASE ---
+    // Konfigurasi Supabase
     const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
     const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
     const supabase = supabase.createClient(supabaseUrl, supabaseKey);
 
-    // --- SPREADSHEET URL ---
     const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv";
 
-    // --- LOAD DATA PAKAI CARA SENGKUNI NET ---
-    Papa.parse(csvUrl, {
-      download: true,
-      complete: function(results) {
+    // Fungsi menampilkan pesan jika gagal
+    function tampilkanError(pesan) {
         document.getElementById('loading').style.display = 'none';
-        // Memotong header (baris pertama)
-        tampilkanData(results.data.slice(1));
-      }
-    });
-
-    function tampilkanData(data) {
-      const container = document.getElementById('listPelanggan');
-      data.forEach(row => {
-        if (!row[0]) return; // Skip baris kosong
-        
-        const nama = row[0].trim();
-        // Mengambil harga dari row[3] sesuai struktur asli spreadsheet Anda
-        const harga = row[3] ? row[3].toString().replace(/[^0-9]/g, '') : "0";
-        
-        const div = document.createElement('div');
-        div.className = 'item';
-        div.innerHTML = `
-          <div class="info">
-            <span class="nama">${nama}</span>
-            <span class="detail">Rp ${parseInt(harga).toLocaleString('id-ID')}</span>
-          </div>
-          <div>
-            <button class="btn-lapor" onclick="laporSupabase('${nama}', '${harga}', this)">Lapor ke Web 1</button>
-          </div>
-        `;
-        container.appendChild(div);
-      });
+        const errDiv = document.getElementById('error-msg');
+        errDiv.style.display = 'block';
+        errDiv.innerHTML = "Gagal memuat: " + pesan;
     }
 
-    // --- FUNGSI KIRIM KE SUPABASE ---
-    async function laporSupabase(nama, harga, btn) {
-      btn.innerText = "Mengirim...";
-      btn.disabled = true;
+    // Fungsi Utama Tarik Data
+    async function ambilData() {
+        try {
+            // Kita tarik datanya secara paksa pakai fetch
+            const response = await fetch(csvUrl);
+            if (!response.ok) throw new Error("Akses diblokir oleh sistem");
+            
+            const csvText = await response.text();
+            
+            // Masukkan teks mentah ke PapaParse
+            Papa.parse(csvText, {
+                complete: function(results) {
+                    document.getElementById('loading').style.display = 'none';
+                    const data = results.data.slice(1); // Potong header
+                    const container = document.getElementById('listPelanggan');
+                    
+                    if (data.length === 0) {
+                        container.innerHTML = "<p style='text-align:center;'>Data spreadsheet kosong.</p>";
+                        return;
+                    }
 
-      const { data, error } = await supabase
-        .from('laporan_tagihan')
-        .insert([{ 
-          nama_klien: nama, 
-          jumlah_tagihan: harga, // Sekarang mengirim data angka yang benar
-          status: 'belum bayar' 
-        }]);
-      
-      if (error) {
-        alert("Gagal kirim ke Supabase: " + error.message);
-        btn.innerText = "Lapor ke Web 1";
-        btn.disabled = false;
-      } else {
-        btn.innerText = "Terkirim ✅";
-        btn.style.backgroundColor = "#4caf50"; // Hijau kalau sukses
-      }
+                    data.forEach(row => {
+                        if (!row[0]) return; 
+                        
+                        const nama = row[0].trim();
+                        // Ambil harga dari kolom ke-4 (row[3])
+                        const harga = row[3] ? row[3].toString().replace(/[^0-9]/g, '') : "0";
+                        
+                        const div = document.createElement('div');
+                        div.className = 'item';
+                        div.innerHTML = `
+                            <div class="info">
+                                <span class="nama">${nama}</span>
+                                <span class="detail">Rp ${parseInt(harga).toLocaleString('id-ID')}</span>
+                            </div>
+                            <div>
+                                <button class="btn-lapor" onclick="laporSupabase('${nama}', '${harga}', this)">Lapor</button>
+                            </div>
+                        `;
+                        container.appendChild(div);
+                    });
+                },
+                error: function(err) {
+                    tampilkanError(err.message);
+                }
+            });
+        } catch (error) {
+            tampilkanError(error.message);
+        }
+    }
+
+    // Jalankan skrip
+    ambilData();
+
+    // Fungsi Kirim ke Supabase
+    async function laporSupabase(nama, harga, btn) {
+        btn.innerText = "...";
+        btn.disabled = true;
+
+        const { data, error } = await supabase
+            .from('laporan_tagihan')
+            .insert([{ 
+                nama_klien: nama, 
+                jumlah_tagihan: harga, 
+                status: 'belum bayar' 
+            }]);
+        
+        if (error) {
+            alert("Gagal kirim ke Supabase: " + error.message);
+            btn.innerText = "Lapor";
+            btn.disabled = false;
+        } else {
+            btn.innerText = "Terkirim ✅";
+            btn.style.backgroundColor = "#4caf50"; 
+        }
     }
   </script>
 </body>
-</html> 
+</html>
