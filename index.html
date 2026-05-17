@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Warung Basecamp Coffee - Sinkronisasi Supabase</title>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4ece1; padding: 15px; margin: 0; color: #3e2723; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 15px; box-shadow: 0 8px 20px rgba(93, 64, 55, 0.1); border-top: 5px solid #8B5A2B; }
+    
+    h2 { text-align: center; color: #5d4037; margin-bottom: 5px; }
+    .subtitle { text-align: center; color: #795548; font-size: 14px; margin-top: 0; margin-bottom: 20px; border-bottom: 2px dashed #d7ccc8; padding-bottom: 15px; }
+    
+    .item { border-bottom: 1px solid #eee; padding: 15px 0; display: flex; justify-content: space-between; align-items: center; }
+    .info { flex: 1; }
+    .nama { font-weight: bold; font-size: 18px; color: #3e2723; text-transform: capitalize; display: block; margin-bottom: 3px; }
+    .detail { font-size: 15px; color: #6d4c41; }
+    
+    .btn-lapor { background-color: #6d4c41; border: none; padding: 12px 18px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 14px; color: white; transition: 0.2s; }
+    .btn-lapor:active { transform: scale(0.95); }
+    .btn-lapor:disabled { background-color: #bcaaa4; cursor: not-allowed; }
+    
+    #loading { text-align: center; color: #8d6e63; font-style: italic; margin-top: 20px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h2>Warung Basecamp Coffee</h2>
+    <p class="subtitle">Kirim Data Spreadsheet ke Database Supabase</p>
+    
+    <div id="loading">Menyeduh data pelanggan... ☕</div>
+    <div id="listPelanggan"></div>
+  </div>
+
+  <script>
+    // --- KONFIGURASI SUPABASE ---
+    const supabaseUrl = 'https://wfcmhdqtoftuyfjtyfkk.supabase.co';
+    const supabaseKey = 'sb_publishable_TE45MyojofIEUkZyvLkHmg_xnsk92Ld';
+    const supabase = supabase.createClient(supabaseUrl, supabaseKey);
+
+    // --- SPREADSHEET URL ---
+    const csvUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSV673nBl_6Wn_6eBjiJzoSQfHDn0VQRCNTGsjrdo2fLPFZenxVD1MBvatyIJ8mTGuZX58w5UI3uII9/pub?output=csv";
+
+    // --- LOAD DATA PAKAI CARA SENGKUNI NET ---
+    Papa.parse(csvUrl, {
+      download: true,
+      complete: function(results) {
+        document.getElementById('loading').style.display = 'none';
+        // Memotong header (baris pertama)
+        tampilkanData(results.data.slice(1));
+      }
+    });
+
+    function tampilkanData(data) {
+      const container = document.getElementById('listPelanggan');
+      data.forEach(row => {
+        if (!row[0]) return; // Skip baris kosong
+        
+        const nama = row[0].trim();
+        // Mengambil harga dari row[3] sesuai struktur asli spreadsheet Anda
+        const harga = row[3] ? row[3].toString().replace(/[^0-9]/g, '') : "0";
+        
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.innerHTML = `
+          <div class="info">
+            <span class="nama">${nama}</span>
+            <span class="detail">Rp ${parseInt(harga).toLocaleString('id-ID')}</span>
+          </div>
+          <div>
+            <button class="btn-lapor" onclick="laporSupabase('${nama}', '${harga}', this)">Lapor ke Web 1</button>
+          </div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // --- FUNGSI KIRIM KE SUPABASE ---
+    async function laporSupabase(nama, harga, btn) {
+      btn.innerText = "Mengirim...";
+      btn.disabled = true;
+
+      const { data, error } = await supabase
+        .from('laporan_tagihan')
+        .insert([{ 
+          nama_klien: nama, 
+          jumlah_tagihan: harga, // Sekarang mengirim data angka yang benar
+          status: 'belum bayar' 
+        }]);
+      
+      if (error) {
+        alert("Gagal kirim ke Supabase: " + error.message);
+        btn.innerText = "Lapor ke Web 1";
+        btn.disabled = false;
+      } else {
+        btn.innerText = "Terkirim ✅";
+        btn.style.backgroundColor = "#4caf50"; // Hijau kalau sukses
+      }
+    }
+  </script>
+</body>
+</html>
