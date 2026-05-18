@@ -13,7 +13,7 @@
         .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
         .product-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; }
         .product-card.active { border-color: #3B82F6; background: #1E3A8A; }
-        #toast-topup { visibility: hidden; min-width: 250px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        #toast-topup { visibility: hidden; min-width: 280px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         #toast-topup.show { visibility: visible; animation: slideUp 0.4s; }
         @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
@@ -25,7 +25,7 @@
     <div class="w-full max-w-md bg-[#1E293B] p-8 rounded-[2.5rem] shadow-2xl border border-slate-800">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-extrabold italic text-blue-500 tracking-tighter">BASECAMP<span class="text-white"> COFFEE</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Sengkuni Net & PT FAMILI</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">SENGKUNI NET & PT FAMILI</p>
         </div>
 
         <div class="space-y-6">
@@ -64,7 +64,7 @@
     </div>
 
     <script>
-        // Inisialisasi Kunci Supabase Project "Pulsa" Mas Eko
+        // Kunci Akurat Project Pulsa Mas Eko
         const SUPABASE_URL = 'https://lybwttrdybmgatvauxev.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
         
@@ -78,7 +78,7 @@
             const t = document.getElementById("toast-topup");
             t.innerText = msg;
             t.className = "show";
-            setTimeout(() => { t.className = ""; }, 3000);
+            setTimeout(() => { t.className = ""; }, 4000);
         }
 
         function pilihProduk(sku, nama, harga) {
@@ -90,7 +90,6 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        // FUNGSI UTAMA PROSES TRANSAKSI
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
@@ -101,31 +100,29 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // Proses 1: Menyimpan data transaksi ke database pesanan_pulsa
-            const { data, error } = await sb.from('pesanan_pulsa').insert([{
-                nama_pembeli: 'Topup ' + namaProdukTerpilih,
-                no_wa: noHp,
-                alamat_kirim: 'SKU: ' + skuTerpilih,
-                total_harga: hargaTerpilih,
-                status: 'pending',
-                metode_bayar: 'QRIS'
+            // MENEMBAK TABEL 'transaksi' SESUAI SCREENSHOT 21:37
+            const { data, error } = await sb.from('transaksi').insert([{
+                nomor_hp: noHp,
+                produk: namaProdukTerpilih + ' (' + skuTerpilih + ')',
+                harga: hargaTerpilih,
+                status: 'pending'
             }]).select();
 
             if (error) {
-                showToast("❌ Gagal Simpan Database: " + error.message);
+                showToast("❌ Gagal Simpan: " + error.message);
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
             } else {
-                showToast("✅ Berhasil Masuk Database Pulsa!");
+                showToast("✅ Berhasil Masuk Tabel Transaksi!");
                 
-                // Format Pesan Teks Nota Transaksi untuk WhatsApp Bisnis Mas Eko
-                const textPesan = `📱 *TOP UP BARU (PROJECT PULSA)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
+                // Format Nota WhatsApp Bisnis
+                const textPesan = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
                 
-                // Proses 2: Lempar Notifikasi Chat ke WhatsApp Bisnis Mas Eko
+                // Buka otomatis WA Bisnis Mas Eko
                 const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
                 window.open(urlWhatsApp, '_blank');
 
-                // Reset Form Input setelah sukses transaksi
+                // Reset Form
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
@@ -135,4 +132,4 @@
         }
     </script>
 </body>
-</html> 
+</html>
