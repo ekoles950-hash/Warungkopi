@@ -66,10 +66,16 @@
     </div>
 
     <script>
-        // Data Supabase Mas Eko
+        // Mengarah ke database grabndeso milik Mas Eko yang stabil
         const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // ===================================================
+        // KONFIGURASI API WA GATEWAY (Contoh pakai Fonnte)
+        // ===================================================
+        const WA_API_TOKEN   = 'MASUKKAN_TOKEN_GATEWAY_WA_DISINI'; 
+        const NOMOR_TUJUAN_WA = '6281313726330'; // Nomor WA Bisnis Mas Eko yang menerima notifikasi
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -94,18 +100,14 @@
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
-            if (!noHp) {
-                return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            }
-            if (!skuTerpilih) {
-                return showToast("⚠️ Pilih produknya dulu Mas!");
-            }
+            if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
+            if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
 
             const btn = document.getElementById('btn-submit');
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko
+            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko (grabndeso)
             const { data, error } = await sb.from('pesanan_ojek').insert([{
                 nama_pembeli: 'Topup ' + namaProdukTerpilih,
                 no_wa: noHp,
@@ -121,19 +123,40 @@
                 btn.disabled = false;
             } else {
                 showToast("✅ Berhasil Masuk Supabase!");
+                
+                // Format Pesan Teks untuk WhatsApp Mas Eko
+                const pesanWA = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
+                
+                // Tembak API Notifikasi WA secara background (Otomatis terkirim)
+                kirimNotifWA(pesanWA);
+
+                // Reset form
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
-                
-                // Kirim Bot Telegram Notifikasi Orderan
-                const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
-                const chatId = '7933777456';
-                const pesan = `📱 *TOP UP BARU (VERCEL)* 📱\n\n🎯 No Tujuan: ${noHp}\n📦 Produk: ${namaProdukTerpilih} (${skuTerpilih})\n💵 Harga: Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ Status: PENDING`;
-                
-                fetch(`https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesan)}&parse_mode=Markdown`);
             }
+        }
+
+        // Fungsi Request kirim teks ke API WhatsApp Gateway
+        function kirifNotifWA(pesan) {
+            const formData = new FormData();
+            formData.append('target', NOMOR_TUJUAN_WA);
+            formData.append('message', pesan);
+
+            fetch('https://api.fonnte.com/send', {
+                method: 'POST',
+                headers: {
+                    'Authorization': WA_API_TOKEN
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(result => {
+                console.log('Status WA:', result);
+            })
+            .catch(err => console.error('Gagal Kirim Notif WA:', err));
         }
     </script>
 </body>
