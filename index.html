@@ -64,6 +64,7 @@
     </div>
 
     <script>
+        // Config Supabase Akurat Project Pulsa Mas Eko
         const SUPABASE_URL = 'https://lybwttrdybmgatvauxev.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
         
@@ -99,8 +100,8 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // KITA ARAHKAN LANGSUNG KE TABEL BARU 'tb_transaksi'
-            const { data, error } = await sb.from('tb_transaksi').insert([{
+            // KEMBALI MENEMBAK TABEL 'transaksi' YANG SUDAH SEHAT
+            const { data, error } = await sb.from('transaksi').insert([{
                 nomor_hp: noHp,
                 produk: namaProdukTerpilih + ' (' + skuTerpilih + ')',
                 harga: hargaTerpilih,
@@ -114,11 +115,14 @@
             } else {
                 showToast("✅ Berhasil Masuk Tabel Transaksi!");
                 
+                // Format Nota Teks WhatsApp
                 const textPesan = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
                 
+                // Direct Redirect ke WhatsApp Bisnis Mas Eko
                 const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
                 window.open(urlWhatsApp, '_blank');
 
+                // Reset Form inputan
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
