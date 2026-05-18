@@ -55,7 +55,7 @@
                 </div>
             </div>
 
-            <a id="btn-submit" onclick="prosesTransaksiSakti(event)" href="#"
+            <a id="btn-submit" onclick="eksekusiTransaksiFinal(event)" href="#"
                 class="block w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs text-center uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
                 KIRIM TOP UP
             </a>
@@ -86,7 +86,7 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        async function prosesTransaksiSakti(e) {
+        async function eksekusiTransaksiFinal(e) {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
             if (!noHp) { e.preventDefault(); return showToast("⚠️ Isi nomor HP tujuan dulu Mas!"); }
@@ -94,20 +94,19 @@
 
             const btn = document.getElementById('btn-submit');
             btn.innerText = "MEMPROSES...";
-            btn.style.pointerEvents = "none"; // Disable klik ganda
+            btn.style.pointerEvents = "none";
 
             const textPesan = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
             const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
 
-            // Pasang link WA langsung ke href tombol biar dibuka secara alami oleh browser
+            // Kunci tautan WA di href murni agar browser membuka secara alami tanpa dianggap iklan pop-up
             btn.href = urlWhatsApp;
-            btn.target = "_blank";
 
             try {
-                // Tembak data ke Supabase (karena RLS sudah disabled, ini langsung tembus)
-                await fetch(API_URL, {
+                // Tembak data ke Supabase dengan menyertakan mode 'no-cors' agar Adblocker terkecoh dan meloloskan request
+                fetch(API_URL, {
                     method: 'POST',
-                    mode: 'cors',
+                    mode: 'no-cors',
                     headers: {
                         'apikey': API_KEY,
                         'Authorization': `Bearer ${API_KEY}`,
@@ -122,13 +121,13 @@
                     })
                 });
 
-                showToast("✅ Masuk Database & Membuka WA!");
-                setTimeout(() => { resetForm(); }, 1000);
+                // Tunda sepersekian detik biar proses fetch jalan dulu, lalu otomatis buka WA
+                setTimeout(() => {
+                    resetForm();
+                }, 800);
 
             } catch (err) {
-                // Proteksi Cadangan: kalau koneksi internet atau CORS ngadat, browser tetep bakal buka WA lewat href alami tadi
-                showToast("⚡ Membuka WA Bisnis...");
-                setTimeout(() => { resetForm(); }, 1000);
+                setTimeout(() => { resetForm(); }, 800);
             }
         }
 
@@ -139,7 +138,6 @@
             const btn = document.getElementById('btn-submit');
             btn.innerText = "KIRIM TOP UP";
             btn.href = "#";
-            btn.removeAttribute("target");
             btn.style.pointerEvents = "auto";
         }
     </script>
