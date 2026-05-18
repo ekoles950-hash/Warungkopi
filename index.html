@@ -64,7 +64,7 @@
     </div>
 
     <script>
-        // Kunci Project Pulsa Mas Eko
+        // Inisialisasi Kunci Supabase Project "Pulsa" Mas Eko
         const SUPABASE_URL = 'https://lybwttrdybmgatvauxev.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
         
@@ -90,6 +90,7 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
+        // FUNGSI UTAMA PROSES TRANSAKSI
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
@@ -100,7 +101,7 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // Simpan data ke tabel pesanan_pulsa
+            // Proses 1: Menyimpan data transaksi ke database pesanan_pulsa
             const { data, error } = await sb.from('pesanan_pulsa').insert([{
                 nama_pembeli: 'Topup ' + namaProdukTerpilih,
                 no_wa: noHp,
@@ -111,22 +112,20 @@
             }]).select();
 
             if (error) {
-                showToast("❌ Gagal: " + error.message);
+                showToast("❌ Gagal Simpan Database: " + error.message);
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
             } else {
                 showToast("✅ Berhasil Masuk Database Pulsa!");
                 
-                // Format Pesan Teks untuk Link WhatsApp Mas Eko
+                // Format Pesan Teks Nota Transaksi untuk WhatsApp Bisnis Mas Eko
                 const textPesan = `📱 *TOP UP BARU (PROJECT PULSA)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
                 
-                // Gabungkan nomor WA Mas Eko dengan teks orderan yang di-encode
+                // Proses 2: Lempar Notifikasi Chat ke WhatsApp Bisnis Mas Eko
                 const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
-                
-                // Buka otomatis halaman chat WhatsApp Bisnis Mas Eko di tab baru
                 window.open(urlWhatsApp, '_blank');
 
-                // Reset Form inputan
+                // Reset Form Input setelah sukses transaksi
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
