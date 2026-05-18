@@ -9,7 +9,10 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4ece1; margin: 0; padding: 15px; color: #3e2723; }
+    /* Menambahkan efek scroll mulus agar seperti aplikasi */
+    html { scroll-behavior: smooth; }
+    
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; margin: 0; color: #333; }
     .container { max-width: 1000px; margin: auto; }
     
     /* Panel Global */
@@ -66,7 +69,7 @@
 
   <div class="container">
 
-    <div class="panel">
+    <div class="panel" id="monitor-panel">
       <div class="panel-header">
         <h2>Monitor Tagihan Warung Basecamp</h2>
         <p>Dashboard terpusat untuk memantau data yang dikirim dari sistem bawah</p>
@@ -107,9 +110,12 @@
     </div>
 
     <div class="panel">
-      <div class="panel-header" style="border-bottom-color: #25D366;">
-        <h2 style="color: #1a1a1a;">Tagihan Sengkuni Net</h2>
-        <p>Tarik data dari Spreadsheet untuk disinkronkan ke Monitor</p>
+      <div class="panel-header" style="border-bottom-color: #25D366; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; text-align: left;">
+        <div style="flex: 1;">
+          <h2 style="color: #1a1a1a; margin: 0; font-size: 24px;">Tagihan Sengkuni Net</h2>
+          <p style="margin: 5px 0 0 0; color: #666;">Tarik data dari Spreadsheet ke Monitor</p>
+        </div>
+        <a href="#monitor-panel" style="background-color: #8B5A2B; color: white; padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap; display: inline-block;">📈 Ke Monitor Tagihan</a>
       </div>
 
       <div class="form-group">
@@ -333,6 +339,8 @@
 
     // Eksekusi Muat Monitor saat web dibuka
     muatDataDashboard();
+    // Otomatis update status ping jaringan setiap 10 detik di background
+    setInterval(muatDataDashboard, 10000); 
   </script>
 </body>
 </html>
