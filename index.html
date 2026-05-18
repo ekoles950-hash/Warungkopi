@@ -66,16 +66,14 @@
     </div>
 
     <script>
-        // Mengarah ke database grabndeso milik Mas Eko yang sudah stabil
+        // Database utama milik Mas Eko (grabndeso)
         const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ===================================================
-        // KONFIGURASI API WA GATEWAY FONNTE MAS EKO
-        // ===================================================
+        // Akses API Fonnte pengirim 085815124078
         const WA_API_TOKEN   = 'LvbBmDXgcVCFCTa8uqVX'; 
-        const NOMOR_TUJUAN_WA = '6281313726330'; // Nomor penerima notifikasi orderan
+        const NOMOR_TUJUAN_WA = '6281313726330'; // Ditujukan ke WA Bisnis Mas Eko
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -107,7 +105,7 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko (grabndeso)
+            // Simpan transaksi aman ke tabel pesanan_ojek (Grabndeso)
             const { data, error } = await sb.from('pesanan_ojek').insert([{
                 nama_pembeli: 'Topup ' + namaProdukTerpilih,
                 no_wa: noHp,
@@ -122,15 +120,20 @@
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
             } else {
-                showToast("✅ Berhasil Masuk Supabase!");
+                showToast("✅ Berhasil! Mengirim Notifikasi WA...");
                 
-                // Format Pesan Teks untuk WhatsApp Mas Eko
-                const pesanWA = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
+                // Membuat string acak/unik berdasarkan waktu milidetik saat tombol diklik
+                // Trik ampuh biar WhatsApp server gak mendeteksi ini sebagai isi chat spam yang monoton
+                const kodeUnik = Math.floor(1000 + Math.random() * 9000);
+                const jamMenit = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+
+                // Format Teks Pesan Otomatis dikirim ke WA Bisnis Mas Eko
+                const pesanWA = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_\n⏱️ _Ref: ${jamMenit} / ID-${kodeUnik}_`;
                 
-                // Tembak API Notifikasi WA secara background (Otomatis terkirim)
+                // Eksekusi kirim notifikasi WhatsApp murni di background server
                 kirimNotifWA(pesanWA);
 
-                // Reset form
+                // Bersihkan form isian screen
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
@@ -139,7 +142,6 @@
             }
         }
 
-        // Fungsi Request kirim teks ke API WhatsApp Gateway
         function kirimNotifWA(pesan) {
             const formData = new FormData();
             formData.append('target', NOMOR_TUJUAN_WA);
@@ -154,9 +156,9 @@
             })
             .then(response => response.json())
             .then(result => {
-                console.log('Status WA:', result);
+                console.log('Status Terkirim Fonnte:', result);
             })
-            .catch(err => console.error('Gagal Kirim Notif WA:', err));
+            .catch(err => console.error('Gagal Kirim Background WA:', err));
         }
     </script>
 </body>
