@@ -5,14 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Basecamp Coffee - Top Up Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
         .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
         .product-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; }
         .product-card.active { border-color: #3B82F6; background: #1E3A8A; }
-        #toast-topup { visibility: hidden; min-width: 280px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        #toast-topup { visibility: hidden; min-width: 280px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 13px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         #toast-topup.show { visibility: visible; animation: slideUp 0.4s; }
         @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
@@ -55,16 +55,17 @@
                 </div>
             </div>
 
-            <a id="btn-submit" onclick="eksekusiTransaksiFinal(event)" href="#"
-                class="block w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs text-center uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
+            <button onclick="kirimOtomatis()" id="btn-submit"
+                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
                 KIRIM TOP UP
-            </a>
+            </button>
         </div>
     </div>
 
     <script>
-        const API_URL = 'https://lybwttrdybmgatvauxev.supabase.co/rest/v1/transaksi';
-        const API_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
+        // Jalur Pipa REST Supabase Project Pulsa
+        const SB_URL = 'https://lybwttrdybmgatvauxev.supabase.co/rest/v1/transaksi';
+        const SB_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi';
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -86,59 +87,56 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        async function eksekusiTransaksiFinal(e) {
+        function kirimOtomatis() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
-            if (!noHp) { e.preventDefault(); return showToast("⚠️ Isi nomor HP tujuan dulu Mas!"); }
-            if (!skuTerpilih) { e.preventDefault(); return showToast("⚠️ Pilih produknya dulu Mas!"); }
+            if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
+            if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
 
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "MEMPROSES...";
-            btn.style.pointerEvents = "none";
+            btn.innerText = "MENGIRIM...";
+            btn.disabled = true;
 
-            const textPesan = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
-            const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
+            // 1. FORMAT DATA UNTUK SUPABASE
+            const dataSupabase = JSON.stringify({
+                nomor_hp: noHp,
+                produk: namaProdukTerpilih + ' (' + skuTerpilih + ')',
+                harga: hargaTerpilih,
+                status: 'pending'
+            });
 
-            // Kunci tautan WA di href murni agar browser membuka secara alami tanpa dianggap iklan pop-up
-            btn.href = urlWhatsApp;
+            // 2. FORMAT DATA UNTUK NOTIFIKASI TELEGRAM OTOMATIS
+            const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
+            const chatId = '7933777456';
+            const pesanTelegram = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
+            const urlTelegram = `https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesanTelegram)}&parse_mode=Markdown`;
 
             try {
-                // Tembak data ke Supabase dengan menyertakan mode 'no-cors' agar Adblocker terkecoh dan meloloskan request
-                fetch(API_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: {
-                        'apikey': API_KEY,
-                        'Authorization': `Bearer ${API_KEY}`,
-                        'Content-Type': 'application/json',
-                        'Prefer': 'return=minimal'
-                    },
-                    body: JSON.stringify({
-                        nomor_hp: noHp,
-                        produk: namaProdukTerpilih + ' (' + skuTerpilih + ')',
-                        harga: hargaTerpilih,
-                        status: 'pending'
-                    })
-                });
+                // Trik Sakti: Gunakan Blob + sendBeacon. Ini lolos dari blokiran Adblocker Kiwi jenis apapun!
+                const blobSB = new Blob([dataSupabase], { type: 'application/json' });
+                
+                // Kirim ke Supabase di background
+                navigator.sendBeacon(`${SB_URL}?apikey=${SB_KEY}`, blobSB);
+                
+                // Kirim ke Telegram otomatis di background (HP langsung bunyi!)
+                navigator.sendBeacon(urlTelegram);
 
-                // Tunda sepersekian detik biar proses fetch jalan dulu, lalu otomatis buka WA
+                // Langsung kasih laporan sukses ke konsumen tanpa nunggu loading muter-muter
+                showToast("✅ Top Up Berhasil Dikirim!");
+                
                 setTimeout(() => {
-                    resetForm();
-                }, 800);
+                    document.getElementById('nomor_hp').value = '';
+                    document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
+                    skuTerpilih = '';
+                    btn.innerText = "KIRIM TOP UP";
+                    btn.disabled = false;
+                }, 1000);
 
             } catch (err) {
-                setTimeout(() => { resetForm(); }, 800);
+                showToast("❌ Hubungan Putus, Coba Lagi!");
+                btn.innerText = "KIRIM TOP UP";
+                btn.disabled = false;
             }
-        }
-
-        function resetForm() {
-            document.getElementById('nomor_hp').value = '';
-            document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
-            skuTerpilih = '';
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = "KIRIM TOP UP";
-            btn.href = "#";
-            btn.style.pointerEvents = "auto";
         }
     </script>
 </body>
