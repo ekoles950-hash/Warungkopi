@@ -3,17 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Basecamp Coffee - Top Up Center</title>
+    <title>Basecamp Coffee - Order & Top Up</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
-        .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+        .input-dark:focus { border-color: #10B981; outline: none; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1); }
         .product-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; }
-        .product-card.active { border-color: #3B82F6; background: #1E3A8A; }
-        #toast-topup { visibility: hidden; min-width: 250px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        .product-card.active { border-color: #10B981; background: #064E3B; }
+        #toast-topup { visibility: hidden; min-width: 280px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 13px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         #toast-topup.show { visibility: visible; animation: slideUp 0.4s; }
         @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
@@ -24,49 +24,49 @@
 
     <div class="w-full max-w-md bg-[#1E293B] p-8 rounded-[2.5rem] shadow-2xl border border-slate-800">
         <div class="text-center mb-8">
-            <h1 class="text-3xl font-extrabold italic text-blue-500 tracking-tighter">BASECAMP<span class="text-white"> COFFEE</span></h1>
+            <h1 class="text-3xl font-extrabold italic text-[#10B981] tracking-tighter">BASECAMP<span class="text-white"> COFFEE</span></h1>
             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Sengkuni Net & PT FAMILI</p>
         </div>
 
         <div class="space-y-6">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Nomor Tujuan</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Nomor WhatsApp Pelanggan</label>
                 <input type="number" id="nomor_hp" placeholder="08xxxxxxxxxx" required
                     class="w-full p-5 rounded-2xl input-dark text-xl font-bold tracking-wider">
             </div>
 
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Produk</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Menu / Layanan</label>
                 <div class="space-y-3">
                     
-                    <div onclick="pilihProduk('GPY1', 'Gopay 1.000', 2050)" id="card-GPY1" class="product-card p-5 rounded-2xl flex justify-between items-center">
+                    <div onclick="pilihProduk('KOPI01', 'Kopi Hitam Basecamp', 5000)" id="card-KOPI01" class="product-card p-5 rounded-2xl flex justify-between items-center">
                         <div class="flex flex-col text-left">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Gopay</span>
-                            <span class="font-black text-white">Gopay 1.000</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Minuman</span>
+                            <span class="font-black text-white">Kopi Hitam Basecamp</span>
                         </div>
-                        <span class="text-xs font-black text-blue-400">Rp 2.050</span>
+                        <span class="text-sm font-black text-[#10B981]">Rp 5.000</span>
                     </div>
 
-                    <div onclick="pilihProduk('DANA1', 'Dana 1.000', 2000)" id="card-DANA1" class="product-card p-5 rounded-2xl flex justify-between items-center">
+                    <div onclick="pilihProduk('VCH01', 'WiFi Sengkuni 24 Jam', 3000)" id="card-VCH01" class="product-card p-5 rounded-2xl flex justify-between items-center">
                         <div class="flex flex-col text-left">
-                            <span class="text-[10px] font-bold text-slate-400 uppercase">Dana</span>
-                            <span class="font-black text-white">Dana 1.000</span>
+                            <span class="text-[10px] font-bold text-slate-400 uppercase">Internet</span>
+                            <span class="font-black text-white">WiFi Sengkuni 24 Jam</span>
                         </div>
-                        <span class="text-xs font-black text-blue-400">Rp 2.000</span>
+                        <span class="text-sm font-black text-[#10B981]">Rp 3.000</span>
                     </div>
 
                 </div>
             </div>
 
             <button onclick="kirimKeSupabase()" id="btn-submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
-                KIRIM TOP UP
+                class="w-full bg-[#10B981] hover:bg-[#059669] text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
+                PROSES PESANAN
             </button>
         </div>
     </div>
 
     <script>
-        // Data Supabase Mas Eko
+        // Data Kunci Supabase Mas Eko
         const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
@@ -79,7 +79,7 @@
             const t = document.getElementById("toast-topup");
             t.innerText = msg;
             t.className = "show";
-            setTimeout(() => { t.className = ""; }, 3000);
+            setTimeout(() => { t.className = ""; }, 4000);
         }
 
         function pilihProduk(sku, nama, harga) {
@@ -94,43 +94,41 @@
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
-            if (!noHp) {
-                return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            }
-            if (!skuTerpilih) {
-                return showToast("⚠️ Pilih produknya dulu Mas!");
-            }
+            if (!noHp) { return showToast("⚠️ Isi nomor WA dulu Mas Eko!"); }
+            if (!skuTerpilih) { return showToast("⚠️ Pilih menunya dulu Bos!"); }
 
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "MEMPROSES...";
+            btn.innerText = "MENGIRIM...";
             btn.disabled = true;
 
-            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko
+            // Kita tembak tabel 'pesanan_ojek'
             const { data, error } = await sb.from('pesanan_ojek').insert([{
-                nama_pembeli: 'Topup ' + namaProdukTerpilih,
+                nama_pembeli: 'Warung - ' + namaProdukTerpilih,
                 no_wa: noHp,
-                alamat_kirim: 'SKU: ' + skuTerpilih,
+                alamat_kirim: 'Kode Menu: ' + skuTerpilih,
                 total_harga: hargaTerpilih,
                 status: 'pending',
                 metode_bayar: 'QRIS'
             }]).select();
 
             if (error) {
-                showToast("❌ Gagal simpan: " + error.message);
-                btn.innerText = "KIRIM TOP UP";
+                // KELUARKAN PESAN ERROR DARI SUPABASE AGAR KELIHATAN SALAHNYA
+                console.error(error);
+                showToast("❌ Gagal! Error: " + error.message);
+                btn.innerText = "PROSES PESANAN";
                 btn.disabled = false;
             } else {
-                showToast("✅ Berhasil Masuk Supabase!");
+                showToast("✅ Mantap, Berhasil Masuk Supabase!");
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
-                btn.innerText = "KIRIM TOP UP";
+                btn.innerText = "PROSES PESANAN";
                 btn.disabled = false;
                 
-                // Kirim Bot Telegram Notifikasi Orderan
+                // Bot Telegram Notifikasi Orderan
                 const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
                 const chatId = '7933777456';
-                const pesan = `📱 *TOP UP BARU (VERCEL)* 📱\n\n🎯 No Tujuan: ${noHp}\n📦 Produk: ${namaProdukTerpilih} (${skuTerpilih})\n💵 Harga: Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ Status: PENDING`;
+                const pesan = `🏪 *PESANAN BARU BASECAMP* 🏪\n\n👤 No WA: ${noHp}\n🍱 Menu: ${namaProdukTerpilih} (${skuTerpilih})\n💰 Total: Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ Status: PENDING`;
                 
                 fetch(`https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesan)}&parse_mode=Markdown`);
             }
