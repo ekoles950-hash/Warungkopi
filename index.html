@@ -64,9 +64,9 @@
     </div>
 
     <script>
-        // DATA KUNCI PROJECT "PULSA" MAS EKO YANG KEMARIN
+        // Kunci Project Pulsa Mas Eko
         const SUPABASE_URL = 'https://lybwttrdybmgatvauxev.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X'; // Menggunakan public anon key project pulsa Mas Eko
+        const SUPABASE_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
         
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -100,7 +100,7 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // MENEMBAK TABEL 'pesanan_pulsa' DI PROJECT PULSA
+            // Simpan data ke tabel pesanan_pulsa
             const { data, error } = await sb.from('pesanan_pulsa').insert([{
                 nama_pembeli: 'Topup ' + namaProdukTerpilih,
                 no_wa: noHp,
@@ -116,18 +116,22 @@
                 btn.disabled = false;
             } else {
                 showToast("✅ Berhasil Masuk Database Pulsa!");
+                
+                // Format Pesan Teks untuk Link WhatsApp Mas Eko
+                const textPesan = `📱 *TOP UP BARU (PROJECT PULSA)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
+                
+                // Gabungkan nomor WA Mas Eko dengan teks orderan yang di-encode
+                const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
+                
+                // Buka otomatis halaman chat WhatsApp Bisnis Mas Eko di tab baru
+                window.open(urlWhatsApp, '_blank');
+
+                // Reset Form inputan
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
-                
-                // Bot Telegram Notifikasi Orderan Pulsa Mas Eko
-                const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
-                const chatId = '7933777456';
-                const pesan = `📱 *TOP UP BARU (PROJECT PULSA)* 📱\n\n🎯 No Tujuan: ${noHp}\n📦 Produk: ${namaProdukTerpilih} (${skuTerpilih})\n💵 Harga: Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ Status: PENDING`;
-                
-                fetch(`https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesan)}&parse_mode=Markdown`);
             }
         }
     </script>
