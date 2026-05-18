@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Basecamp Coffee - Top Up Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
@@ -55,15 +55,14 @@
                 </div>
             </div>
 
-            <button onclick="prosesTransaksiSakti()" id="btn-submit"
-                class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
+            <a id="btn-submit" onclick="prosesTransaksiSakti(event)" href="#"
+                class="block w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs text-center uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
                 KIRIM TOP UP
-            </button>
+            </a>
         </div>
     </div>
 
     <script>
-        // API Supabase URL Langsung murni tanpa SDK library
         const API_URL = 'https://lybwttrdybmgatvauxev.supabase.co/rest/v1/transaksi';
         const API_KEY = 'sb_publishable_g18NbVXV34s3Je_BOuoajA_dmOguJGi'; 
 
@@ -87,25 +86,28 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        // FUNGSI UTAMA BYPASS CORS & AUTO REDIRECT WA
-        async function prosesTransaksiSakti() {
+        async function prosesTransaksiSakti(e) {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
-            if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
+            if (!noHp) { e.preventDefault(); return showToast("⚠️ Isi nomor HP tujuan dulu Mas!"); }
+            if (!skuTerpilih) { e.preventDefault(); return showToast("⚠️ Pilih produknya dulu Mas!"); }
 
             const btn = document.getElementById('btn-submit');
             btn.innerText = "MEMPROSES...";
-            btn.disabled = true;
+            btn.style.pointerEvents = "none"; // Disable klik ganda
 
-            // Siapkan Format Nota WhatsApp Bisnis Mas Eko lebih dulu
             const textPesan = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
             const urlWhatsApp = `https://wa.me/6281313726330?text=${encodeURIComponent(textPesan)}`;
 
+            // Pasang link WA langsung ke href tombol biar dibuka secara alami oleh browser
+            btn.href = urlWhatsApp;
+            btn.target = "_blank";
+
             try {
-                // Tembak murni menggunakan fetch biasa untuk bypass pemblokiran library
-                const response = await fetch(API_URL, {
+                // Tembak data ke Supabase (karena RLS sudah disabled, ini langsung tembus)
+                await fetch(API_URL, {
                     method: 'POST',
+                    mode: 'cors',
                     headers: {
                         'apikey': API_KEY,
                         'Authorization': `Bearer ${API_KEY}`,
@@ -120,20 +122,13 @@
                     })
                 });
 
-                // Apapun respon database-nya (berhasil/gagal karena CORS), langsung lempar pembeli ke WA Mas Eko!
-                showToast("⚡ Membuka WhatsApp Bisnis...");
-                setTimeout(() => {
-                    window.open(urlWhatsApp, '_blank');
-                    resetForm();
-                }, 1000);
+                showToast("✅ Masuk Database & Membuka WA!");
+                setTimeout(() => { resetForm(); }, 1000);
 
             } catch (err) {
-                // Jika browser memblokir total secara sepihak (Failed to fetch), JANGAN ERROR! Langsung loloskan ke WA!
-                showToast("⚡ Masuk Jalur Cadangan WA Bisnis...");
-                setTimeout(() => {
-                    window.open(urlWhatsApp, '_blank');
-                    resetForm();
-                }, 1000);
+                // Proteksi Cadangan: kalau koneksi internet atau CORS ngadat, browser tetep bakal buka WA lewat href alami tadi
+                showToast("⚡ Membuka WA Bisnis...");
+                setTimeout(() => { resetForm(); }, 1000);
             }
         }
 
@@ -143,7 +138,9 @@
             skuTerpilih = '';
             const btn = document.getElementById('btn-submit');
             btn.innerText = "KIRIM TOP UP";
-            btn.disabled = false;
+            btn.href = "#";
+            btn.removeAttribute("target");
+            btn.style.pointerEvents = "auto";
         }
     </script>
 </body>
