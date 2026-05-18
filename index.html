@@ -5,14 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
     <title>Basecamp Coffee - Top Up Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
         .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
         .product-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; }
         .product-card.active { border-color: #3B82F6; background: #1E3A8A; }
-        #toast-topup { visibility: hidden; min-width: 280px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 20px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 13px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+        #toast-topup { visibility: hidden; min-width: 250px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
         #toast-topup.show { visibility: visible; animation: slideUp 0.4s; }
         @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
     </style>
@@ -24,12 +25,12 @@
     <div class="w-full max-w-md bg-[#1E293B] p-8 rounded-[2.5rem] shadow-2xl border border-slate-800">
         <div class="text-center mb-8">
             <h1 class="text-3xl font-extrabold italic text-blue-500 tracking-tighter">BASECAMP<span class="text-white"> COFFEE</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">SENGKUNI NET & PT FAMILI</p>
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">Sengkuni Net & PT FAMILI</p>
         </div>
 
         <div class="space-y-6">
             <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Nomor HP Tujuan</label>
+                <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Nomor Tujuan</label>
                 <input type="number" id="nomor_hp" placeholder="08xxxxxxxxxx" required
                     class="w-full p-5 rounded-2xl input-dark text-xl font-bold tracking-wider">
             </div>
@@ -37,6 +38,7 @@
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Produk</label>
                 <div class="space-y-3">
+                    
                     <div onclick="pilihProduk('GPY1', 'Gopay 1.000', 2050)" id="card-GPY1" class="product-card p-5 rounded-2xl flex justify-between items-center">
                         <div class="flex flex-col text-left">
                             <span class="text-[10px] font-bold text-slate-400 uppercase">Gopay</span>
@@ -52,10 +54,11 @@
                         </div>
                         <span class="text-xs font-black text-blue-400">Rp 2.000</span>
                     </div>
+
                 </div>
             </div>
 
-            <button onclick="kirimKeBackend()" id="btn-submit"
+            <button onclick="kirimKeSupabase()" id="btn-submit"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
                 KIRIM TOP UP
             </button>
@@ -63,8 +66,10 @@
     </div>
 
     <script>
-        // Silakan sesuaikan endpoint backend grabndeso Mas Eko di bawah ini
-        const BACKEND_URL = '/api/transaksi'; 
+        // Data Supabase Mas Eko
+        const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
+        const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
+        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -74,7 +79,7 @@
             const t = document.getElementById("toast-topup");
             t.innerText = msg;
             t.className = "show";
-            setTimeout(() => { t.className = ""; }, 4000);
+            setTimeout(() => { t.className = ""; }, 3000);
         }
 
         function pilihProduk(sku, nama, harga) {
@@ -86,58 +91,48 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        async function kirimKeBackend() {
+        async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
-            if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
+            if (!noHp) {
+                return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
+            }
+            if (!skuTerpilih) {
+                return showToast("⚠️ Pilih produknya dulu Mas!");
+            }
 
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "MENGIRIM...";
+            btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            try {
-                // Tembak data ke server grabndeso sendiri (Anti-Block, Aman dari CORS Browser)
-                const response = await fetch(BACKEND_URL, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        nomor_hp: noHp,
-                        produk: namaProdukTerpilih + ' (' + skuTerpilih + ')',
-                        harga: hargaTerpilih,
-                        status: 'pending'
-                    })
-                });
+            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko
+            const { data, error } = await sb.from('pesanan_ojek').insert([{
+                nama_pembeli: 'Topup ' + namaProdukTerpilih,
+                no_wa: noHp,
+                alamat_kirim: 'SKU: ' + skuTerpilih,
+                total_harga: hargaTerpilih,
+                status: 'pending',
+                metode_bayar: 'QRIS'
+            }]).select();
 
-                if (response.ok) {
-                    showToast("✅ Top Up Sukses Diproses!");
-                    
-                    // Notifikasi otomatis ke Bot Telegram Mas Eko biar HP langsung bunyi!
-                    const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
-                    const chatId = '7933777456';
-                    const pesanTelegram = `📱 *TOP UP BARU (${skuTerpilih})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
-                    
-                    fetch(`https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesanTelegram)}&parse_mode=Markdown`, { mode: 'no-cors' });
-
-                    setTimeout(() => {
-                        document.getElementById('nomor_hp').value = '';
-                        document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
-                        skuTerpilih = '';
-                        btn.innerText = "KIRIM TOP UP";
-                        btn.disabled = false;
-                    }, 1000);
-                } else {
-                    showToast("❌ Server Grabndeso Respon Gagal!");
-                    btn.innerText = "KIRIM TOP UP";
-                    btn.disabled = false;
-                }
-
-            } catch (err) {
-                showToast("❌ Gagal Konek ke Server!");
+            if (error) {
+                showToast("❌ Gagal simpan: " + error.message);
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
+            } else {
+                showToast("✅ Berhasil Masuk Supabase!");
+                document.getElementById('nomor_hp').value = '';
+                document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
+                skuTerpilih = '';
+                btn.innerText = "KIRIM TOP UP";
+                btn.disabled = false;
+                
+                // Kirim Bot Telegram Notifikasi Orderan
+                const tokenOrder = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
+                const chatId = '7933777456';
+                const pesan = `📱 *TOP UP BARU (VERCEL)* 📱\n\n🎯 No Tujuan: ${noHp}\n📦 Produk: ${namaProdukTerpilih} (${skuTerpilih})\n💵 Harga: Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ Status: PENDING`;
+                
+                fetch(`https://api.telegram.org/bot${tokenOrder}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesan)}&parse_mode=Markdown`);
             }
         }
     </script>
