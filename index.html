@@ -6,7 +6,7 @@
     <title>Basecamp Coffee - Top Up Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
@@ -58,7 +58,7 @@
                 </div>
             </div>
 
-            <button onclick="prosesTopUpOtomatis()" id="btn-submit"
+            <button onclick="kirimKeSupabase()" id="btn-submit"
                 class="w-full bg-blue-600 hover:bg-blue-700 text-white py-6 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
                 KIRIM TOP UP
             </button>
@@ -66,14 +66,16 @@
     </div>
 
     <script>
-        // Kunci Akses Database Supabase Grabndeso Mas Eko
+        // Mengarah ke database grabndeso milik Mas Eko yang sudah stabil
         const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Kunci Akses API Fonnte Mas Eko
-        const FONNTE_TOKEN = 'LvbBmDXgcVCFCTa8uqVX'; 
-        const NOMOR_TUJUAN_WA = '6281313726330'; // Nomor WA Bisnis Mas Eko yang menerima rincian orderan
+        // ===================================================
+        // KONFIGURASI API WA GATEWAY FONNTE MAS EKO
+        // ===================================================
+        const WA_API_TOKEN   = 'LvbBmDXgcVCFCTa8uqVX'; 
+        const NOMOR_TUJUAN_WA = '6281313726330'; // Nomor penerima notifikasi orderan
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -95,19 +97,17 @@
             document.getElementById('card-' + sku).classList.add('active');
         }
 
-        async function prosesTopUpOtomatis() {
+        async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
             if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            if (!skuTerpilled) {
-                if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
-            }
+            if (!skuTerpilih) return showToast("⚠️ Pilih produknya dulu Mas!");
 
             const btn = document.getElementById('btn-submit');
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // 1. KIRIM DATA KE SUPABASE GRABNDESO (Tabel pesanan_ojek)
+            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko (grabndeso)
             const { data, error } = await sb.from('pesanan_ojek').insert([{
                 nama_pembeli: 'Topup ' + namaProdukTerpilih,
                 no_wa: noHp,
@@ -118,19 +118,19 @@
             }]).select();
 
             if (error) {
-                showToast("❌ Gagal simpan database: " + error.message);
+                showToast("❌ Gagal simpan: " + error.message);
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
             } else {
-                showToast("✅ Berhasil Masuk Database & Mengirim WA!");
-
-                // 2. FORMAT PESAN NOTIFIKASI WHATSAPP
+                showToast("✅ Berhasil Masuk Supabase!");
+                
+                // Format Pesan Teks untuk WhatsApp Mas Eko
                 const pesanWA = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
-
-                // 3. SEKKALI KLIK - EMBAT NOTIFIKASI WA LEWAT API FONNTE
+                
+                // Tembak API Notifikasi WA secara background (Otomatis terkirim)
                 kirimNotifWA(pesanWA);
 
-                // Reset Form Pengisian
+                // Reset form
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
@@ -139,26 +139,24 @@
             }
         }
 
-        // Fungsi Background Request untuk Kirim WhatsApp Tanpa Alihkan Browser
+        // Fungsi Request kirim teks ke API WhatsApp Gateway
         function kirimNotifWA(pesan) {
-            const dataFonnte = new FormData();
-            dataFonnte.append('target', NOMOR_TUJUAN_WA);
-            dataFonnte.append('message', pesan);
+            const formData = new FormData();
+            formData.append('target', NOMOR_TUJUAN_WA);
+            formData.append('message', pesan);
 
             fetch('https://api.fonnte.com/send', {
                 method: 'POST',
                 headers: {
-                    'Authorization': FONNTE_TOKEN
+                    'Authorization': WA_API_TOKEN
                 },
-                body: dataFonnte
+                body: formData
             })
-            .then(res => res.json())
-            .then(hasil => {
-                console.log('Fonnte Sent Status:', hasil);
+            .then(response => response.json())
+            .then(result => {
+                console.log('Status WA:', result);
             })
-            .catch(err => {
-                console.error('Fonnte API Error:', err);
-            });
+            .catch(err => console.error('Gagal Kirim Notif WA:', err));
         }
     </script>
 </body>
