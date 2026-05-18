@@ -9,24 +9,27 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    /* Menambahkan efek scroll mulus agar seperti aplikasi */
-    html { scroll-behavior: smooth; }
-    
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; margin: 0; color: #333; }
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; padding: 15px; margin: 0; color: #3e2723; }
     .container { max-width: 1000px; margin: auto; }
     
-    /* Panel Global */
-    .panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.1); margin-bottom: 25px; }
+    /* MENU TAB (NAVIGASI) */
+    .tab-menu { display: flex; background: white; padding: 8px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.1); position: sticky; top: 10px; z-index: 100; }
+    .tab-btn { flex: 1; padding: 15px; border: none; background: transparent; font-size: 16px; font-weight: bold; color: #795548; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+    .tab-btn.active { background: #8B5A2B; color: white; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+
+    /* Pengaturan Panel agar bisa disembunyikan */
+    .panel { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(93, 64, 55, 0.1); display: none; animation: fadeIn 0.3s; }
+    .panel.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    
     .panel-header { text-align: center; border-bottom: 3px solid #8B5A2B; padding-bottom: 15px; margin-bottom: 20px; }
     .panel-header h2 { margin: 0; color: #5d4037; font-size: 24px; }
     .panel-header p { margin: 5px 0 0 0; color: #795548; font-size: 14px; }
 
-    /* --- GAYA UNTUK BAGIAN MONITOR (ATAS) --- */
-    .btn-reset { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-    .btn-reset:hover { background-color: #a5281b; }
-
+    /* --- GAYA MONITOR (ATAS) --- */
+    .btn-reset { background-color: #c0392b; color: white; border: none; padding: 10px 15px; border-radius: 8px; font-weight: bold; cursor: pointer; margin-top: 15px; transition: 0.2s; }
     .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 20px; }
-    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 6px solid #8B5A2B; border-top: 1px solid #efebe9; border-right: 1px solid #efebe9; border-bottom: 1px solid #efebe9; }
+    .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 6px solid #8B5A2B; border: 1px solid #efebe9; }
     .card.green { border-left-color: #2ecc71; }
     .card.orange { border-left-color: #f39c12; }
     .card.red { border-left-color: #e74c3c; }
@@ -37,31 +40,30 @@
     table { width: 100%; border-collapse: collapse; min-width: 600px; }
     th, td { text-align: left; padding: 12px 15px; border-bottom: 1px solid #efebe9; font-size: 14px; }
     th { background-color: #f4ece1; color: #5d4037; font-weight: bold; }
-    tr:hover { background-color: #faf8f5; }
-    
     .badge { padding: 5px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; color: white; }
     .badge-belum { background-color: #e74c3c; }
     .badge-lunas { background-color: #2ecc71; }
-    .btn-update { background-color: #3498db; color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; transition: 0.2s; }
-    
-    /* --- GAYA UNTUK BAGIAN TAGIHAN SPREADSHEET (BAWAH) --- */
+    .status-online { color: #2ecc71; font-weight: bold; background: #e8f8f5; padding: 4px 8px; border-radius: 6px; font-size: 12px; }
+    .status-offline { color: #e74c3c; font-weight: bold; background: #fdedec; padding: 4px 8px; border-radius: 6px; font-size: 12px; animation: kedip 1s infinite; }
+    @keyframes kedip { 0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;} }
+
+    /* --- GAYA TAGIHAN SPREADSHEET (BAWAH) --- */
     .form-group { margin-bottom: 15px; }
-    label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; font-size: 14px; }
-    select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; outline: none; box-sizing: border-box; background: #fff; }
+    label { font-weight: bold; display: block; margin-bottom: 5px; color: #444; font-size: 16px; }
+    select, input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #ddd; font-size: 16px; box-sizing: border-box; }
     
     .item-sheet { border-bottom: 1px solid #eee; padding: 15px 0; }
-    .nama-sheet { font-weight: bold; font-size: 17px; color: #222; text-transform: capitalize; display: block; margin-bottom: 3px; }
-    .detail-sheet { font-size: 14px; color: #666; margin-bottom: 10px; display: block; }
+    .nama-sheet { font-weight: bold; font-size: 18px; color: #222; text-transform: capitalize; display: block; margin-bottom: 3px; }
+    .detail-sheet { font-size: 15px; color: #666; margin-bottom: 12px; display: block; }
     
     .actions-sheet { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .btn-sheet { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 12px; color: white; transition: 0.2s; text-align: center; }
+    .btn-sheet, .btn-update { border: none; padding: 12px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 13px; color: white; text-align: center; }
+    .btn-update { background-color: #3498db; }
     .btn-wa { background-color: #25D366; }
     .btn-lunas-sheet { background-color: #007bff; }
     .btn-supabase { background-color: #8e44ad; } 
     
-    .btn-sheet:active, .btn-update:active { transform: scale(0.95); opacity: 0.9; }
-    .btn-sheet:disabled, .btn-update:disabled { background-color: #ccc; cursor: not-allowed; }
-    
+    .btn-sheet:active, .btn-update:active, .tab-btn:active { transform: scale(0.95); }
     .loading-teks { text-align: center; color: #8d6e63; font-style: italic; margin-bottom: 20px; font-weight: bold; }
   </style>
 </head>
@@ -69,10 +71,15 @@
 
   <div class="container">
 
-    <div class="panel" id="monitor-panel">
+    <div class="tab-menu">
+      <button class="tab-btn active" id="btn-tab-monitor" onclick="bukaTab('monitor')">🖥️ Monitor Tagihan</button>
+      <button class="tab-btn" id="btn-tab-tagihan" onclick="bukaTab('tagihan')">📝 Data Sengkuni Net</button>
+    </div>
+
+    <div class="panel active" id="panel-monitor">
       <div class="panel-header">
-        <h2>Monitor Tagihan Warung Basecamp</h2>
-        <p>Dashboard terpusat untuk memantau data yang dikirim dari sistem bawah</p>
+        <h2>Monitor Basecamp Coffee</h2>
+        <p>Dashboard terpusat pantauan keuangan</p>
         <button class="btn-reset" onclick="resetDataBulanIni()">🗑️ Reset Data Bulan Ini</button>
       </div>
 
@@ -93,14 +100,15 @@
 
       <div class="table-container">
         <h3 style="margin-top: 0; color: #5d4037;">Rincian Klien & Status</h3>
-        <div id="loading-monitor" class="loading-teks">Mengambil data dari database... ☕</div>
+        <div id="loading-monitor" class="loading-teks">Mengambil data database... ☕</div>
         <table>
           <thead>
             <tr>
               <th>Nama Klien</th>
+              <th>Status Net</th>
               <th>Tagihan</th>
-              <th>Status</th>
-              <th>Aksi Admin</th>
+              <th>Status Bayar</th>
+              <th>Aksi</th>
             </tr>
           </thead>
           <tbody id="tabel-body">
@@ -109,13 +117,14 @@
       </div>
     </div>
 
-    <div class="panel">
-      <div class="panel-header" style="border-bottom-color: #25D366; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; text-align: left;">
-        <div style="flex: 1;">
-          <h2 style="color: #1a1a1a; margin: 0; font-size: 24px;">Tagihan Sengkuni Net</h2>
-          <p style="margin: 5px 0 0 0; color: #666;">Tarik data dari Spreadsheet ke Monitor</p>
-        </div>
-        <a href="#monitor-panel" style="background-color: #8B5A2B; color: white; padding: 12px 20px; text-decoration: none; font-weight: bold; border-radius: 8px; font-size: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); white-space: nowrap; display: inline-block;">📈 Ke Monitor Tagihan</a>
+    <div class="panel" id="panel-tagihan">
+      <div class="panel-header" style="border-bottom-color: #25D366;">
+        <h2 style="color: #1a1a1a;">Tagihan Sengkuni Net</h2>
+        <p>Sistem pengiriman WA & penarikan Spreadsheet</p>
+      </div>
+
+      <div style="background: #efebe9; padding: 12px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #795548; font-size: 15px; font-weight: bold; color: #4e342e;">
+        Pastikan Bulan dan Tanggal Jatuh Tempo sudah benar sebelum mengirim tagihan WA.
       </div>
 
       <div class="form-group">
@@ -127,6 +136,8 @@
           <option value="April">April</option>
           <option value="Mei">Mei</option>
           <option value="Juni" selected>Juni</option>
+          <option value="Juli">Juli</option>
+          <option value="Agustus">Agustus</option>
         </select>
       </div>
 
@@ -135,17 +146,31 @@
         <input type="number" id="tglTempo" value="4">
       </div>
 
-      <button id="btn-kirim-semua" class="btn-sheet btn-supabase" style="width: 100%; padding: 15px; font-size: 16px; margin-bottom: 20px; display: none;" onclick="laporSemuaKeSupabase()">🚀 Kirim Semua Data ke Monitor (Atas)</button>
+      <button id="btn-kirim-semua" class="btn-sheet btn-supabase" style="width: 100%; padding: 15px; font-size: 16px; margin-bottom: 20px; display: none;" onclick="laporSemuaKeSupabase()">🚀 Kirim Semua Data ini ke Monitor</button>
 
-      <div id="loading-sheet" class="loading-teks">Memuat data pelanggan dari Sheet...</div>
+      <div id="loading-sheet" class="loading-teks">Memuat data dari Google Sheets... ⏳</div>
       <div id="listPelanggan"></div>
     </div>
 
   </div>
 
   <script>
+    // --- FUNGSI TAB MENU ---
+    function bukaTab(namaTab) {
+      // Sembunyikan semua panel
+      document.getElementById('panel-monitor').classList.remove('active');
+      document.getElementById('panel-tagihan').classList.remove('active');
+      // Matikan warna aktif di tombol
+      document.getElementById('btn-tab-monitor').classList.remove('active');
+      document.getElementById('btn-tab-tagihan').classList.remove('active');
+      
+      // Tampilkan panel yang diklik
+      document.getElementById('panel-' + namaTab).classList.add('active');
+      document.getElementById('btn-tab-' + namaTab).classList.add('active');
+    }
+
     // ==========================================
-    // KONSOLIDASI KONFIGURASI
+    // KONSOLIDASI KONFIGURASI API
     // ==========================================
     const TOKEN_FONNTE = "CEjeWxk7WvpFJaNL94Km";
     const SCRIPT_FIRMAN = "https://script.google.com/macros/s/AKfycbwpSA_UfqSUzK6JFZkvJkrftgOqRjKL-HzA8OLtfAQEaOM3iC3H90YjXv6pI3D-kGQ/exec";
@@ -162,54 +187,30 @@
     // FUNGSI UNTUK BAGIAN 1 (MONITOR SUPABASE)
     // ==========================================
     async function muatDataDashboard() {
-      const { data, error } = await supabaseClient
-        .from('laporan_tagihan')
-        .select('*')
-        .order('id', { ascending: true });
-
+      const { data, error } = await supabaseClient.from('laporan_tagihan').select('*').order('id', { ascending: true });
       const loadingMonitor = document.getElementById('loading-monitor');
-
-      if (error) {
-        loadingMonitor.innerText = "Gagal memuat database: " + error.message;
-        loadingMonitor.style.color = "red";
-        return;
-      }
+      if (error) { loadingMonitor.innerText = "Gagal memuat database: " + error.message; loadingMonitor.style.color = "red"; return; }
+      
       loadingMonitor.style.display = 'none';
-
       let pemasukanLunas = 0, nominalBelumBayar = 0, klienBelumBayar = 0;
       const tbody = document.getElementById('tabel-body');
       tbody.innerHTML = ''; 
 
-      if(data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; color:#795548; padding: 20px;">Data laporan masih kosong. Silakan kirim data dari panel bawah.</td></tr>';
-      }
+      if(data.length === 0) tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">Data kosong. Masuk ke tab Tagihan untuk kirim data.</td></tr>';
 
       data.forEach(row => {
         const nominal = parseInt(row.jumlah_tagihan) || 0;
         const status = row.status || 'belum bayar';
+        const statusNet = row.status_jaringan || 'online';
 
-        if (status === 'lunas') {
-          pemasukanLunas += nominal;
-        } else {
-          nominalBelumBayar += nominal;
-          klienBelumBayar += 1;
-        }
+        if (status === 'lunas') { pemasukanLunas += nominal; } else { nominalBelumBayar += nominal; klienBelumBayar += 1; }
+
+        let badgeHtml = status === 'lunas' ? `<span class="badge badge-lunas">LUNAS</span>` : `<span class="badge badge-belum">BELUM BAYAR</span>`;
+        let aksiHtml = status === 'belum bayar' ? `<button class="btn-update" onclick="tandaiLunas('${row.id}', this)">Set Lunas</button>` : `<span style="font-size:12px; color:#7f8c8d; font-weight:bold;">Selesai ✅</span>`;
+        let jaringanHtml = statusNet === 'offline' ? `<span class="status-offline">🔴 OFF</span>` : `<span class="status-online">🟢 ON</span>`;
 
         const tr = document.createElement('tr');
-        let badgeHtml = status === 'lunas' 
-          ? `<span class="badge badge-lunas">LUNAS</span>` 
-          : `<span class="badge badge-belum">BELUM BAYAR</span>`;
-
-        let aksiHtml = status === 'belum bayar'
-          ? `<button class="btn-update" onclick="tandaiLunas('${row.id}', this)">Tandai Lunas</button>`
-          : `<span style="font-size:12px; color:#7f8c8d; font-weight:bold;">Selesai ✅</span>`;
-
-        tr.innerHTML = `
-          <td style="font-weight: bold; text-transform: capitalize;">${row.nama_klien}</td>
-          <td>Rp ${nominal.toLocaleString('id-ID')}</td>
-          <td>${badgeHtml}</td>
-          <td>${aksiHtml}</td>
-        `;
+        tr.innerHTML = `<td style="font-weight: bold; text-transform: capitalize;">${row.nama_klien}</td><td>${jaringanHtml}</td><td>Rp ${nominal.toLocaleString('id-ID')}</td><td>${badgeHtml}</td><td>${aksiHtml}</td>`;
         tbody.appendChild(tr);
       });
 
@@ -219,25 +220,18 @@
     }
 
     async function tandaiLunas(id, btn) {
-      if(!confirm("Yakin ingin mengubah status klien ini menjadi LUNAS?")) return;
-      btn.innerText = "...";
-      btn.disabled = true;
-
-      const { error } = await supabaseClient.from('laporan_tagihan').update({ status: 'lunas' }).eq('id', id);
-      if (error) alert("Gagal mengupdate data: " + error.message);
+      if(!confirm("Ubah status klien ini menjadi LUNAS?")) return;
+      btn.innerText = "..."; btn.disabled = true;
+      await supabaseClient.from('laporan_tagihan').update({ status: 'lunas' }).eq('id', id);
       muatDataDashboard();
     }
 
     async function resetDataBulanIni() {
-      let konfirmasi = prompt("PERINGATAN! Ini akan menghapus permanen SEMUA data laporan.\n\nKetik kata RESET (huruf besar) untuk melanjutkan:");
+      let konfirmasi = prompt("Ketik kata RESET (huruf besar) untuk menghapus semua data monitor:");
       if (konfirmasi === 'RESET') {
-        const loadingMonitor = document.getElementById('loading-monitor');
-        loadingMonitor.style.display = 'block';
-        loadingMonitor.innerText = "Sedang mereset data... ⏳";
-        
-        const { error } = await supabaseClient.from('laporan_tagihan').delete().not('id', 'is', null);
-        if (error) alert("Gagal mereset: " + error.message);
-        else muatDataDashboard();
+        document.getElementById('loading-monitor').style.display = 'block';
+        await supabaseClient.from('laporan_tagihan').delete().not('id', 'is', null);
+        muatDataDashboard();
       }
     }
 
@@ -249,9 +243,7 @@
       complete: function(results) {
         document.getElementById('loading-sheet').style.display = 'none';
         tampilkanDataSheet(results.data.slice(1));
-        if(dataMassalSupabase.length > 0) {
-           document.getElementById('btn-kirim-semua').style.display = 'block';
-        }
+        if(dataMassalSupabase.length > 0) document.getElementById('btn-kirim-semua').style.display = 'block';
       }
     });
 
@@ -261,11 +253,7 @@
 
       data.forEach(row => {
         if (!row[0]) return;
-        const nama = row[0].trim();
-        const noWa = row[1] ? row[1].toString().trim() : "";
-        const idPel = row[2] ? row[2].trim() : "-";
-        const harga = row[3] ? row[3].toString().replace(/[^0-9]/g, '') : "0";
-        const petugas = row[4] ? row[4].toLowerCase().trim() : "";
+        const nama = row[0].trim(), noWa = row[1] ? row[1].toString().trim() : "", idPel = row[2] ? row[2].trim() : "-", harga = row[3] ? row[3].toString().replace(/[^0-9]/g, '') : "0", petugas = row[4] ? row[4].toLowerCase().trim() : "";
         
         dataMassalSupabase.push({ nama_klien: nama, jumlah_tagihan: harga, status: 'belum bayar' });
         
@@ -277,7 +265,7 @@
             <span class="detail-sheet">ID: ${idPel} | <b>Rp ${parseInt(harga).toLocaleString('id-ID')}</b></span>
           </div>
           <div class="actions-sheet">
-            <button class="btn-sheet btn-wa" onclick="kirimFonnte('${nama}', '${noWa}', '${idPel}', '${harga}', this)">Kirim Tagihan</button>
+            <button class="btn-sheet btn-wa" onclick="kirimFonnte('${nama}', '${noWa}', '${idPel}', '${harga}', this)">Kirim WA</button>
             <button class="btn-sheet btn-lunas-sheet" onclick="setLunas('${nama}', '${idPel}', '${harga}', '${petugas}', this)">Set Lunas</button>
           </div>
         `;
@@ -286,42 +274,33 @@
     }
 
     function buatPesan(nama, idPel, harga) {
-      const bulan = document.getElementById('bulanSelect').value;
-      const tgl = document.getElementById('tglTempo').value;
+      const bulan = document.getElementById('bulanSelect').value, tgl = document.getElementById('tglTempo').value;
       return `sistem chat otomatis tidak perlu di balas❌\nPelanggan SENGKUNI NET\nYth. *${nama}*\nKami sampaikan tagihan layanan internet bulan *${bulan}.${new Date().getFullYear()}*\nDengan ID Pelanggan *${idPel}*\nSebesar *Rp ${parseInt(harga).toLocaleString('id-ID')}*\nPembayaran paling lambat di tanggal *${tgl}*\nPembayaran nunggu tukang narik\nAdmin bendahara : RENDI dan FIRMAN\nuntuk menghindari isolir kecepatan menurun otomatis di jaringan anda`;
     }
 
     async function kirimFonnte(nama, noWa, idPel, harga, btn) {
-      let hp = noWa.replace(/[^0-9]/g, '');
-      if (hp.startsWith('0')) hp = '62' + hp.substring(1);
-      btn.innerText = "Mengirim...";
+      let hp = noWa.replace(/[^0-9]/g, ''); if (hp.startsWith('0')) hp = '62' + hp.substring(1);
+      btn.innerText = "...";
       try {
         await fetch('https://api.fonnte.com/send', { method: 'POST', headers: { 'Authorization': TOKEN_FONNTE }, body: new URLSearchParams({ 'target': hp, 'message': buatPesan(nama, idPel, harga) }) });
-        btn.innerText = "Terkirim ✅";
-        btn.style.backgroundColor = "#7f8c8d";
+        btn.innerText = "WA Sent ✅"; btn.style.backgroundColor = "#7f8c8d";
       } catch (e) { btn.innerText = "Gagal"; }
     }
 
     async function laporSemuaKeSupabase() {
-      if(!confirm("Kirim SEMUA data ini ke Monitor Tagihan (Bagian Atas)?")) return;
+      if(!confirm("Kirim SEMUA data ini ke Monitor Tagihan?")) return;
       const btn = document.getElementById('btn-kirim-semua');
-      const originalText = btn.innerText;
-      btn.innerText = "Sedang Mengirim Massal... ⏳";
-      btn.disabled = true;
-      btn.style.backgroundColor = "#9b59b6";
+      btn.innerText = "Mengirim... ⏳"; btn.disabled = true; btn.style.backgroundColor = "#9b59b6";
 
       const { error } = await supabaseClient.from('laporan_tagihan').insert(dataMassalSupabase);
       
       if (error) {
-        alert("Gagal kirim massal: " + error.message);
-        btn.innerText = originalText;
-        btn.disabled = false;
-        btn.style.backgroundColor = "#8e44ad";
+        alert("Gagal kirim massal"); btn.innerText = "Kirim Semua Data"; btn.disabled = false; btn.style.backgroundColor = "#8e44ad";
       } else {
-        btn.innerText = "Data Berhasil Terkirim! ✅";
-        btn.style.backgroundColor = "#27ae60";
-        // Refresh tabel monitor otomatis
+        btn.innerText = "Terkirim! ✅"; btn.style.backgroundColor = "#27ae60";
         muatDataDashboard();
+        alert("Data berhasil disinkron! Silakan cek di Tab Monitor.");
+        bukaTab('monitor'); // Otomatis pindah tab ke Monitor
       }
     }
 
@@ -331,15 +310,11 @@
       btn.innerText = "...";
       try {
         await fetch(scriptUrl, { method: 'POST', mode: 'no-cors', body: new URLSearchParams({ 'nama': nama, 'id': id, 'nominal': harga }) });
-        btn.innerText = "Lunas ✅";
-        btn.style.backgroundColor = "#6c757d";
-        btn.disabled = true;
-      } catch (e) { alert("Error Apps Script"); }
+        btn.innerText = "Lunas ✅"; btn.style.backgroundColor = "#6c757d"; btn.disabled = true;
+      } catch (e) { alert("Error"); }
     }
 
-    // Eksekusi Muat Monitor saat web dibuka
     muatDataDashboard();
-    // Otomatis update status ping jaringan setiap 10 detik di background
     setInterval(muatDataDashboard, 10000); 
   </script>
 </body>
