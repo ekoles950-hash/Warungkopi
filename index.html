@@ -61,7 +61,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Nominal Saldo </label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Nominal Saldo (Untung +1.500)</label>
                     <div id="container-nominal" class="grid grid-cols-1 gap-2.5 max-h-60 overflow-y-auto pr-1"></div>
                 </div>
 
@@ -75,11 +75,11 @@
 
     <div class="w-full max-w-md bg-[#1E293B] p-6 rounded-[2.5rem] shadow-2xl border border-slate-800">
         <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
-            <h2 class="font-black text-xs text-blue-400 uppercase tracking-widest ml-1">📋 Riwayat Top Up LIVE</h2>
+            <h2 class="font-black text-xs text-blue-400 uppercase tracking-widest ml-1">📋 Riwayat Hari Ini</h2>
             <button onclick="loadRiwayatLive()" class="text-[10px] font-bold text-blue-400 hover:text-blue-500 uppercase tracking-wider">🔄 Refresh</button>
         </div>
         <div id="container-riwayat" class="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
-            <div class="text-center text-slate-500 py-4">Memuat riwayat transaksi...</div>
+            <div class="text-center text-slate-500 py-4">Belum ada transaksi di HP ini.</div>
         </div>
     </div>
 
@@ -96,7 +96,6 @@
         let namaProdukTerpilih = '';
         let hargaJualTerpilih = 0;
 
-        // Load riwayat live langsung dari database saat pertama buka
         document.addEventListener("DOMContentLoaded", loadRiwayatLive);
 
         function showToast(msg) {
@@ -110,10 +109,8 @@
             providerTerpilih = providerName;
             document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active'));
             document.getElementById('card-' + idCode).classList.add('active');
-
             skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0;
             generateListNominal(idCode, providerName);
-
             document.getElementById('form-input-dinamis').classList.remove('hidden');
             document.getElementById('nomor_hp').focus();
         }
@@ -121,7 +118,6 @@
         function generateListNominal(idCode, providerName) {
             const container = document.getElementById('container-nominal');
             container.innerHTML = '';
-
             let daftarNominal = [];
             for (let i = 1000; i <= 10000; i += 1000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
             for (let i = 15000; i <= 100000; i += 5000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
@@ -129,8 +125,7 @@
             daftarNominal.forEach(item => {
                 const sku = `${idCode}${item.nominal / 1000}`;
                 const namaProduk = `${providerName} ${item.nominal.toLocaleString('id-ID')}`;
-                
-                const cardHtml = `
+                container.innerHTML += `
                     <div onclick="setNominalAktif('${sku}', '${namaProduk}', ${item.harga}, this)" 
                         class="nominal-card p-4 rounded-xl flex justify-between items-center border border-slate-700/60 bg-slate-800/40 hover:border-slate-600 transition-all">
                         <div class="flex flex-col text-left">
@@ -140,44 +135,45 @@
                         <span class="text-sm font-black text-emerald-400">Rp ${item.harga.toLocaleString('id-ID')}</span>
                     </div>
                 `;
-                container.innerHTML += cardHtml;
             });
         }
 
         function setNominalAktif(sku, nama, harga, element) {
-            skuCodeTerpilih = sku;
-            namaProdukTerpilih = nama;
-            hargaJualTerpilih = harga;
+            skuCodeTerpilih = sku; namaProdukTerpilih = nama; hargaJualTerpilih = harga;
             document.querySelectorAll('.nominal-card').forEach(card => card.classList.remove('active'));
             element.classList.add('active');
         }
 
+        // AMBIL RIWAYAT PRIVATE + AUTO-FILTER HANYA 24 JAM TERAKHIR (ANTI-NUMPUK)
         async function loadRiwayatLive() {
             const container = document.getElementById('container-riwayat');
-            
-            // Mengambil 10 transaksi terakhir dari database pesanan_pulsa secara LIVE
+            let myTrxIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
+
+            if (myTrxIds.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 py-4">Belum ada transaksi hari ini.</div>`;
+                return;
+            }
+
+            // Trik Sakti: Buat waktu filter mundur 24 jam ke belakang dari detik ini
+            const batasanWaktuHariIni = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
             const { data, error } = await sb
                 .from('pesanan_pulsa')
                 .select('*')
-                .order('created_at', { ascending: false })
-                .limit(10);
+                .in('id', myTrxIds)
+                .gte('created_at', batasanWaktuHariIni) // Ambil yang gte (lebih besar/baru) dari 24 jam lalu
+                .order('created_at', { ascending: false });
 
             if (error || !data || data.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 py-4 font-bold">Belum ada riwayat transaksi database.</div>`;
+                container.innerHTML = `<div class="text-center text-slate-500 py-4">Riwayat hari ini bersih otomatis.</div>`;
                 return;
             }
 
             container.innerHTML = '';
             data.forEach(item => {
                 const waktu = new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                
-                // Set badge warna status dinamis dari database
                 let statusBadge = `<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase rounded tracking-wider border border-yellow-500/20">Pending</span>`;
-                if (item.status === 'success') {
-                    statusBadge = `<span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] font-black uppercase rounded tracking-wider border border-green-500/20">Success</span>`;
-                } else if (item.status === 'failed') {
-                    statusBadge = `<span class="px-1.5 py-0.5 bg-red-500/10 text-red-400 text-[8px] font-black uppercase rounded tracking-wider border border-red-500/20">Failed</span>`;
-                }
+                if (item.status === 'success') statusBadge = `<span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] font-black uppercase rounded tracking-wider border border-green-500/20">Success</span>`;
 
                 container.innerHTML += `
                     <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
@@ -197,13 +193,11 @@
 
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
-
             if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
             if (!skuCodeTerpilih) return showToast("⚠️ Pilih nominal saldonya dulu Mas!");
 
             const btn = document.getElementById('btn-submit');
-            btn.innerText = "MEMPROSES...";
-            btn.disabled = true;
+            btn.innerText = "MEMPROSES..."; btn.disabled = true;
 
             const { data, error } = await sb.from('pesanan_pulsa').insert([{
                 nama_produk: namaProdukTerpilih,
@@ -213,27 +207,25 @@
                 status: 'pending'
             }]).select();
 
-            if (error) {
-                showToast("❌ Gagal simpan database: " + error.message);
-                btn.innerText = "KIRIM TOP UP";
-                btn.disabled = false;
+            if (error || !data) {
+                showToast("❌ Gagal simpan database!");
+                btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
             } else {
                 showToast("✅ Transaksi Berhasil Dikirim!");
                 
-                // Langsung refresh riwayat live di bawahnya begitu sukses diklik
+                let currentSavedIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
+                currentSavedIds.unshift(data[0].id); 
+                localStorage.setItem('my_basecamp_topup_ids', JSON.stringify(currentSavedIds));
+
                 loadRiwayatLive();
 
-                // Kirim Notif Telegram Kasir
-                const pesanTele = `📱 *TOP UP BARU (${providerTerpilih.toUpperCase()})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilled || namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
+                const pesanTele = `📱 *TOP UP BARU (${providerTerpilih.toUpperCase()})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN}/sendMessage?chat_id=${TELE_CHAT_ID}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
-                // Reset Form
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active'));
                 document.getElementById('form-input-dinamis').classList.add('hidden');
-                skuCodeTerpilih = '';
-                btn.innerText = "KIRIM TOP UP";
-                btn.disabled = false;
+                skuCodeTerpilih = ''; btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
             }
         }
     </script>
