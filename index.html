@@ -6,7 +6,7 @@
     <title>Basecamp Coffee - Top Up Center</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
@@ -66,16 +66,14 @@
     </div>
 
     <script>
-        // Mengarah ke database grabndeso milik Mas Eko yang sudah stabil
+        // Konek ke project grabndeso
         const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // ===================================================
-        // KONFIGURASI API WA GATEWAY FONNTE MAS EKO
-        // ===================================================
-        const WA_API_TOKEN   = 'LvbBmDXgcVCFCTa8uqVX'; 
-        const NOMOR_TUJUAN_WA = '6282243047166'; // Nomor penerima notifikasi orderan
+        // Akses Bot Telegram Mas Eko
+        const TELE_TOKEN = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
+        const TELE_CHAT_ID = '7933777456'; 
 
         let skuTerpilih = '';
         let namaProdukTerpilih = '';
@@ -107,30 +105,29 @@
             btn.innerText = "MEMPROSES...";
             btn.disabled = true;
 
-            // Masuk langsung ke tabel pesanan_ojek Supabase Mas Eko (grabndeso)
-            const { data, error } = await sb.from('pesanan_ojek').insert([{
-                nama_pembeli: 'Topup ' + namaProdukTerpilih,
-                no_wa: noHp,
-                alamat_kirim: 'SKU: ' + skuTerpilih,
-                total_harga: hargaTerpilih,
-                status: 'pending',
-                metode_bayar: 'QRIS'
+            // 1. Tembak data ke tabel baru pesanan_pulsa (Sesuai screenshot Mas Eko)
+            const { data, error } = await sb.from('pesanan_pulsa').insert([{
+                nama_produk: namaProdukTerpilih,
+                sku_code: skuTerpilih,
+                nomor_tujuan: noHp,
+                harga_jual: hargaTerpilih,
+                status: 'pending'
             }]).select();
 
             if (error) {
-                showToast("❌ Gagal simpan: " + error.message);
+                showToast("❌ Gagal simpan database: " + error.message);
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
             } else {
-                showToast("✅ Berhasil!");
+                showToast("✅ Berhasil Masuk Database!");
                 
-                // Format Pesan Teks untuk WhatsApp Mas Eko
-                const pesanWA = `📱 *TOP UP BARU (AUTOMATION)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
+                // Format notif Telegram
+                const pesanTele = `📱 *TOP UP BARU (BASECAMP COFFEE)* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih} (${skuTerpilih})\n💵 *Harga:* Rp ${hargaTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Sengkuni Net & PT FAMILI_`;
                 
-                // Tembak API Notifikasi WA secara background (Otomatis terkirim)
-                kirimNotifWA(pesanWA);
+                // 2. Kirim background otomatis ke Telegram biar HP bunyi
+                kirimNotifTelegram(pesanTele);
 
-                // Reset form
+                // Reset Form
                 document.getElementById('nomor_hp').value = '';
                 document.querySelectorAll('.product-card').forEach(card => card.classList.remove('active'));
                 skuTerpilih = '';
@@ -139,24 +136,9 @@
             }
         }
 
-        // Fungsi Request kirim teks ke API WhatsApp Gateway
-        function kirimNotifWA(pesan) {
-            const formData = new FormData();
-            formData.append('target', NOMOR_TUJUAN_WA);
-            formData.append('message', pesan);
-
-            fetch('https://api.fonnte.com/send', {
-                method: 'POST',
-                headers: {
-                    'Authorization': WA_API_TOKEN
-                },
-                body: formData
-            })
-            .then(response => response.json())
-            .then(result => {
-                console.log('Status WA:', result);
-            })
-            .catch(err => console.error('Gagal Kirim Notif WA:', err));
+        function kirimNotifTelegram(pesan) {
+            const url = `https://api.telegram.org/bot${TELE_TOKEN}/sendMessage?chat_id=${TELE_CHAT_ID}&text=${encodeURIComponent(pesan)}&parse_mode=Markdown`;
+            fetch(url, { mode: 'no-cors' });
         }
     </script>
 </body>
