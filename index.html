@@ -11,7 +11,7 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
         .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
         .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-        .wallet-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; }
+        .wallet-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; width: 100%; }
         .wallet-card.active { border-color: #3B82F6; background: #1E3A8A; transform: scale(1.02); }
         .nominal-card { background: #1E293B; border: 1px solid #334155; cursor: pointer; transition: 0.2s; }
         .nominal-card.active { border-color: #10B981; background: #064E3B; }
@@ -33,21 +33,21 @@
         <div class="space-y-6">
             <div>
                 <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih e-Wallet</label>
-                <div class="grid grid-cols-2 gap-3">
+                <div class="grid grid-cols-2 gap-3 w-full">
                     <div onclick="pilihEWallet('SPP', 'ShopeePay')" id="card-SPP" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">SPP</div>
+                        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">SPP</div>
                         <span class="font-bold text-xs uppercase tracking-wider">ShopeePay</span>
                     </div>
                     <div onclick="pilihEWallet('GPY', 'Gopay')" id="card-GPY" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-12 h-12 bg-emerald-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">GPY</div>
+                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">GPY</div>
                         <span class="font-bold text-xs uppercase tracking-wider">Gopay</span>
                     </div>
                     <div onclick="pilihEWallet('DANA', 'DANA')" id="card-DANA" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">DANA</div>
+                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">DANA</div>
                         <span class="font-bold text-xs uppercase tracking-wider">DANA</span>
                     </div>
                     <div onclick="pilihEWallet('OVO', 'OVO')" id="card-OVO" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">OVO</div>
+                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">OVO</div>
                         <span class="font-bold text-xs uppercase tracking-wider">OVO</span>
                     </div>
                 </div>
@@ -75,11 +75,12 @@
 
     <div class="w-full max-w-md bg-[#1E293B] p-6 rounded-[2.5rem] shadow-2xl border border-slate-800">
         <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
-            <h2 class="font-black text-xs text-blue-400 uppercase tracking-widest ml-1">📋 Riwayat Top Up Anda</h2>
-            <button onclick="hapusRiwayatLokal()" class="text-[10px] font-bold text-red-400 hover:text-red-500 uppercase tracking-wider">Bersihkan</button>
+            <h2 class="font-black text-xs text-blue-400 uppercase tracking-widest ml-1">📋 Riwayat Top Up LIVE</h2>
+            <button onclick="loadRiwayatLive()" class="text-[10px] font-bold text-blue-400 hover:text-blue-500 uppercase tracking-wider">🔄 Refresh</button>
         </div>
         <div id="container-riwayat" class="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
-            </div>
+            <div class="text-center text-slate-500 py-4">Memuat riwayat transaksi...</div>
+        </div>
     </div>
 
     <script>
@@ -95,8 +96,8 @@
         let namaProdukTerpilih = '';
         let hargaJualTerpilih = 0;
 
-        // Ambil riwayat dari memori HP saat web pertama kali dimuat
-        document.addEventListener("DOMContentLoaded", tampilkanRiwayatLokal);
+        // Load riwayat live langsung dari database saat pertama buka
+        document.addEventListener("DOMContentLoaded", loadRiwayatLive);
 
         function showToast(msg) {
             const t = document.getElementById("toast-topup");
@@ -122,14 +123,8 @@
             container.innerHTML = '';
 
             let daftarNominal = [];
-            // Nominal kecil 1rb - 10rb
-            for (let i = 1000; i <= 10000; i += 1000) {
-                daftarNominal.push({ nominal: i, harga: i + 1500 });
-            }
-            // Nominal besar genap 15rb - 100rb
-            for (let i = 15000; i <= 100000; i += 5000) {
-                daftarNominal.push({ nominal: i, harga: i + 1500 });
-            }
+            for (let i = 1000; i <= 10000; i += 1000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
+            for (let i = 15000; i <= 100000; i += 5000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
 
             daftarNominal.forEach(item => {
                 const sku = `${idCode}${item.nominal / 1000}`;
@@ -157,6 +152,49 @@
             element.classList.add('active');
         }
 
+        async function loadRiwayatLive() {
+            const container = document.getElementById('container-riwayat');
+            
+            // Mengambil 10 transaksi terakhir dari database pesanan_pulsa secara LIVE
+            const { data, error } = await sb
+                .from('pesanan_pulsa')
+                .select('*')
+                .order('created_at', { ascending: false })
+                .limit(10);
+
+            if (error || !data || data.length === 0) {
+                container.innerHTML = `<div class="text-center text-slate-500 py-4 font-bold">Belum ada riwayat transaksi database.</div>`;
+                return;
+            }
+
+            container.innerHTML = '';
+            data.forEach(item => {
+                const waktu = new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+                
+                // Set badge warna status dinamis dari database
+                let statusBadge = `<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase rounded tracking-wider border border-yellow-500/20">Pending</span>`;
+                if (item.status === 'success') {
+                    statusBadge = `<span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] font-black uppercase rounded tracking-wider border border-green-500/20">Success</span>`;
+                } else if (item.status === 'failed') {
+                    statusBadge = `<span class="px-1.5 py-0.5 bg-red-500/10 text-red-400 text-[8px] font-black uppercase rounded tracking-wider border border-red-500/20">Failed</span>`;
+                }
+
+                container.innerHTML += `
+                    <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                        <div class="flex flex-col text-left gap-0.5">
+                            <span class="font-black text-white text-xs">${item.nama_produk}</span>
+                            <span class="text-[10px] text-slate-400 font-mono tracking-wider">Tujuan: ${item.nomor_tujuan}</span>
+                            <span class="text-[9px] text-slate-500 font-bold">${waktu} WIB</span>
+                        </div>
+                        <div class="flex flex-col items-end gap-1">
+                            <span class="font-extrabold text-emerald-400 text-xs">Rp ${parseInt(item.harga_jual).toLocaleString('id-ID')}</span>
+                            ${statusBadge}
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
         async function kirimKeSupabase() {
             const noHp = document.getElementById('nomor_hp').value.trim();
 
@@ -182,13 +220,11 @@
             } else {
                 showToast("✅ Transaksi Berhasil Dikirim!");
                 
-                const jamMenit = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-
-                // SIMPAN KE MEMORI LOKAL HP BIAR RIWAYAT TETEP ADA PAS DI-REFRESH
-                simpanKeRiwayatLokal(namaProdukTerpilih, noHp, hargaJualTerpilih, jamMenit);
+                // Langsung refresh riwayat live di bawahnya begitu sukses diklik
+                loadRiwayatLive();
 
                 // Kirim Notif Telegram Kasir
-                const pesanTele = `📱 *TOP UP BARU (${providerTerpilih.toUpperCase()})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
+                const pesanTele = `📱 *TOP UP BARU (${providerTerpilih.toUpperCase()})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilled || namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Warung Basecamp Coffee_`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN}/sendMessage?chat_id=${TELE_CHAT_ID}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
                 // Reset Form
@@ -198,54 +234,6 @@
                 skuCodeTerpilih = '';
                 btn.innerText = "KIRIM TOP UP";
                 btn.disabled = false;
-            }
-        }
-
-        // FUNGSI UTAMA ENGINE RIWAYAT PERMANEN (LOCAL STORAGE)
-        function simpanKeRiwayatLokal(produk, tujuan, harga, waktu) {
-            let riwayatLama = JSON.parse(localStorage.getItem('riwayat_topup_basecamp')) || [];
-            
-            // Tambahkan data baru di posisi paling atas
-            riwayatLama.unshift({ produk, tujuan, harga, waktu });
-            
-            // Batasi riwayat maksimal simpan 15 data saja biar gak kepenuhan
-            if (riwayatLama.length > 15) riwayatLama.pop();
-
-            localStorage.setItem('riwayat_topup_basecamp', JSON.stringify(riwayatLama));
-            tampilkanRiwayatLokal();
-        }
-
-        function tampilkanRiwayatLokal() {
-            const container = document.getElementById('container-riwayat');
-            let dataRiwayat = JSON.parse(localStorage.getItem('riwayat_topup_basecamp')) || [];
-
-            if (dataRiwayat.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 py-4 font-bold">Belum ada riwayat transaksi.</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            dataRiwayat.forEach(item => {
-                container.innerHTML += `
-                    <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div class="flex flex-col text-left gap-0.5">
-                            <span class="font-black text-white text-xs">${item.produk}</span>
-                            <span class="text-[10px] text-slate-400 font-mono tracking-wider">Tujuan: ${item.tujuan}</span>
-                            <span class="text-[9px] text-slate-500 font-bold">${item.waktu} WIB</span>
-                        </div>
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="font-extrabold text-emerald-400 text-xs">Rp ${item.harga.toLocaleString('id-ID')}</span>
-                            <span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase rounded tracking-wider border border-yellow-500/20">Pending</span>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function hapusRiwayatLokal() {
-            if (confirm("Hapus semua daftar riwayat di layar ini?")) {
-                localStorage.removeItem('riwayat_topup_basecamp');
-                tampilkanRiwayatLokal();
             }
         }
     </script>
