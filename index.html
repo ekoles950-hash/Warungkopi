@@ -61,7 +61,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Nominal Saldo (dibawah 👇)</label>
+                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Nominal Saldo (Untung +1.500)</label>
                     <div id="container-nominal" class="grid grid-cols-1 gap-2.5 max-h-60 overflow-y-auto pr-1"></div>
                 </div>
 
@@ -91,17 +91,13 @@
         const TELE_TOKEN = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
         const TELE_CHAT_ID = '7933777456'; 
 
-        let providerTerpilih = '';
-        let skuCodeTerpilih = '';
-        let namaProdukTerpilih = '';
-        let hargaJualTerpilih = 0;
+        let providerTerpilih = ''; let skuCodeTerpilih = ''; let namaProdukTerpilih = ''; let hargaJualTerpilih = 0;
 
         document.addEventListener("DOMContentLoaded", loadRiwayatLive);
 
         function showToast(msg) {
             const t = document.getElementById("toast-topup");
-            t.innerText = msg;
-            t.className = "show";
+            t.innerText = msg; t.className = "show";
             setTimeout(() => { t.className = ""; }, 3000);
         }
 
@@ -144,24 +140,19 @@
             element.classList.add('active');
         }
 
-        // AMBIL RIWAYAT PRIVATE + AUTO-FILTER HANYA 24 JAM TERAKHIR (ANTI-NUMPUK)
         async function loadRiwayatLive() {
             const container = document.getElementById('container-riwayat');
             let myTrxIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
-
             if (myTrxIds.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-500 py-4">Belum ada transaksi hari ini.</div>`;
                 return;
             }
-
-            // Trik Sakti: Buat waktu filter mundur 24 jam ke belakang dari detik ini
             const batasanWaktuHariIni = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-
             const { data, error } = await sb
                 .from('pesanan_pulsa')
                 .select('*')
                 .in('id', myTrxIds)
-                .gte('created_at', batasanWaktuHariIni) // Ambil yang gte (lebih besar/baru) dari 24 jam lalu
+                .gte('created_at', batasanWaktuHariIni)
                 .order('created_at', { ascending: false });
 
             if (error || !data || data.length === 0) {
@@ -212,14 +203,14 @@
                 btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
             } else {
                 showToast("✅ Transaksi Berhasil Dikirim!");
-                
                 let currentSavedIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
                 currentSavedIds.unshift(data[0].id); 
                 localStorage.setItem('my_basecamp_topup_ids', JSON.stringify(currentSavedIds));
 
                 loadRiwayatLive();
 
-                const pesanTele = `📱 *TOP UP BARU (${providerTerpilih.toUpperCase()})* 📱\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING`;
+                // Notifikasi Masuk ke Telegram Saat Ada Pembeli Order (Bunyi Instan)
+                const pesanTele = `🔔 *ADA ANTREAN TOP UP MASUK* 🔔\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Harap buka adminpulsa.html untuk memproses_`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN}/sendMessage?chat_id=${TELE_CHAT_ID}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
                 document.getElementById('nomor_hp').value = '';
