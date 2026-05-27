@@ -2,223 +2,141 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
-    <title>Basecamp Coffee - Top Up Center</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght=400;600;700;800&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Top Up - Warung Basecamp Coffee</title>
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0F172A; color: white; }
-        .input-dark { background-color: #1E293B; border: 1px solid #334155; color: white; transition: 0.3s; }
-        .input-dark:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
-        .wallet-card { background: #1E293B; border: 2px solid #334155; cursor: pointer; transition: 0.3s; width: 100%; }
-        .wallet-card.active { border-color: #3B82F6; background: #1E3A8A; transform: scale(1.02); }
-        .nominal-card { background: #1E293B; border: 1px solid #334155; cursor: pointer; transition: 0.2s; }
-        .nominal-card.active { border-color: #10B981; background: #064E3B; }
-        #toast-topup { visibility: hidden; min-width: 250px; background-color: #1E293B; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 3000; left: 50%; bottom: 50px; transform: translateX(-50%); font-size: 12px; font-weight: 800; border: 1px solid #334155; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-        #toast-topup.show { visibility: visible; animation: slideUp 0.4s; }
-        @keyframes slideUp { from { transform: translate(-50%, 20px); opacity: 0; } to { transform: translate(-50%, 0); opacity: 1; } }
+        /* Nuansa Coffee Shop & Ukuran Teks Besar */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4eadd; /* Latar belakang warna krem/latte */
+            color: #3b2818; /* Teks cokelat gelap */
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(59, 40, 24, 0.2);
+            width: 100%;
+            max-width: 400px;
+            border-top: 6px solid #6f4e37; /* Aksen garis cokelat kopi */
+        }
+        h2 {
+            text-align: center;
+            font-size: 26px;
+            margin-bottom: 25px;
+            color: #4a3320;
+        }
+        .form-group {
+            margin-bottom: 25px;
+        }
+        /* Posisi instruksi persis di atas form input */
+        label {
+            display: block;
+            font-size: 20px; 
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        input, select {
+            width: 100%;
+            padding: 14px;
+            font-size: 20px; 
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            border-color: #6f4e37;
+            outline: none;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            font-size: 22px;
+            font-weight: bold;
+            background-color: #6f4e37; /* Tombol warna kopi */
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #5a3e2b;
+        }
+        .footer-note {
+            text-align: center;
+            margin-top: 15px;
+            font-size: 16px;
+            color: #666;
+        }
     </style>
 </head>
-<body class="flex flex-col items-center justify-start min-h-screen p-4 my-6 gap-6">
+<body>
 
-    <div id="toast-topup"></div>
-
-    <div class="w-full max-w-md bg-[#1E293B] p-6 rounded-[2.5rem] shadow-2xl border border-slate-800">
-        <div class="text-center mb-6">
-            <h1 class="text-3xl font-extrabold italic text-blue-500 tracking-tighter">TOP UP<span class="text-white">DELIVERY ( COD)</span></h1>
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] mt-1">MALES KE ALFAMART? WARUNGKOPI siap isi saldo anda sesudah saldo masuk kami siap cod</p>
-        </div>
-
-        <div class="space-y-6">
-            <div>
-                <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih e-Wallet</label>
-                <div class="grid grid-cols-2 gap-3 w-full">
-                    <div onclick="pilihEWallet('SPP', 'ShopeePay')" id="card-SPP" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">SPP</div>
-                        <span class="font-bold text-xs uppercase tracking-wider">ShopeePay</span>
-                    </div>
-                    <div onclick="pilihEWallet('GPY', 'Gopay')" id="card-GPY" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">GPY</div>
-                        <span class="font-bold text-xs uppercase tracking-wider">Gopay</span>
-                    </div>
-                    <div onclick="pilihEWallet('DANA', 'DANA')" id="card-DANA" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">DANA</div>
-                        <span class="font-bold text-xs uppercase tracking-wider">DANA</span>
-                    </div>
-                    <div onclick="pilihEWallet('OVO', 'OVO')" id="card-OVO" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
-                        <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">OVO</div>
-                        <span class="font-bold text-xs uppercase tracking-wider">OVO</span>
-                    </div>
-                </div>
-            </div>
-
-            <div id="form-input-dinamis" class="hidden space-y-5 border-t border-slate-800/80 pt-4">
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Nomor HP Tujuan</label>
-                    <input type="number" id="nomor_hp" placeholder="08xxxxxxxxxx" required
-                        class="w-full p-4 rounded-xl input-dark text-xl font-bold tracking-wider">
-                </div>
-
-                <div>
-                    <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih Nominal Saldo (di bawah)</label>
-                    <div id="container-nominal" class="grid grid-cols-1 gap-2.5 max-h-60 overflow-y-auto pr-1"></div>
-                </div>
-
-                <button onclick="kirimKeSupabase()" id="btn-submit"
-                    class="w-full bg-blue-600 hover:bg-blue-700 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-xl transition-all active:scale-95">
-                    KIRIM TOP UP
-                </button>
-            </div>
-        </div>
+<div class="container">
+    <h2>Warung Basecamp Coffee</h2>
+    
+    <div class="form-group">
+        <label for="nohp">Masukkan Nomor HP Tujuan:</label>
+        <input type="number" id="nohp" placeholder="Contoh: 08123456789" required>
     </div>
 
-    <div class="w-full max-w-md bg-[#1E293B] p-6 rounded-[2.5rem] shadow-2xl border border-slate-800">
-        <div class="flex justify-between items-center mb-4 pb-2 border-b border-slate-800">
-            <h2 class="font-black text-xs text-blue-400 uppercase tracking-widest ml-1">📋 Riwayat Hari Ini</h2>
-            <button onclick="loadRiwayatLive()" class="text-[10px] font-bold text-blue-400 hover:text-blue-500 uppercase tracking-wider">🔄 Refresh</button>
-        </div>
-        <div id="container-riwayat" class="space-y-3 max-h-64 overflow-y-auto pr-1 text-xs">
-            <div class="text-center text-slate-500 py-4">Belum ada transaksi di HP ini.</div>
-        </div>
+    <div class="form-group">
+        <label for="produk">Pilih Nominal Top Up:</label>
+        <select id="produk">
+            <option value="TSEL20">Telkomsel 20.000</option>
+            <option value="ISAT20">Indosat 20.000</option>
+            <option value="XL20">XL 20.000</option>
+        </select>
     </div>
 
-    <script>
-        const SUPABASE_URL = 'https://butydxuauhtvwojvpixt.supabase.co';
-        const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
-        const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    <button onclick="kirimPesanan()">Pesan Sekarang (COD)</button>
+    
+    <div class="footer-note">
+        *Pulsa langsung masuk, pembayaran via COD (Tunggu di tempat).
+    </div>
+</div>
 
-        const TELE_TOKEN = '8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE';
-        const TELE_CHAT_ID = '7933777456'; 
-
-        let providerTerpilih = ''; let skuCodeTerpilih = ''; let namaProdukTerpilih = ''; let hargaJualTerpilih = 0;
-
-        document.addEventListener("DOMContentLoaded", loadRiwayatLive);
-
-        function showToast(msg) {
-            const t = document.getElementById("toast-topup");
-            t.innerText = msg; t.className = "show";
-            setTimeout(() => { t.className = ""; }, 3000);
+<script>
+    function kirimPesanan() {
+        const nohp = document.getElementById("nohp").value;
+        const produk = document.getElementById("produk").value;
+        
+        if(!nohp) {
+            alert("Nomor HP wajib diisi!");
+            return;
         }
 
-        function pilihEWallet(idCode, providerName) {
-            providerTerpilih = providerName;
-            document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active'));
-            document.getElementById('card-' + idCode).classList.add('active');
-            skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0;
-            generateListNominal(idCode, providerName);
-            document.getElementById('form-input-dinamis').classList.remove('hidden');
-            document.getElementById('nomor_hp').focus();
-        }
-
-        function generateListNominal(idCode, providerName) {
-            const container = document.getElementById('container-nominal');
-            container.innerHTML = '';
-            let daftarNominal = [];
-            for (let i = 1000; i <= 10000; i += 1000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
-            for (let i = 15000; i <= 100000; i += 5000) { daftarNominal.push({ nominal: i, harga: i + 1500 }); }
-
-            daftarNominal.forEach(item => {
-                const sku = `${idCode}${item.nominal / 1000}`;
-                const namaProduk = `${providerName} ${item.nominal.toLocaleString('id-ID')}`;
-                container.innerHTML += `
-                    <div onclick="setNominalAktif('${sku}', '${namaProduk}', ${item.harga}, this)" 
-                        class="nominal-card p-4 rounded-xl flex justify-between items-center border border-slate-700/60 bg-slate-800/40 hover:border-slate-600 transition-all">
-                        <div class="flex flex-col text-left">
-                            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">${providerName} Agen</span>
-                            <span class="font-extrabold text-white text-sm">${item.nominal.toLocaleString('id-ID')}</span>
-                        </div>
-                        <span class="text-sm font-black text-emerald-400">Rp ${item.harga.toLocaleString('id-ID')}</span>
-                    </div>
-                `;
-            });
-        }
-
-        function setNominalAktif(sku, nama, harga, element) {
-            skuCodeTerpilih = sku; namaProdukTerpilih = nama; hargaJualTerpilih = harga;
-            document.querySelectorAll('.nominal-card').forEach(card => card.classList.remove('active'));
-            element.classList.add('active');
-        }
-
-        async function loadRiwayatLive() {
-            const container = document.getElementById('container-riwayat');
-            let myTrxIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
-            if (myTrxIds.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 py-4">Belum ada transaksi hari ini.</div>`;
-                return;
-            }
-            const batasanWaktuHariIni = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-            const { data, error } = await sb
-                .from('pesanan_pulsa')
-                .select('*')
-                .in('id', myTrxIds)
-                .gte('created_at', batasanWaktuHariIni)
-                .order('created_at', { ascending: false });
-
-            if (error || !data || data.length === 0) {
-                container.innerHTML = `<div class="text-center text-slate-500 py-4">Riwayat hari ini bersih otomatis.</div>`;
-                return;
-            }
-
-            container.innerHTML = '';
-            data.forEach(item => {
-                const waktu = new Date(item.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
-                let statusBadge = `<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase rounded tracking-wider border border-yellow-500/20">Pending</span>`;
-                if (item.status === 'success') statusBadge = `<span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] font-black uppercase rounded tracking-wider border border-green-500/20">Success</span>`;
-
-                container.innerHTML += `
-                    <div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
-                        <div class="flex flex-col text-left gap-0.5">
-                            <span class="font-black text-white text-xs">${item.nama_produk}</span>
-                            <span class="text-[10px] text-slate-400 font-mono tracking-wider">Tujuan: ${item.nomor_tujuan}</span>
-                            <span class="text-[9px] text-slate-500 font-bold">${waktu} WIB</span>
-                        </div>
-                        <div class="flex flex-col items-end gap-1">
-                            <span class="font-extrabold text-emerald-400 text-xs">Rp ${parseInt(item.harga_jual).toLocaleString('id-ID')}</span>
-                            ${statusBadge}
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        async function kirimKeSupabase() {
-            const noHp = document.getElementById('nomor_hp').value.trim();
-            if (!noHp) return showToast("⚠️ Isi nomor HP tujuan dulu Mas!");
-            if (!skuCodeTerpilih) return showToast("⚠️ Pilih nominal saldonya dulu Mas!");
-
-            const btn = document.getElementById('btn-submit');
-            btn.innerText = "MEMPROSES..."; btn.disabled = true;
-
-            const { data, error } = await sb.from('pesanan_pulsa').insert([{
-                nama_produk: namaProdukTerpilih,
-                sku_code: skuCodeTerpilih,
-                nomor_tujuan: noHp,
-                harga_jual: hargaJualTerpilih,
-                status: 'pending'
-            }]).select();
-
-            if (error || !data) {
-                showToast("❌ Gagal simpan database!");
-                btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
+        // ==========================================
+        // MASUKKAN TOKEN BOT & CHAT ID ANDA DI SINI
+        // ==========================================
+        const botToken = "8669740968:AAE7WcWDDqKcj7V836fFYUaZmdcpwyuecVE";
+        const chatId = "7933777456"; 
+        
+        // Membentuk format pesan yang dikenali oleh script MikroTik Anda
+        const pesan = `!topup#${nohp}#${produk}`;
+        
+        // Memanggil API Telegram langsung dari web
+        const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(pesan)}`;
+        
+        fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if(data.ok) {
+                alert("✅ Pesanan berhasil masuk ke sistem kami! Pulsa sedang diproses, silakan siapkan uang pas.");
+                document.getElementById("nohp").value = ""; // Kosongkan kolom input setelah sukses
             } else {
-                showToast("✅ Transaksi Berhasil Dikirim!");
-                let currentSavedIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
-                currentSavedIds.unshift(data[0].id); 
-                localStorage.setItem('my_basecamp_topup_ids', JSON.stringify(currentSavedIds));
-
-                loadRiwayatLive();
-
-                // Notifikasi Masuk ke Telegram Saat Ada Pembeli Order (Bunyi Instan)
-                const pesanTele = `🔔 *ADA ANTREAN TOP UP MASUK* 🔔\n\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Harap buka adminpulsa.html untuk memproses_`;
-                fetch(`https://api.telegram.org/bot${TELE_TOKEN}/sendMessage?chat_id=${TELE_CHAT_ID}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
-
-                document.getElementById('nomor_hp').value = '';
-                document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active'));
-                document.getElementById('form-input-dinamis').classList.add('hidden');
-                skuCodeTerpilih = ''; btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
+                alert("❌ Gagal mengirim pesanan. Sistem sedang sibuk.");
             }
-        }
-    </script>
+        })
+        .catch(error => {
+            alert("Terjadi kesalahan jaringan.");
+        });
+    }
+</script>
+
 </body>
-</html> 
+</html>
