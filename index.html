@@ -3,19 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTO KASIR TELEGRAM</title>
+    <title>AUTO KASIR SENGKUNI</title>
     <style>
         body { background: #000; color: #0f0; font-family: sans-serif; padding: 20px; text-align: center; }
         .card { background: #111; border: 2px solid cyan; border-radius: 10px; padding: 20px; max-width: 350px; margin: auto; box-shadow: 0 0 15px cyan; }
         input, select { width: 90%; padding: 12px; margin: 10px 0; background: #222; color: #fff; border: 1px solid #0f0; border-radius: 5px; font-weight: bold; }
         button { width: 95%; background: linear-gradient(45deg, cyan, blue); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 0 10px cyan; margin-top: 10px; }
         button:active { transform: scale(0.95); }
+        .badge-kasir { background: #004400; color: #0f0; padding: 5px 10px; border-radius: 20px; font-size: 11px; display: inline-block; margin-bottom: 10px; border: 1px solid #0f0; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <h2 style="color: cyan; margin-top:0;">🚀 AUTO TEMBAK BOT</h2>
+        
+        <!-- INI BAGIAN USERNAME JENENGAN -->
+        <div class="badge-kasir">👤 Kasir Aktif: @Wel_com23</div>
+        
         <p style="font-size:12px; color:#aaa;">Pilih nominal, masukkan nomor, dan gas!</p>
         
         <!-- Input Form -->
@@ -51,10 +56,11 @@
 
             // 3. Copy ke Clipboard HP
             navigator.clipboard.writeText(formatPesan).then(function() {
-                // 4. Buka Telegram dan arahkan ke Bot Village Payment
-                let usernameBot = "villagepayment_bot"; // <-- Username sudah saya pasang di sini
                 
-                // Pindah langsung ke aplikasi Telegram
+                // INI BAGIAN USERNAME BOT TUJUAN
+                let usernameBot = "villagepayment_bot"; 
+                
+                // 4. Buka Telegram dan arahkan ke Bot Village Payment
                 window.location.href = "tg://resolve?domain=" + usernameBot;
                 
             }).catch(function(err) {
