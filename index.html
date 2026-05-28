@@ -15,7 +15,7 @@
         button:active { transform: scale(0.95); }
         
         /* Layout Tombol Cepat */
-        .btn-group { display: flex; gap: 10px; margin-bottom: 25px; }
+        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .btn-cepat { background: #795548; font-size: 16px; padding: 12px; margin-top: 0; }
         
         #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
@@ -35,7 +35,7 @@
         <!-- ========================================== -->
         <div class="instruksi" style="margin-top: 0;">Tombol Pintasan Grup:</div>
         <div class="btn-group">
-            <button type="button" class="btn-cepat" id="btn_start">▶️ /start</button>
+            <button type="button" class="btn-cepat" id="btn_start">▶️ /start@villagepayment_bot</button>
             <button type="button" class="btn-cepat" id="btn_daftar">📝 DAFTAR.123</button>
         </div>
 
@@ -94,7 +94,7 @@
                         statusDiv.innerHTML = "✅ Pesan terkirim ke Grup: <b>" + pesanKirim + "</b>";
                         
                         // Kosongkan kolom nomor HP JIKA yang dikirim adalah format transaksi
-                        if(pesanKirim !== "/start" && pesanKirim !== "DAFTAR.123") {
+                        if(pesanKirim !== "/start@villagepayment_bot" && pesanKirim !== "DAFTAR.123") {
                             document.getElementById("nomor_tujuan").value = "";
                         }
                     } else {
@@ -120,7 +120,7 @@
 
         // Aksi ketika tombol /start ditekan
         document.getElementById("btn_start").addEventListener("click", function() {
-            kirimKeTelegram("/start", this);
+            kirimKeTelegram("/start@villagepayment_bot", this);
         });
 
         // Aksi ketika tombol DAFTAR.123 ditekan
