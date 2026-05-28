@@ -41,21 +41,21 @@
 
     <script>
         document.getElementById("formTransaksi").addEventListener("submit", function(event) {
-            // Mencegah halaman me-refresh saat tombol ditekan
+            // Mencegah web merefresh
             event.preventDefault();
 
-            // 1. Ambil data dari kotak isian
+            // 1. Ambil data
             let kode = document.getElementById("kode_produk").value;
             let nomor = document.getElementById("nomor_tujuan").value;
             let pin = document.getElementById("pin_trx").value;
 
-            // 2. Rakit format pesannya
+            // 2. Rakit formatnya
             let formatPesan = kode + "." + nomor + "." + pin;
 
-            // 3. Username Bot GrabNdeso Asli Mas Eko
+            // 3. Username Asli Bot Jenengan
             let usernameBot = "GrabNdesoBot_bot"; 
 
-            // 4. Buka aplikasi Telegram dengan teks yang sudah tertulis otomatis di kolom chat!
+            // 4. Buka Telegram dengan teks yg sudah siap tembak!
             window.location.href = "https://t.me/" + usernameBot + "?text=" + encodeURIComponent(formatPesan);
         });
     </script>
