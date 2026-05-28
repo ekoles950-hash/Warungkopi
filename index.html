@@ -1,72 +1,81 @@
+<?php
+// ==========================================
+// PENGATURAN REMOTE BOT - WARUNG BASECAMP COFFEE
+// ==========================================
+$token_bot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E"; 
+$chat_id   = "7933777456"; 
+
+$pesan_status = "";
+
+// JIKA TOMBOL GAS DITEKAN
+if (isset($_POST['gas_tembak'])) {
+    $kode = $_POST['kode_produk'];
+    $nomor = $_POST['nomor_tujuan'];
+    $pin = $_POST['pin_trx'];
+
+    // Rakit Format Pesan
+    $format_pesan = "$kode.$nomor.$pin";
+
+    // Kirim langsung ke Bot Telegram jenengan
+    $url = "https://api.telegram.org/bot" . $token_bot . "/sendMessage?chat_id=" . $chat_id . "&text=" . urlencode($format_pesan);
+    
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    $result = curl_exec($ch);
+    curl_close($ch);
+
+    if ($result) {
+        $pesan_status = "<div style='color:#3e2723; background:#d7ccc8; padding:15px; border-radius:8px; font-weight:bold; margin-bottom:15px; font-size:18px;'>✅ Transaksi Berhasil Dikirim!</div>";
+    } else {
+        $pesan_status = "<div style='color:white; background:#d32f2f; padding:15px; border-radius:8px; font-weight:bold; margin-bottom:15px; font-size:18px;'>❌ Gagal Kirim Perintah!</div>";
+    }
+}
+?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AUTO KASIR SENGKUNI</title>
+    <title>Warung Basecamp Coffee - Kasir</title>
     <style>
-        body { background: #000; color: #0f0; font-family: sans-serif; padding: 20px; text-align: center; }
-        .card { background: #111; border: 2px solid cyan; border-radius: 10px; padding: 20px; max-width: 350px; margin: auto; box-shadow: 0 0 15px cyan; }
-        input, select { width: 90%; padding: 12px; margin: 10px 0; background: #222; color: #fff; border: 1px solid #0f0; border-radius: 5px; font-weight: bold; }
-        button { width: 95%; background: linear-gradient(45deg, cyan, blue); color: #fff; border: none; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 16px; cursor: pointer; box-shadow: 0 0 10px cyan; margin-top: 10px; }
+        body { background: #efebe9; color: #3e2723; font-family: sans-serif; padding: 20px; text-align: center; }
+        .card { background: #d7ccc8; border: 3px solid #8d6e63; border-radius: 12px; padding: 25px; max-width: 420px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        .instruksi { font-size: 18px; font-weight: bold; color: #4e342e; text-align: left; margin-bottom: 8px; margin-top: 15px;}
+        input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 18px; box-sizing: border-box; }
+        button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; }
         button:active { transform: scale(0.95); }
-        .badge-kasir { background: #004400; color: #0f0; padding: 5px 10px; border-radius: 20px; font-size: 11px; display: inline-block; margin-bottom: 10px; border: 1px solid #0f0; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2 style="color: cyan; margin-top:0;">🚀 AUTO TEMBAK BOT</h2>
+        <h2 style="color: #3e2723; margin-top:0;">☕ Warung Basecamp Coffee</h2>
         
-        <!-- INI BAGIAN USERNAME JENENGAN -->
-        <div class="badge-kasir">👤 Kasir Aktif: @Wel_com23</div>
-        
-        <p style="font-size:12px; color:#aaa;">Pilih nominal, masukkan nomor, dan gas!</p>
-        
-        <!-- Input Form -->
-        <select id="kode_produk">
-            <option value="DN5">DANA 5.000 (DN5)</option>
-            <option value="DN10">DANA 10.000 (DN10)</option>
-            <option value="DN50">DANA 50.000 (DN50)</option>
-            <option value="GP5000">GOPAY 5.000 (GP5000)</option>
-        </select>
-        
-        <input type="number" id="nomor_tujuan" placeholder="Nomor Pembeli (0856...)">
-        <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123">
-        
-        <!-- Tombol Aksi -->
-        <button onclick="gasTembak()">🚀 COPY & BUKA TELEGRAM</button>
+        <?php echo $pesan_status; ?>
+
+        <form method="POST">
+            
+            <div class="instruksi">Pilih Nominal Top-Up:</div>
+            <select name="kode_produk">
+                <option value="DN5">DANA 5.000 (DN5)</option>
+                <option value="DN10">DANA 10.000 (DN10)</option>
+                <option value="DN15">DANA 15.000 (DN15)</option>
+                <option value="DN20">DANA 20.000 (DN20)</option>
+                <option value="DN25">DANA 25.000 (DN25)</option>
+                <option value="DN50">DANA 50.000 (DN50)</option>
+            </select>
+            
+            <div class="instruksi">Masukkan Nomor Tujuan:</div>
+            <input type="number" name="nomor_tujuan" placeholder="08..." required>
+            
+            <div class="instruksi">Masukkan PIN:</div>
+            <input type="password" name="pin_trx" placeholder="PIN Transaksi" value="123" required>
+            
+            <button type="submit" name="gas_tembak">☕ GAS PROSES TRANSAKSI</button>
+        </form>
     </div>
 
-    <script>
-        function gasTembak() {
-            // 1. Ambil data dari inputan
-            let kode = document.getElementById("kode_produk").value;
-            let nomor = document.getElementById("nomor_tujuan").value;
-            let pin = document.getElementById("pin_trx").value;
-
-            // Validasi jika kosong
-            if(nomor === "" || pin === "") {
-                alert("Isi nomor dan PIN dulu Mas Eko!");
-                return;
-            }
-
-            // 2. Rakit format pesannya
-            let formatPesan = kode + "." + nomor + "." + pin;
-
-            // 3. Copy ke Clipboard HP
-            navigator.clipboard.writeText(formatPesan).then(function() {
-                
-                // INI BAGIAN USERNAME BOT TUJUAN
-                let usernameBot = "villagepayment_bot"; 
-                
-                // 4. Buka Telegram dan arahkan ke Bot Village Payment
-                window.location.href = "tg://resolve?domain=" + usernameBot;
-                
-            }).catch(function(err) {
-                alert("Gagal Copy! Coba cek izin browsernya.");
-            });
-        }
-    </script>
 </body>
 </html>
