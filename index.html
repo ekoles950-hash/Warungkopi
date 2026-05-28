@@ -9,17 +9,9 @@
         .card { background: #d7ccc8; border: 3px solid #8d6e63; border-radius: 12px; padding: 25px; max-width: 420px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
         .instruksi { font-size: 18px; font-weight: bold; color: #4e342e; text-align: left; margin-bottom: 8px; margin-top: 15px;}
         input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 18px; box-sizing: border-box; }
-        
-        /* Tombol Utama */
         button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; }
         button:active { transform: scale(0.95); }
-        
-        /* Layout Tombol Cepat */
-        .btn-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
-        .btn-cepat { background: #795548; font-size: 16px; padding: 12px; margin-top: 0; }
-        
         #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
-        .garis-pembatas { border-top: 2px dashed #a1887f; margin: 20px 0; }
     </style>
 </head>
 <body>
@@ -30,21 +22,8 @@
         <!-- Tempat notifikasi sukses/gagal -->
         <div id="pesan_status"></div>
 
-        <!-- ========================================== -->
-        <!-- TOMBOL CEPAT (START & DAFTAR) -->
-        <!-- ========================================== -->
-        <div class="instruksi" style="margin-top: 0;">Tombol Pintasan Grup:</div>
-        <div class="btn-group">
-            <button type="button" class="btn-cepat" id="btn_start">▶️ /start@villagepayment_bot</button>
-            <button type="button" class="btn-cepat" id="btn_daftar">📝 DAFTAR.123</button>
-        </div>
-
-        <div class="garis-pembatas"></div>
-
-        <!-- ========================================== -->
-        <!-- FORM TRANSAKSI UTAMA -->
-        <!-- ========================================== -->
         <form id="formTransaksi">
+            
             <div class="instruksi">Pilih Nominal Top-Up:</div>
             <select id="kode_produk" required>
                 <option value="DN5">DANA 5.000 (DN5)</option>
@@ -56,33 +35,41 @@
             </select>
             
             <div class="instruksi">Masukkan Nomor Tujuan:</div>
-            <input type="number" id="nomor_tujuan" placeholder="08...">
+            <input type="number" id="nomor_tujuan" placeholder="08..." required>
             
             <div class="instruksi">Masukkan PIN:</div>
             <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123" required>
             
-            <button type="submit" id="btn_transaksi">☕ GAS KIRIM KE GRUP</button>
+            <button type="submit">☕ GAS PROSES TRANSAKSI</button>
         </form>
     </div>
 
     <script>
-        // Data Bot Telegram
-        const tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
-        
-        // MENGUBAH ARAH KE ID GRUP MAS EKO
-        const chatId = "-5044338600";
+        document.getElementById("formTransaksi").addEventListener("submit", function(event) {
+            // Mencegah halaman me-refresh saat tombol ditekan
+            event.preventDefault();
 
-        // Fungsi Utama Pengirim Pesan
-        function kirimKeTelegram(pesanKirim, elemenTombol) {
+            // 1. Ambil data dari kotak isian
+            let kode = document.getElementById("kode_produk").value;
+            let nomor = document.getElementById("nomor_tujuan").value;
+            let pin = document.getElementById("pin_trx").value;
             let statusDiv = document.getElementById("pesan_status");
-            let teksTombolAsli = elemenTombol.innerHTML;
-            let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(pesanKirim);
 
-            // Ubah tombol jadi mode loading
-            elemenTombol.innerHTML = "⏳ MENGIRIM...";
-            elemenTombol.disabled = true;
+            // 2. Rakit format pesannya
+            let formatPesan = kode + "." + nomor + "." + pin;
 
-            // Eksekusi pengiriman via jalur belakang (Background Fetch)
+            // 3. Pengaturan Token dan ID Telegram Jenengan
+            let tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
+            let chatId = "7933777456";
+            let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(formatPesan);
+
+            // 4. Ubah tombol jadi loading
+            let tombolSubmit = document.querySelector("button[type='submit']");
+            let teksTombolAsli = tombolSubmit.innerHTML;
+            tombolSubmit.innerHTML = "⏳ MENGIRIM...";
+            tombolSubmit.disabled = true;
+
+            // 5. Proses kirim ke Telegram (secara ghaib di background)
             fetch(urlTelegram)
                 .then(response => response.json())
                 .then(data => {
@@ -91,12 +78,10 @@
                         statusDiv.style.background = "#d7ccc8";
                         statusDiv.style.color = "#3e2723";
                         statusDiv.style.border = "2px solid #8d6e63";
-                        statusDiv.innerHTML = "✅ Pesan terkirim ke Grup: <b>" + pesanKirim + "</b>";
+                        statusDiv.innerHTML = "✅ Transaksi Berhasil Dikirim!";
                         
-                        // Kosongkan kolom nomor HP JIKA yang dikirim adalah format transaksi
-                        if(pesanKirim !== "/start@villagepayment_bot" && pesanKirim !== "DAFTAR.123") {
-                            document.getElementById("nomor_tujuan").value = "";
-                        }
+                        // Kosongkan kolom nomor setelah sukses
+                        document.getElementById("nomor_tujuan").value = "";
                     } else {
                         statusDiv.style.background = "#d32f2f";
                         statusDiv.style.color = "white";
@@ -108,44 +93,13 @@
                     statusDiv.style.display = "block";
                     statusDiv.style.background = "#d32f2f";
                     statusDiv.style.color = "white";
-                    statusDiv.style.border = "none";
                     statusDiv.innerHTML = "❌ Error jaringan! Cek koneksi internet.";
                 })
                 .finally(() => {
-                    // Kembalikan tombol ke bentuk semula
-                    elemenTombol.innerHTML = teksTombolAsli;
-                    elemenTombol.disabled = false;
+                    // Kembalikan tombol seperti semula
+                    tombolSubmit.innerHTML = teksTombolAsli;
+                    tombolSubmit.disabled = false;
                 });
-        }
-
-        // Aksi ketika tombol /start ditekan
-        document.getElementById("btn_start").addEventListener("click", function() {
-            kirimKeTelegram("/start@villagepayment_bot", this);
-        });
-
-        // Aksi ketika tombol DAFTAR.123 ditekan
-        document.getElementById("btn_daftar").addEventListener("click", function() {
-            kirimKeTelegram("DAFTAR.123", this);
-        });
-
-        // Aksi ketika form Transaksi Utama ditekan
-        document.getElementById("formTransaksi").addEventListener("submit", function(event) {
-            event.preventDefault(); // Mencegah web merefresh
-            
-            let kode = document.getElementById("kode_produk").value;
-            let nomor = document.getElementById("nomor_tujuan").value;
-            let pin = document.getElementById("pin_trx").value;
-            
-            // Validasi khusus untuk form
-            if(nomor === "") {
-                alert("Nomor Tujuan tidak boleh kosong untuk transaksi!");
-                return;
-            }
-
-            let formatPesan = kode + "." + nomor + "." + pin;
-            let tombolSubmit = document.getElementById("btn_transaksi");
-            
-            kirimKeTelegram(formatPesan, tombolSubmit);
         });
     </script>
 </body>
