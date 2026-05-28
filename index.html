@@ -1,38 +1,3 @@
-<?php
-// ==========================================
-// PENGATURAN REMOTE BOT - WARUNG BASECAMP COFFEE
-// ==========================================
-$token_bot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E"; 
-$chat_id   = "7933777456"; 
-
-$pesan_status = "";
-
-// JIKA TOMBOL GAS DITEKAN
-if (isset($_POST['gas_tembak'])) {
-    $kode = $_POST['kode_produk'];
-    $nomor = $_POST['nomor_tujuan'];
-    $pin = $_POST['pin_trx'];
-
-    // Rakit Format Pesan
-    $format_pesan = "$kode.$nomor.$pin";
-
-    // Kirim langsung ke Bot Telegram jenengan
-    $url = "https://api.telegram.org/bot" . $token_bot . "/sendMessage?chat_id=" . $chat_id . "&text=" . urlencode($format_pesan);
-    
-    $ch = curl_init();
-    curl_setopt($ch, CURLOPT_URL, $url);
-    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-    $result = curl_exec($ch);
-    curl_close($ch);
-
-    if ($result) {
-        $pesan_status = "<div style='color:#3e2723; background:#d7ccc8; padding:15px; border-radius:8px; font-weight:bold; margin-bottom:15px; font-size:18px;'>✅ Transaksi Berhasil Dikirim!</div>";
-    } else {
-        $pesan_status = "<div style='color:white; background:#d32f2f; padding:15px; border-radius:8px; font-weight:bold; margin-bottom:15px; font-size:18px;'>❌ Gagal Kirim Perintah!</div>";
-    }
-}
-?>
-
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -46,6 +11,7 @@ if (isset($_POST['gas_tembak'])) {
         input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 18px; box-sizing: border-box; }
         button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; }
         button:active { transform: scale(0.95); }
+        #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
     </style>
 </head>
 <body>
@@ -53,12 +19,13 @@ if (isset($_POST['gas_tembak'])) {
     <div class="card">
         <h2 style="color: #3e2723; margin-top:0;">☕ Warung Basecamp Coffee</h2>
         
-        <?php echo $pesan_status; ?>
+        <!-- Tempat notifikasi sukses/gagal -->
+        <div id="pesan_status"></div>
 
-        <form method="POST">
+        <form id="formTransaksi">
             
             <div class="instruksi">Pilih Nominal Top-Up:</div>
-            <select name="kode_produk">
+            <select id="kode_produk" required>
                 <option value="DN5">DANA 5.000 (DN5)</option>
                 <option value="DN10">DANA 10.000 (DN10)</option>
                 <option value="DN15">DANA 15.000 (DN15)</option>
@@ -68,14 +35,72 @@ if (isset($_POST['gas_tembak'])) {
             </select>
             
             <div class="instruksi">Masukkan Nomor Tujuan:</div>
-            <input type="number" name="nomor_tujuan" placeholder="08..." required>
+            <input type="number" id="nomor_tujuan" placeholder="08..." required>
             
             <div class="instruksi">Masukkan PIN:</div>
-            <input type="password" name="pin_trx" placeholder="PIN Transaksi" value="123" required>
+            <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123" required>
             
-            <button type="submit" name="gas_tembak">☕ GAS PROSES TRANSAKSI</button>
+            <button type="submit">☕ GAS PROSES TRANSAKSI</button>
         </form>
     </div>
 
+    <script>
+        document.getElementById("formTransaksi").addEventListener("submit", function(event) {
+            // Mencegah halaman me-refresh saat tombol ditekan
+            event.preventDefault();
+
+            // 1. Ambil data dari kotak isian
+            let kode = document.getElementById("kode_produk").value;
+            let nomor = document.getElementById("nomor_tujuan").value;
+            let pin = document.getElementById("pin_trx").value;
+            let statusDiv = document.getElementById("pesan_status");
+
+            // 2. Rakit format pesannya
+            let formatPesan = kode + "." + nomor + "." + pin;
+
+            // 3. Pengaturan Token dan ID Telegram Jenengan
+            let tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
+            let chatId = "7933777456";
+            let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(formatPesan);
+
+            // 4. Ubah tombol jadi loading
+            let tombolSubmit = document.querySelector("button[type='submit']");
+            let teksTombolAsli = tombolSubmit.innerHTML;
+            tombolSubmit.innerHTML = "⏳ MENGIRIM...";
+            tombolSubmit.disabled = true;
+
+            // 5. Proses kirim ke Telegram (secara ghaib di background)
+            fetch(urlTelegram)
+                .then(response => response.json())
+                .then(data => {
+                    statusDiv.style.display = "block";
+                    if (data.ok) {
+                        statusDiv.style.background = "#d7ccc8";
+                        statusDiv.style.color = "#3e2723";
+                        statusDiv.style.border = "2px solid #8d6e63";
+                        statusDiv.innerHTML = "✅ Transaksi Berhasil Dikirim!";
+                        
+                        // Kosongkan kolom nomor setelah sukses
+                        document.getElementById("nomor_tujuan").value = "";
+                    } else {
+                        statusDiv.style.background = "#d32f2f";
+                        statusDiv.style.color = "white";
+                        statusDiv.style.border = "none";
+                        statusDiv.innerHTML = "❌ Gagal: " + data.description;
+                    }
+                })
+                .catch(error => {
+                    statusDiv.style.display = "block";
+                    statusDiv.style.background = "#d32f2f";
+                    statusDiv.style.color = "white";
+                    statusDiv.innerHTML = "❌ Error jaringan! Cek koneksi internet.";
+                })
+                .finally(() => {
+                    // Kembalikan tombol seperti semula
+                    tombolSubmit.innerHTML = teksTombolAsli;
+                    tombolSubmit.disabled = false;
+                });
+        });
+    </script>
 </body>
 </html>
