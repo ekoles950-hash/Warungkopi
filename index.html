@@ -6,26 +6,30 @@
     <title>Warung Basecamp Coffee - Kasir</title>
     <style>
         body { background: #efebe9; color: #3e2723; font-family: sans-serif; padding: 20px; text-align: center; }
-        .card { background: #d7ccc8; border: 3px solid #8d6e63; border-radius: 12px; padding: 25px; max-width: 420px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .instruksi { font-size: 18px; font-weight: bold; color: #4e342e; text-align: left; margin-bottom: 8px; margin-top: 15px;}
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 18px; box-sizing: border-box; }
-        button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 20px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; }
+        .card { background: #d7ccc8; border: 3px solid #8d6e63; border-radius: 12px; padding: 25px; max-width: 450px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
+        
+        .instruksi { font-size: 20px; font-weight: bold; color: #4e342e; text-align: left; margin-bottom: 8px; margin-top: 15px; display: block; }
+        
+        input, select { width: 100%; padding: 16px; margin-bottom: 20px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 22px; box-sizing: border-box; }
+        
+        button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 20px; border-radius: 8px; font-weight: bold; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; transition: 0.2s; }
         button:active { transform: scale(0.95); }
-        #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
+        button:disabled { background: #8d6e63; cursor: not-allowed; }
+        #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 20px; }
     </style>
 </head>
 <body>
 
     <div class="card">
-        <h2 style="color: #3e2723; margin-top:0;">☕ Warung Basecamp Coffee</h2>
+        <h2 style="color: #3e2723; margin-top:0; font-size: 26px;">☕ Warung Basecamp Coffee</h2>
         
-        <!-- Tempat notifikasi sukses/gagal -->
         <div id="pesan_status"></div>
 
         <form id="formTransaksi">
             
-            <div class="instruksi">Pilih Nominal Top-Up:</div>
+            <label class="instruksi" for="kode_produk">Pilih Nominal Top-Up:</label>
             <select id="kode_produk" required>
+                <option value="GP5000">Grab 5.000 (GP5000)</option>
                 <option value="DN5">DANA 5.000 (DN5)</option>
                 <option value="DN10">DANA 10.000 (DN10)</option>
                 <option value="DN15">DANA 15.000 (DN15)</option>
@@ -34,72 +38,68 @@
                 <option value="DN50">DANA 50.000 (DN50)</option>
             </select>
             
-            <div class="instruksi">Masukkan Nomor Tujuan:</div>
-            <input type="number" id="nomor_tujuan" placeholder="08..." required>
+            <label class="instruksi" for="nomor_tujuan">Masukkan Nomor Tujuan:</label>
+            <input type="number" id="nomor_tujuan" placeholder="Contoh: 0822..." required>
             
-            <div class="instruksi">Masukkan PIN:</div>
+            <label class="instruksi" for="pin_trx">Masukkan PIN:</label>
             <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123" required>
             
-            <button type="submit">☕ GAS PROSES TRANSAKSI</button>
+            <button type="submit" id="btnSubmit">☕ GAS PROSES TRANSAKSI</button>
         </form>
     </div>
 
     <script>
-        document.getElementById("formTransaksi").addEventListener("submit", function(event) {
-            // Mencegah halaman me-refresh saat tombol ditekan
+        document.getElementById("formTransaksi").addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            // 1. Ambil data dari kotak isian
             let kode = document.getElementById("kode_produk").value;
             let nomor = document.getElementById("nomor_tujuan").value;
             let pin = document.getElementById("pin_trx").value;
             let statusDiv = document.getElementById("pesan_status");
+            let tombolSubmit = document.getElementById("btnSubmit");
 
-            // 2. Rakit format pesannya
-            let formatPesan = kode + "." + nomor + "." + pin;
-
-            // 3. Pengaturan Token dan ID Telegram Jenengan
-            let tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
-            let chatId = "7933777456";
-            let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(formatPesan);
-
-            // 4. Ubah tombol jadi loading
-            let tombolSubmit = document.querySelector("button[type='submit']");
-            let teksTombolAsli = tombolSubmit.innerHTML;
-            tombolSubmit.innerHTML = "⏳ MENGIRIM...";
+            tombolSubmit.innerHTML = "⏳ MENGIRIM KE TERMUX...";
             tombolSubmit.disabled = true;
+            statusDiv.style.display = "none";
 
-            // 5. Proses kirim ke Telegram (secara ghaib di background)
-            fetch(urlTelegram)
-                .then(response => response.json())
-                .then(data => {
-                    statusDiv.style.display = "block";
-                    if (data.ok) {
-                        statusDiv.style.background = "#d7ccc8";
-                        statusDiv.style.color = "#3e2723";
-                        statusDiv.style.border = "2px solid #8d6e63";
-                        statusDiv.innerHTML = "✅ Transaksi Berhasil Dikirim!";
-                        
-                        // Kosongkan kolom nomor setelah sukses
-                        document.getElementById("nomor_tujuan").value = "";
-                    } else {
-                        statusDiv.style.background = "#d32f2f";
-                        statusDiv.style.color = "white";
-                        statusDiv.style.border = "none";
-                        statusDiv.innerHTML = "❌ Gagal: " + data.description;
-                    }
-                })
-                .catch(error => {
-                    statusDiv.style.display = "block";
+            let dataKirim = { kode: kode, nomor: nomor, pin: pin };
+
+            // ⚠️ PERHATIAN: Ganti link di bawah ini dengan link NGROK HTTPS dari Termux jenengan!
+            let urlTermux = "https://MASUKKAN-LINK-NGROK-JENENGAN-DISINI.ngrok-free.app/transaksi"; 
+
+            try {
+                // Vercel menembak langsung ke pintu Termux
+                let response = await fetch(urlTermux, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(dataKirim)
+                });
+                
+                let data = await response.json();
+                statusDiv.style.display = "block";
+                
+                if (data.status === "sukses") {
+                    statusDiv.style.background = "#d7ccc8";
+                    statusDiv.style.color = "#3e2723";
+                    statusDiv.style.border = "2px solid #8d6e63";
+                    statusDiv.innerHTML = "✅ Pesanan Masuk ke Termux!";
+                    document.getElementById("nomor_tujuan").value = ""; 
+                } else {
                     statusDiv.style.background = "#d32f2f";
                     statusDiv.style.color = "white";
-                    statusDiv.innerHTML = "❌ Error jaringan! Cek koneksi internet.";
-                })
-                .finally(() => {
-                    // Kembalikan tombol seperti semula
-                    tombolSubmit.innerHTML = teksTombolAsli;
-                    tombolSubmit.disabled = false;
-                });
+                    statusDiv.style.border = "none";
+                    statusDiv.innerHTML = "❌ Gagal: " + data.pesan;
+                }
+            } catch (error) {
+                statusDiv.style.display = "block";
+                statusDiv.style.background = "#d32f2f";
+                statusDiv.style.color = "white";
+                statusDiv.style.border = "none";
+                statusDiv.innerHTML = "❌ Error! Pastikan Ngrok & Python jalan di Termux.";
+            } finally {
+                tombolSubmit.innerHTML = "☕ GAS PROSES TRANSAKSI";
+                tombolSubmit.disabled = false;
+            }
         });
     </script>
 </body>
