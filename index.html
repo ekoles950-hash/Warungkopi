@@ -33,7 +33,7 @@
         <!-- ========================================== -->
         <!-- TOMBOL CEPAT (START & DAFTAR) -->
         <!-- ========================================== -->
-        <div class="instruksi" style="margin-top: 0;">Tombol Pintasan:</div>
+        <div class="instruksi" style="margin-top: 0;">Tombol Pintasan Grup:</div>
         <div class="btn-group">
             <button type="button" class="btn-cepat" id="btn_start">▶️ /start</button>
             <button type="button" class="btn-cepat" id="btn_daftar">📝 DAFTAR.123</button>
@@ -61,14 +61,16 @@
             <div class="instruksi">Masukkan PIN:</div>
             <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123" required>
             
-            <button type="submit" id="btn_transaksi">☕ GAS PROSES TRANSAKSI</button>
+            <button type="submit" id="btn_transaksi">☕ GAS KIRIM KE GRUP</button>
         </form>
     </div>
 
     <script>
         // Data Bot Telegram
         const tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
-        const chatId = "5044338600";
+        
+        // MENGUBAH ARAH KE ID GRUP MAS EKO
+        const chatId = "-5044338600";
 
         // Fungsi Utama Pengirim Pesan
         function kirimKeTelegram(pesanKirim, elemenTombol) {
@@ -89,7 +91,7 @@
                         statusDiv.style.background = "#d7ccc8";
                         statusDiv.style.color = "#3e2723";
                         statusDiv.style.border = "2px solid #8d6e63";
-                        statusDiv.innerHTML = "✅ Pesan terkirim: <b>" + pesanKirim + "</b>";
+                        statusDiv.innerHTML = "✅ Pesan terkirim ke Grup: <b>" + pesanKirim + "</b>";
                         
                         // Kosongkan kolom nomor HP JIKA yang dikirim adalah format transaksi
                         if(pesanKirim !== "/start" && pesanKirim !== "DAFTAR.123") {
