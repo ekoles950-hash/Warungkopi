@@ -3,116 +3,129 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warung Basecamp Coffee - Kasir</title>
+    <title>Kasir Warung Basecamp Coffee</title>
     <style>
-        body { background: #efebe9; color: #3e2723; font-family: sans-serif; padding: 20px; text-align: center; }
-        .card { background: #d7ccc8; border: 3px solid #8d6e63; border-radius: 12px; padding: 25px; max-width: 420px; margin: auto; box-shadow: 0 4px 8px rgba(0,0,0,0.2); }
-        .instruksi { font-size: 20px; font-weight: bold; color: #4e342e; text-align: left; margin-bottom: 8px; margin-top: 15px;}
-        input, select { width: 100%; padding: 15px; margin-bottom: 15px; background: #fff; color: #3e2723; border: 2px solid #a1887f; border-radius: 8px; font-weight: bold; font-size: 20px; box-sizing: border-box; }
-        button { width: 100%; background: #5d4037; color: #fff; border: none; padding: 18px; border-radius: 8px; font-weight: bold; font-size: 22px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.3); margin-top: 10px; }
-        button:active { transform: scale(0.95); }
-        #pesan_status { display: none; padding: 15px; border-radius: 8px; font-weight: bold; margin-bottom: 15px; font-size: 18px; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background-color: #efebe9; /* Latar warna cream kopi */
+            padding: 20px; 
+        }
+        .container { 
+            background: #ffffff; 
+            padding: 30px; 
+            border-radius: 12px; 
+            max-width: 450px; 
+            margin: 40px auto; 
+            box-shadow: 0 8px 16px rgba(78, 52, 46, 0.2); 
+            border-top: 5px solid #4e342e;
+        }
+        h2 { 
+            text-align: center; 
+            color: #4e342e; /* Cokelat tua */
+            font-size: 28px;
+            margin-bottom: 25px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            color: #3e2723;
+            font-size: 18px; /* Ukuran teks diperbesar */
+            margin-bottom: 8px; /* Instruksi persis di atas input */
+        }
+        input { 
+            width: 100%; 
+            padding: 15px; 
+            margin-bottom: 20px; 
+            border-radius: 8px; 
+            border: 2px solid #d7ccc8; 
+            box-sizing: border-box; 
+            font-size: 18px; /* Ukuran teks input diperbesar */
+        }
+        input:focus {
+            outline: none;
+            border-color: #8d6e63;
+        }
+        button { 
+            width: 100%;
+            background-color: #4e342e; 
+            color: white; 
+            border: none; 
+            padding: 15px;
+            border-radius: 8px;
+            cursor: pointer; 
+            font-weight: bold; 
+            font-size: 20px;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+        button:hover { 
+            background-color: #3e2723; 
+        }
+        #status {
+            text-align: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-
-    <div class="card">
-        <h2 style="color: #3e2723; margin-top:0;">☕ Warung Basecamp Coffee</h2>
+    <div class="container">
+        <h2>☕ Kasir Basecamp</h2>
         
-        <div id="pesan_status"></div>
+        <form id="kasirForm">
+            <!-- Instruksi diletakkan di atas kolom input -->
+            <label for="produk">Ketik Kode Produk (Contoh: PULSA50):</label>
+            <input type="text" id="produk" placeholder="Masukkan kode..." required>
 
-        <form id="formTransaksi">
-            
-            <div class="instruksi">Pilih Nominal Top-Up:</div>
-            <select id="kode_produk" required>
-                <option value="DN1">DANA 1.000 (DN1)</option>
-                <option value="DN2">DANA 2.000 (DN2)</option>
-                <option value="DN3">DANA 3.000 (DN3)</option>
-                <option value="DN4">DANA 4.000 (DN4)</option>
-                <option value="DN5">DANA 5.000 (DN5)</option>
-                <option value="DN10">DANA 10.000 (DN10)</option>
-                <option value="DN15">DANA 15.000 (DN15)</option>
-                <option value="DN20">DANA 20.000 (DN20)</option>
-                <option value="DN25">DANA 25.000 (DN25)</option>
-                <option value="DN30">DANA 30.000 (DN30)</option>
-                <option value="DN35">DANA 35.000 (DN35)</option>
-                <option value="DN40">DANA 40.000 (DN40)</option>
-                <option value="DN45">DANA 45.000 (DN45)</option>
-                <option value="DN50">DANA 50.000 (DN50)</option>
-                <option value="DN55">DANA 55.000 (DN55)</option>
-                <option value="DN60">DANA 60.000 (DN60)</option>
-                <option value="DN65">DANA 65.000 (DN65)</option>
-                <option value="DN70">DANA 70.000 (DN70)</option>
-                <option value="DN75">DANA 75.000 (DN75)</option>
-                <option value="DN80">DANA 80.000 (DN80)</option>
-                <option value="DN85">DANA 85.000 (DN85)</option>
-                <option value="DN90">DANA 90.000 (DN90)</option>
-                <option value="DN95">DANA 95.000 (DN95)</option>
-                <option value="DN100">DANA 100.000 (DN100)</option>
-                <option value="DN125">DANA 125.000 (DN125)</option>
-                <option value="DN150">DANA 150.000 (DN150)</option>
-                <option value="DN200">DANA 200.000 (DN200)</option>
-            </select>
-            
-            <div class="instruksi">Masukkan Nomor Tujuan:</div>
-            <input type="number" id="nomor_tujuan" placeholder="08..." required>
-            
-            <div class="instruksi">Masukkan PIN:</div>
-            <input type="password" id="pin_trx" placeholder="PIN Transaksi" value="123" required>
-            
-            <button type="submit">☕ GAS PROSES TRANSAKSI</button>
+            <label for="tujuan">Ketik Nomor Tujuan Pelanggan:</label>
+            <input type="number" id="tujuan" placeholder="085600..." required>
+
+            <button type="submit">GAS PROSES 🚀</button>
         </form>
+        
+        <p id="status"></p>
     </div>
 
     <script>
-        document.getElementById("formTransaksi").addEventListener("submit", function(event) {
-            event.preventDefault();
+        document.getElementById('kasirForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const statusEl = document.getElementById('status');
+            const tombol = document.querySelector('button');
+            
+            statusEl.innerText = "⏳ Sedang mengirim ke Termux...";
+            statusEl.style.color = "#8d6e63";
+            tombol.disabled = true;
 
-            let kode = document.getElementById("kode_produk").value;
-            let nomor = document.getElementById("nomor_tujuan").value;
-            let pin = document.getElementById("pin_trx").value;
-            let statusDiv = document.getElementById("pesan_status");
+            const data = {
+                produk: document.getElementById('produk').value.trim(),
+                tujuan: document.getElementById('tujuan').value.trim()
+            };
 
-            let formatPesan = kode + "." + nomor + "." + pin;
-
-            let tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
-            let chatId = "7933777456";
-            let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(formatPesan);
-
-            let tombolSubmit = document.querySelector("button[type='submit']");
-            let teksTombolAsli = tombolSubmit.innerHTML;
-            tombolSubmit.innerHTML = "⏳ MENGIRIM...";
-            tombolSubmit.disabled = true;
-
-            fetch(urlTelegram)
-                .then(response => response.json())
-                .then(data => {
-                    statusDiv.style.display = "block";
-                    if (data.ok) {
-                        statusDiv.style.background = "#d7ccc8";
-                        statusDiv.style.color = "#3e2723";
-                        statusDiv.style.border = "2px solid #8d6e63";
-                        statusDiv.innerHTML = "✅ Transaksi Sukses Masuk Mesin!";
-                        document.getElementById("nomor_tujuan").value = "";
-                    } else {
-                        statusDiv.style.background = "#d32f2f";
-                        statusDiv.style.color = "white";
-                        statusDiv.style.border = "none";
-                        statusDiv.innerHTML = "❌ Gagal: " + data.description;
-                    }
-                })
-                .catch(error => {
-                    statusDiv.style.display = "block";
-                    statusDiv.style.background = "#d32f2f";
-                    statusDiv.style.color = "white";
-                    statusDiv.style.border = "none";
-                    statusDiv.innerHTML = "❌ Error jaringan!";
-                })
-                .finally(() => {
-                    tombolSubmit.innerHTML = teksTombolAsli;
-                    tombolSubmit.disabled = false;
+            try {
+                // Menembak ke file backend Vercel (api/kasir.js)
+                const res = await fetch('/api/kasir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
                 });
+                const result = await res.json();
+                
+                if(result.success) {
+                    statusEl.innerText = "✅ Pesanan sukses dikirim ke Termux!";
+                    statusEl.style.color = "green";
+                    document.getElementById('kasirForm').reset();
+                } else {
+                    statusEl.innerText = "❌ Gagal: " + result.message;
+                    statusEl.style.color = "red";
+                }
+            } catch (err) {
+                statusEl.innerText = "❌ Error koneksi ke server Vercel.";
+                statusEl.style.color = "red";
+            } finally {
+                tombol.disabled = false;
+            }
         });
     </script>
 </body>
-</html> 
+</html>
