@@ -3,127 +3,94 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kasir Warung Basecamp Coffee</title>
+    <title>Tes Top Up DANA 5000</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            background-color: #efebe9; /* Latar warna cream kopi */
-            padding: 20px; 
-        }
-        .container { 
-            background: #ffffff; 
-            padding: 30px; 
-            border-radius: 12px; 
-            max-width: 450px; 
-            margin: 40px auto; 
-            box-shadow: 0 8px 16px rgba(78, 52, 46, 0.2); 
-            border-top: 5px solid #4e342e;
-        }
-        h2 { 
-            text-align: center; 
-            color: #4e342e; /* Cokelat tua */
-            font-size: 28px;
-            margin-bottom: 25px;
-        }
-        label {
-            display: block;
-            font-weight: bold;
-            color: #3e2723;
-            font-size: 18px; /* Ukuran teks diperbesar */
-            margin-bottom: 8px; /* Instruksi persis di atas input */
-        }
-        input { 
-            width: 100%; 
-            padding: 15px; 
-            margin-bottom: 20px; 
-            border-radius: 8px; 
-            border: 2px solid #d7ccc8; 
-            box-sizing: border-box; 
-            font-size: 18px; /* Ukuran teks input diperbesar */
-        }
-        input:focus {
-            outline: none;
-            border-color: #8d6e63;
-        }
-        button { 
-            width: 100%;
-            background-color: #4e342e; 
-            color: white; 
-            border: none; 
-            padding: 15px;
-            border-radius: 8px;
-            cursor: pointer; 
-            font-weight: bold; 
-            font-size: 20px;
-            margin-top: 10px;
-            transition: 0.3s;
-        }
-        button:hover { 
-            background-color: #3e2723; 
-        }
-        #status {
-            text-align: center;
-            font-weight: bold;
-            font-size: 18px;
-            margin-top: 20px;
-        }
+        body { font-family: sans-serif; padding: 50px; max-width: 400px; margin: auto; }
+        input, button { padding: 10px; font-size: 16px; margin-bottom: 15px; width: 100%; box-sizing: border-box; }
+        button { background-color: #0070f3; color: white; border: none; cursor: pointer; border-radius: 5px; }
+        button:disabled { background-color: #ccc; }
+        #statusBox { margin-top: 20px; padding: 15px; border-radius: 5px; font-weight: bold; display: none; }
+        
+        /* Warna untuk notifikasi */
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>☕ Kasir Basecamp</h2>
-        
-        <form id="kasirForm">
-            <!-- Instruksi diletakkan di atas kolom input -->
-            <label for="produk">Ketik Kode Produk (Contoh: PULSA50):</label>
-            <input type="text" id="produk" placeholder="Masukkan kode..." required>
 
-            <label for="tujuan">Ketik Nomor Tujuan Pelanggan:</label>
-            <input type="number" id="tujuan" placeholder="085600..." required>
+    <h2>Tes Top Up DANA 5000</h2>
+    <p>ID Layanan: <strong>DN5</strong> | PIN: <strong>959595</strong></p>
+    
+    <form id="topupForm">
+        <input type="number" id="noHp" placeholder="Masukkan Nomor DANA (Misal: 08123...)" required>
+        <button type="submit" id="submitBtn">Tes Top Up 5000</button>
+    </form>
 
-            <button type="submit">GAS PROSES 🚀</button>
-        </form>
-        
-        <p id="status"></p>
-    </div>
+    <!-- Kotak untuk menampilkan hasil / peringatan saldo -->
+    <div id="statusBox"></div>
 
     <script>
-        document.getElementById('kasirForm').addEventListener('submit', async (e) => {
+        document.getElementById('topupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
-            const statusEl = document.getElementById('status');
-            const tombol = document.querySelector('button');
             
-            statusEl.innerText = "⏳ Sedang mengirim ke Termux...";
-            statusEl.style.color = "#8d6e63";
-            tombol.disabled = true;
+            const noHp = document.getElementById('noHp').value;
+            const submitBtn = document.getElementById('submitBtn');
+            const statusBox = document.getElementById('statusBox');
 
-            const data = {
-                produk: document.getElementById('produk').value.trim(),
-                tujuan: document.getElementById('tujuan').value.trim()
-            };
+            // Ubah tombol jadi loading
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Memproses...';
+            
+            // Siapkan kotak status
+            statusBox.style.display = 'block';
+            statusBox.className = '';
+            statusBox.innerText = 'Menghubungi server...';
+
+            // =================================================================
+            // KREDENSIAL API (SEKALI LAGI, INI BAHAYA JIKA DI GITHUB!)
+            // =================================================================
+            const link = "https://village.elyng.com/api/v2/prabayar";
+            const apiKey = "ABcdEfghiJklmNOpqrstuvwXYZ"; 
+            const privateKey = "6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4";
+            const action = "order";
+            const idLayanan = "DN5";
+            const pin = "959595";
+            // =================================================================
+
+            // Rangkai URL sesuai format Village Payment
+            const paymentUrl = `${link}?api_key=${apiKey}&private_key=${privateKey}&action=${action}&layanan=${idLayanan}&target=${noHp}&pin=${pin}`;
 
             try {
-                // Menembak ke file backend Vercel (api/kasir.js)
-                const res = await fetch('/api/kasir', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-                const result = await res.json();
-                
-                if(result.success) {
-                    statusEl.innerText = "✅ Pesanan sukses dikirim ke Termux!";
-                    statusEl.style.color = "green";
-                    document.getElementById('kasirForm').reset();
+                // Eksekusi tembak API
+                const response = await fetch(paymentUrl, { method: 'POST' });
+                const data = await response.json();
+
+                // Cek respon sukses
+                if (data.status === true) {
+                    statusBox.className = 'success';
+                    statusBox.innerText = "✅ Transaksi Berhasil Diproses!";
                 } else {
-                    statusEl.innerText = "❌ Gagal: " + result.message;
-                    statusEl.style.color = "red";
+                    // Tangkap pesan error
+                    const pesanError = (data.data && data.data.pesan) ? data.data.pesan : (data.pesan || "Transaksi gagal.");
+                    
+                    // Cek jika saldo tidak cukup
+                    if (pesanError.toLowerCase().includes("saldo")) {
+                        statusBox.className = 'warning';
+                        statusBox.innerText = "⚠️ Peringatan: Saldo Aplikasi Buatan Anda Tidak Cukup!";
+                    } else {
+                        statusBox.className = 'error';
+                        statusBox.innerText = `❌ Gagal: ${pesanError}`;
+                    }
                 }
-            } catch (err) {
-                statusEl.innerText = "❌ Error koneksi ke server Vercel.";
-                statusEl.style.color = "red";
+            } catch (error) {
+                console.error("Error Fetch:", error);
+                statusBox.className = 'error';
+                statusBox.innerText = "❌ Gagal terhubung ke API. (Mungkin terblokir oleh CORS di browser)";
             } finally {
-                tombol.disabled = false;
+                // Kembalikan tombol ke semula
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Tes Top Up 5000';
             }
         });
     </script>
