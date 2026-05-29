@@ -10,8 +10,6 @@
         button { background-color: #0070f3; color: white; border: none; cursor: pointer; border-radius: 5px; }
         button:disabled { background-color: #ccc; }
         #statusBox { margin-top: 20px; padding: 15px; border-radius: 5px; font-weight: bold; display: none; }
-        
-        /* Warna untuk notifikasi */
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
@@ -27,7 +25,6 @@
         <button type="submit" id="submitBtn">Tes Top Up 5000</button>
     </form>
 
-    <!-- Kotak untuk menampilkan hasil / peringatan saldo -->
     <div id="statusBox"></div>
 
     <script>
@@ -38,43 +35,27 @@
             const submitBtn = document.getElementById('submitBtn');
             const statusBox = document.getElementById('statusBox');
 
-            // Ubah tombol jadi loading
             submitBtn.disabled = true;
             submitBtn.innerText = 'Memproses...';
-            
-            // Siapkan kotak status
             statusBox.style.display = 'block';
             statusBox.className = '';
             statusBox.innerText = 'Menghubungi server...';
 
-            // =================================================================
-            // KREDENSIAL API (SEKALI LAGI, INI BAHAYA JIKA DI GITHUB!)
-            // =================================================================
-            const link = "https://village.elyng.com/api/v2/prabayar";
-            const apiKey = "ABcdEfghiJklmNOpqrstuvwXYZ"; 
-            const privateKey = "6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4";
-            const action = "order";
-            const idLayanan = "DN5";
-            const pin = "959595";
-            // =================================================================
-
-            // Rangkai URL sesuai format Village Payment
-            const paymentUrl = `${link}?api_key=${apiKey}&private_key=${privateKey}&action=${action}&layanan=${idLayanan}&target=${noHp}&pin=${pin}`;
-
             try {
-                // Eksekusi tembak API
-                const response = await fetch(paymentUrl, { method: 'POST' });
+                // SEKARANG KITA NEMBAK KE API VERCEL KITA SENDIRI, BUKAN KE VILLAGE PAYMENT LANGSUNG
+                const response = await fetch('/api/topup', { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ noHp: noHp })
+                });
+                
                 const data = await response.json();
 
-                // Cek respon sukses
                 if (data.status === true) {
                     statusBox.className = 'success';
                     statusBox.innerText = "✅ Transaksi Berhasil Diproses!";
                 } else {
-                    // Tangkap pesan error
                     const pesanError = (data.data && data.data.pesan) ? data.data.pesan : (data.pesan || "Transaksi gagal.");
-                    
-                    // Cek jika saldo tidak cukup
                     if (pesanError.toLowerCase().includes("saldo")) {
                         statusBox.className = 'warning';
                         statusBox.innerText = "⚠️ Peringatan: Saldo Aplikasi Buatan Anda Tidak Cukup!";
@@ -84,11 +65,9 @@
                     }
                 }
             } catch (error) {
-                console.error("Error Fetch:", error);
                 statusBox.className = 'error';
-                statusBox.innerText = "❌ Gagal terhubung ke API. (Mungkin terblokir oleh CORS di browser)";
+                statusBox.innerText = "❌ Gagal terhubung ke API Vercel.";
             } finally {
-                // Kembalikan tombol ke semula
                 submitBtn.disabled = false;
                 submitBtn.innerText = 'Tes Top Up 5000';
             }
