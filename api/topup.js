@@ -11,7 +11,7 @@ export default async function handler(req, res) {
 
   // Kredensial Lo
   const link = "https://village.elyng.com/api/v2/ppob"; // Sesuai dokumentasi lo
-  const apiKey = "ABcdEfghiJklmNOpqrstuvwXYZ"; // Wajib diisi!
+  const apiKey = "EbQmQqVrrBhb35uCJhX1"; // Wajib diisi!
   const privateKey = "6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4";
   
   // CATATAN: Di teks dokumen yang lo kirim, 'layanan-prabayar' itu untuk MELIHAT DAFTAR. 
