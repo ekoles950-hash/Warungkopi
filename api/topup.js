@@ -4,32 +4,25 @@ export default async function handler(req, res) {
   }
 
   const { noHp } = req.body;
-
-  // Kredensial fix
   const link = "https://village.elyng.com/api/v2/ppob"; 
-  const apiKey = "EbQmQqVrrBhb35uCJhX1"; 
-  const privateKey = "6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4";
-  
-  const action = "prabayar"; 
-  const id = "DN5"; 
-  const target = noHp;
 
-  const paymentUrl = `${link}?api_key=${apiKey}&private_key=${privateKey}&action=${action}&id=${id}&target=${target}`;
+  // KITA UBAH FORMATNYA: Masukkan ke Body sebagai URLSearchParams (Form Data)
+  const formData = new URLSearchParams();
+  formData.append('api_key', 'EbQmQqVrrBhb35uCJhX1');
+  formData.append('private_key', '6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4');
+  formData.append('action', 'prabayar');
+  formData.append('id', 'DN5');
+  formData.append('target', noHp);
 
   try {
-    // TWEAK PENTING: Bersihkan IP Vercel dari koma ganda
-    const rawIp = req.headers['x-forwarded-for'] || '127.0.0.1';
-    const cleanIp = rawIp.split(',')[0].trim(); 
-    const hostName = req.headers['host'] || 'warungkopi-lac.vercel.app';
-
-    const response = await fetch(paymentUrl, {
+    // Perhatikan: Kita nembak ke 'link' langsung, TUKAN ke paymentUrl yang ada tanda tanya (?) nya.
+    const response = await fetch(link, {
       method: 'POST',
       headers: {
-        'Referer': hostName,
-        'X-Forwarded-For': cleanIp,
-        'User-Agent': 'Mozilla/5.0 (Vercel App)', // Biar server nggak ngira ini bot aneh
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/x-www-form-urlencoded', // Format wajib untuk POST form
+        // Gue matiin header X-Forwarded-For dan Referer biar gak dicurigai sistem keamanan mereka
+      },
+      body: formData.toString() // Datanya diselipkan di sini
     });
 
     const data = await response.json();
