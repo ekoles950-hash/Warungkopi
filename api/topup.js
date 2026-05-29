@@ -1,39 +1,45 @@
 // Lokasi: api/topup.js
-// Ini berjalan di belakang layar (Server Vercel), jadi bebas dari pemblokiran CORS
 
 export default async function handler(req, res) {
-  // Hanya terima POST dari web lo
   if (req.method !== 'POST') {
     return res.status(405).json({ status: false, pesan: 'Method Not Allowed' });
   }
 
   const { noHp } = req.body;
 
-  // Kredensial Lo
-  const link = "https://village.elyng.com/api/v2/ppob"; // Sesuai dokumentasi lo
-  const apiKey = "EbQmQqVrrBhb35uCJhX1"; // Wajib diisi!
+  // =================================================================
+  // KREDENSIAL LENGKAP SESUAI DOKUMENTASI BARU
+  // =================================================================
+  const link = "https://village.elyng.com/api/v2/ppob"; 
+  
+  // ⚠️ JANGAN LUPA: Ganti tulisan ini dengan API KEY asli lo!
+  const apiKey = "EbQmQqVrrBhb35uCJhX1"; 
   const privateKey = "6BdSctikB-xJyfn-yIYFDFibMY2-FHiLeXA-jU6p4";
   
-  // CATATAN: Di teks dokumen yang lo kirim, 'layanan-prabayar' itu untuk MELIHAT DAFTAR. 
-  // Untuk TRANSAKSI, biasanya action-nya 'order' atau 'transaksi'. Cek lagi di menu "API PPOB" khusus transaksi.
-  const action = "order"; // Ganti jika di dokumentasi transaksi action-nya berbeda
-  const idLayanan = "DN5";
-  const pin = "959595";
+  // Menggunakan parameter persis seperti dokumentasi
+  const action = "prabayar"; 
+  const id = "DN5"; 
+  const target = noHp;
+  // =================================================================
 
-  // Rangkai URL
-  const paymentUrl = `${link}?api_key=${apiKey}&private_key=${privateKey}&action=${action}&layanan=${idLayanan}&target=${noHp}&pin=${pin}`;
+  // Rangkai URL tanpa PIN (Kecuali memang disuruh CS mereka)
+  const paymentUrl = `${link}?api_key=${apiKey}&private_key=${privateKey}&action=${action}&id=${id}&target=${target}`;
 
   try {
+    const clientIp = req.headers['x-forwarded-for'] || '127.0.0.1';
+    const hostName = req.headers['host'] || 'warungkopi-lac.vercel.app';
+
     const response = await fetch(paymentUrl, {
       method: 'POST',
       headers: {
-        'Referer': req.headers['host'] || 'warungkopi-lac.vercel.app',
+        'Referer': hostName,
+        'X-Forwarded-For': clientIp
       }
     });
 
     const data = await response.json();
     
-    // Kembalikan hasil dari Village Payment ke web lo
+    // Langsung lemparkan jawaban dari Village Payment ke frontend
     return res.status(200).json(data);
 
   } catch (error) {
