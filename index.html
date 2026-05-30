@@ -3,57 +3,65 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Basecamp Coffee - Tes Bypass PPOB</title>
+    <title>Warung Basecamp Coffee - PPOB</title>
     <style>
         body { 
             font-family: sans-serif; 
             padding: 30px; 
             max-width: 500px; 
             margin: auto; 
-            background-color: #fcf9f2; /* Warna background kopi susu */
+            background-color: #fcf9f2; 
         }
         .header {
             text-align: center;
-            margin-bottom: 20px;
+            margin-bottom: 30px;
             color: #4a3623;
         }
+        
+        /* Instruksi di atas input dengan teks lebih besar */
+        .instruction-text {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #4a3623;
+            margin-bottom: 10px;
+            display: block;
+        }
+        
         input, button { 
-            padding: 12px; 
-            font-size: 16px; 
-            margin-bottom: 15px; 
+            padding: 15px; 
+            font-size: 1.1rem; 
+            margin-bottom: 20px; 
             width: 100%; 
             box-sizing: border-box; 
             border-radius: 8px;
             border: 1px solid #ccc;
         }
+        
+        input:focus {
+            outline: none;
+            border-color: #6F4E37;
+            box-shadow: 0 0 5px rgba(111, 78, 55, 0.5);
+        }
+        
         button { 
-            background-color: #6F4E37; /* Warna cokelat kopi Basecamp */
+            background-color: #6F4E37; 
             color: white; 
             border: none; 
             cursor: pointer; 
             font-weight: bold;
+            font-size: 1.2rem;
         }
         button:disabled { background-color: #a38c7a; cursor: not-allowed; }
+        
         #statusBox { 
             margin-top: 15px; 
             padding: 15px; 
             border-radius: 5px; 
             font-weight: bold; 
             display: none; 
+            font-size: 1.1rem;
+            text-align: center;
         }
-        textarea { 
-            width: 100%; 
-            height: 300px; 
-            margin-top: 20px; 
-            font-family: monospace; 
-            font-size: 12px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-            resize: vertical;
-        }
-        
         .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
     </style>
@@ -62,19 +70,18 @@
 
     <div class="header">
         <h2>Warung Basecamp Coffee</h2>
-        <p>Tes Jalur Belakang (Bypass Halaman Order)</p>
+        <p>Layanan Pembayaran Otomatis</p>
     </div>
     
     <form id="topupForm">
-        <!-- Input nomor HP tetap disiapkan buat bahan data Vercel -->
-        <input type="number" id="noHp" placeholder="Masukkan Nomor DANA (Misal: 08123...)" required>
-        <button type="submit" id="submitBtn">Tes Tembus Halaman</button>
+        <!-- Posisi instruksi diperjelas di atas kolom -->
+        <label for="noHp" class="instruction-text">Silakan Masukkan Nomor DANA Anda:</label>
+        <input type="number" id="noHp" placeholder="Misal: 08123456789" required>
+        
+        <button type="submit" id="submitBtn">Beli DANA 5000</button>
     </form>
 
     <div id="statusBox"></div>
-    
-    <!-- Kotak ini cuma muncul kalau Vercel sukses maling data HTML-nya -->
-    <textarea id="hasilHtml" readonly style="display:none;" placeholder="Tunggu proses..."></textarea>
 
     <script>
         document.getElementById('topupForm').addEventListener('submit', async function(e) {
@@ -83,49 +90,40 @@
             const noHp = document.getElementById('noHp').value;
             const submitBtn = document.getElementById('submitBtn');
             const statusBox = document.getElementById('statusBox');
-            const hasilHtml = document.getElementById('hasilHtml');
 
-            // Ubah tampilan saat loading
             submitBtn.disabled = true;
-            submitBtn.innerText = 'Vercel Sedang Login...';
+            submitBtn.innerText = 'Memproses Pesanan...';
             statusBox.style.display = 'block';
             statusBox.className = '';
-            statusBox.innerText = 'Menunggu respon dari server PPOB...';
-            hasilHtml.style.display = 'none';
-            hasilHtml.value = '';
+            statusBox.innerText = 'Menghubungkan ke Kasir (Termux)...';
 
             try {
-                // Nembak ke API Vercel buatan lo
+                // Nembak ke api/topup.js di Vercel
                 const response = await fetch('/api/topup', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ noHp: noHp })
                 });
                 
-                // PENTING: Karena backend kirim teks HTML, kita tangkap pakai .text() bukan .json()
-                const data = await response.text();
+                const data = await response.json();
 
-                // Cek hasil respon
-                if (data.startsWith('{')) {
-                    // Kalau formatnya JSON, berarti Vercel ngirim pesan Error
-                    const jsonData = JSON.parse(data);
-                    statusBox.className = 'error';
-                    statusBox.innerText = `❌ Gagal: ${jsonData.pesan}`;
-                } else {
-                    // Kalau dapetnya panjang & bukan JSON, berarti sukses dapet HTML halamannya!
+                // Ngebaca format balasan dari Village Payment
+                if (data.status === true) {
                     statusBox.className = 'success';
-                    statusBox.innerText = "✅ Sukses Nembus! Vercel berhasil login. Cek HTML di bawah:";
-                    
-                    hasilHtml.style.display = 'block';
-                    hasilHtml.value = data; 
+                    statusBox.innerText = "✅ Sukses: Transaksi sedang diproses server!";
+                } else {
+                    statusBox.className = 'error';
+                    // Menangkap pesan error spesifik, misalnya "Saldo Tidak Mencukupi"
+                    const pesanError = data.data && data.data.pesan ? data.data.pesan : (data.pesan || "Permintaan gagal diproses.");
+                    statusBox.innerText = `❌ Gagal: ${pesanError}`;
                 }
             } catch (error) {
                 statusBox.className = 'error';
-                statusBox.innerText = "❌ Gagal terhubung ke Vercel.";
+                statusBox.innerText = "❌ Putus koneksi. Cek apakah Termux dan Cloudflare Tunnel di HP masih nyala.";
                 console.error(error);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Tes Tembus Halaman';
+                submitBtn.innerText = 'Beli DANA 5000';
             }
         });
     </script>
