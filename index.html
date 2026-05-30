@@ -73,19 +73,19 @@
                     <div id="pilih-dompet-container">
                         <label class="block text-[10px] font-black text-slate-400 uppercase mb-3 tracking-widest ml-1">Pilih e-Wallet</label>
                         <div class="grid grid-cols-2 gap-3 w-full">
-                            <div onclick="pilihEWallet('SP', 'ShopeePay')" id="card-SPP" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                            <div onclick="pilihEWallet('SHP', 'ShopeePay')" id="card-SPP" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
                                 <div class="w-10 h-10 bg-orange-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">SPP</div>
                                 <span class="font-bold text-xs uppercase tracking-wider text-white">ShopeePay</span>
                             </div>
-                            <div onclick="pilihEWallet('GP', 'Gopay')" id="card-GPY" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                            <div onclick="pilihEWallet('GPY', 'Gopay')" id="card-GPY" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
                                 <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">GPY</div>
                                 <span class="font-bold text-xs uppercase tracking-wider text-white">Gopay</span>
                             </div>
-                            <div onclick="pilihEWallet('DN', 'DANA')" id="card-DANA" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                            <div onclick="pilihEWallet('D', 'DANA')" id="card-DANA" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
                                 <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">DANA</div>
                                 <span class="font-bold text-xs uppercase tracking-wider text-white">DANA</span>
                             </div>
-                            <div onclick="pilihEWallet('OV', 'OVO')" id="card-OVO" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
+                            <div onclick="pilihEWallet('OVO', 'OVO')" id="card-OVO" class="wallet-card p-4 rounded-2xl flex flex-col items-center justify-center gap-2">
                                 <div class="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-black text-white text-xs shadow-md">OVO</div>
                                 <span class="font-bold text-xs uppercase tracking-wider text-white">OVO</span>
                             </div>
@@ -307,8 +307,6 @@
         // ================= KONTROL STATUS WARUNG & PIN =================
         async function cekStatusWarungDB() {
             try {
-                // Mencoba mengambil data dari tabel 'pengaturan_warung' id 1. 
-                // Jika error (karena tabel belum dibuat), akan diabaikan dan pakai default lokal (buka).
                 const { data, error } = await clientDB.from('pengaturan_warung').select('status_buka').eq('id', 1).single();
                 if (data !== null) {
                     isWarungBuka = data.status_buka;
@@ -318,11 +316,9 @@
             } catch (e) { console.log("Tabel pengaturan_warung belum ada."); }
         }
 
-        // Fungsi buka PIN Modalnya
         function bukaModalPin() { 
             document.getElementById('modal-pin').classList.remove('hidden');
             document.getElementById('input-pin').value = '';
-            // Auto fokus ke input setelah jeda sebentar (untuk animasi)
             setTimeout(() => document.getElementById('input-pin').focus(), 100);
         }
         
@@ -330,12 +326,11 @@
             document.getElementById('modal-pin').classList.add('hidden'); 
         }
 
-        // Fungsi verifikasi PIN
         function verifikasiPin() {
             const input = document.getElementById('input-pin').value;
             if (input === PIN_RAHASIA) {
                 tutupModalPin();
-                bukaModalAdmin(); // Kalau PIN benar, baru buka Pengaturan
+                bukaModalAdmin();
             } else {
                 tampilkanNotifikasi("PIN Salah! Akses ditolak.", "error");
                 document.getElementById('input-pin').value = '';
@@ -343,7 +338,6 @@
             }
         }
 
-        // Tombol enter bisa submit PIN
         document.getElementById('input-pin').addEventListener('keypress', function (e) {
             if (e.key === 'Enter') verifikasiPin();
         });
@@ -353,14 +347,13 @@
         function tutupModalTokoTutup() { document.getElementById('modal-toko-tutup').classList.add('hidden'); }
         function tutupModalSuccessTopup() { 
             document.getElementById('modal-success-topup').classList.add('hidden'); 
-            bukaTopUp(); // Refresh halaman topup
+            bukaTopUp();
         }
 
         async function ubahStatusWarung() {
             isWarungBuka = document.getElementById('toggle-buka-tutup').checked;
             perbaruiLabelStatus();
             try {
-                // Coba update ke Supabase agar sinkron global (pastikan tabel dibuat)
                 await clientDB.from('pengaturan_warung').update({ status_buka: isWarungBuka }).eq('id', 1);
             } catch (e) {}
         }
@@ -442,19 +435,16 @@
                     }
                 }
             })
-            // Realtime Topup (Mendengarkan perubahan pesanan_pulsa)
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pesanan_pulsa' }, payload => {
                  if (!document.getElementById('halaman-topup').classList.contains('hidden')) {
                      loadRiwayatLive();
                  }
             })
-            // Realtime Buka/Tutup Warung
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pengaturan_warung' }, payload => {
                  isWarungBuka = payload.new.status_buka;
                  document.getElementById('toggle-buka-tutup').checked = isWarungBuka;
                  perbaruiLabelStatus();
             }).subscribe();
-
 
         // ================= LOGIKA WARUNG KOPI =================
         async function ambilDataMenu() {
@@ -542,12 +532,10 @@
         function tutupCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
         async function kirimPesananKopi() {
-            // CEK STATUS WARUNG DULU
             if (!isWarungBuka) {
                 document.getElementById('modal-toko-tutup').classList.remove('hidden');
                 return;
             }
-
             const nama = document.getElementById('nama-pemesan').value;
             const btn = document.getElementById('btn-kirim');
             
@@ -561,7 +549,6 @@
 
                 if (error) throw error;
 
-                // Telegram Kopi
                 let detailPesanan = keranjang.map(i => `• ${i.jumlah}x ${i.nama}`).join('%0A');
                 let pesanTele = `🔔 *PESANAN BARU MASUK!*%0A%0A👤 *Nama:* ${nama}%0A🛍️ *Pesanan:*%0A${detailPesanan}%0A%0A💰 *Total:* Rp ${totalHarga.toLocaleString('id-ID')}%0A%0A🚶 *Segera Proses via Dashboard Admin!*`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_KOPI}/sendMessage?chat_id=${TELE_ID_KOPI}&text=${pesanTele}&parse_mode=Markdown`, { mode: 'no-cors' });
@@ -582,7 +569,6 @@
                 
                 tampilkanNotifikasi("Pesanan Kopi Berhasil Dibuat!");
                 setTimeout(() => { pesananAktif = pesananBaru; bukaLacakVisual(); }, 1000);
-
             } catch (err) { tampilkanNotifikasi("Gagal kirim!", "error"); } 
             finally { btn.innerText = "Kirim Pesanan"; btn.disabled = false; }
         }
@@ -651,44 +637,38 @@
         function pilihEWallet(idCode, providerName) {
             providerTerpilih = providerName;
             
-            // Sembunyikan bagian pilih dompet agar layar lebih longgar
             document.getElementById('pilih-dompet-container').classList.add('hidden');
             
-            // Update label E-wallet terpilih beserta inisial/ikon nya
             document.getElementById('label-dompet-terpilih').innerText = providerName;
             document.getElementById('ikon-dompet-terpilih').innerText = idCode;
 
             skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0;
             generateListNominal(idCode, providerName);
             
-            // Tampilkan form input utama
             document.getElementById('form-input-dinamis').classList.remove('hidden');
             
-            // Auto focus ke input nama pelanggan
             document.getElementById('nama_pelanggan_topup').focus();
         }
 
         function gantiEWallet() {
             document.getElementById('form-input-dinamis').classList.add('hidden');
             document.getElementById('pilih-dompet-container').classList.remove('hidden');
-            // Hapus pilihan aktif sebelumnya
             document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active'));
         }
 
+        // KODE SKRIP TELAH DISESUAIKAN UNTUK FORMAT OKECONNECT
         function generateListNominal(idCode, providerName) {
             const container = document.getElementById('container-nominal');
             container.innerHTML = '';
             let daftarNominal = [];
             
-            // Mulai dari 5rb aja karena biasanya PPOB gak ada 1rb
             for (let i = 5000; i <= 10000; i += 1000) { daftarNominal.push({ nominal: i, harga: i + 2000 }); }
             for (let i = 15000; i <= 100000; i += 5000) { daftarNominal.push({ nominal: i, harga: i + 5000 }); }
 
             daftarNominal.forEach(item => {
-                // Logika pembentukan SKU (Misal idCode DN, nominal 5000 -> DN5)
+                // LOGIKA BARU: Cukup Gabungkan IdCode (Misal: D, SHP, GPY) dan nominal per 1000
+                // Format resmi OkeConnect: D1, SHP5, GPY10, dll.
                 let sku = `${idCode}${item.nominal / 1000}`;
-                // Antisipasi Gopay 5000 yang kodenya beda sendiri (GP5000)
-                if (idCode === 'GP' && item.nominal === 5000) sku = 'GP5000';
 
                 const namaProduk = `${providerName} ${item.nominal.toLocaleString('id-ID')}`;
                 container.innerHTML += `
@@ -747,7 +727,6 @@
         }
 
         async function kirimTopUp() {
-            // CEK STATUS WARUNG DULU
             if (!isWarungBuka) {
                 document.getElementById('modal-toko-tutup').classList.remove('hidden');
                 return;
@@ -764,7 +743,7 @@
             btn.innerText = "MEMPROSES OTOMATIS..."; btn.disabled = true;
 
             try {
-                // 1. TEMBAK API VERCEL (JALUR BELAKANG KE TERMUX)
+                // 1. TEMBAK API VERCEL (JALUR BELAKANG KE TERMUX / HOSTING)
                 const responseAPI = await fetch('/api/topup', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -776,7 +755,6 @@
                 // 2. CEK BALASAN SERVER
                 if (dataAPI.status === true) {
                     
-                    // A. TRANSAKSI SUKSES: SIMPAN KE SUPABASE (Status Langsung Success)
                     const { data, error } = await clientDB.from('pesanan_pulsa').insert([{
                         nama_produk: namaProdukTerpilih, sku_code: skuCodeTerpilih, nomor_tujuan: noHp, harga_jual: hargaJualTerpilih, status: 'success'
                     }]).select();
@@ -788,32 +766,25 @@
                         loadRiwayatLive();
                     }
 
-                    // B. KIRIM NOTIFIKASI TELEGRAM (GAK DIHAPUS SESUAI REQUEST)
                     const pesanTele = `🔔 *TOP UP OTOMATIS BERHASIL* 🔔\n\n👤 *Nama:* ${namaPelanggan}\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* SUCCESS / SUDAH MASUK`;
                     fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
-                    // C. MUNCULIN MODAL SUKSES
                     document.getElementById('modal-success-topup').classList.remove('hidden');
 
-                    // D. RESET FORM
                     document.getElementById('nama_pelanggan_topup').value = '';
                     document.getElementById('nomor_hp').value = '';
                     skuCodeTerpilih = ''; 
                     gantiEWallet();
 
                 } else {
-                    // JIKA TRANSAKSI GAGAL DI SERVER
                     const pesanError = dataAPI.data && dataAPI.data.pesan ? dataAPI.data.pesan.toLowerCase() : (dataAPI.pesan || "").toLowerCase();
                     
-                    // ANTI-MALU SYSTEM: Kalau errornya karena saldo kurang, tutup webnya!
                     if (pesanError.includes("saldo") || pesanError.includes("mencukupi")) {
                         document.getElementById('modal-toko-tutup').classList.remove('hidden');
                     } else {
-                        // Kalau error lain (misal nomor salah), tetep munculin alert wajar
                         tampilkanNotifikasi("Gagal: " + (dataAPI.data?.pesan || dataAPI.pesan || "Terjadi kesalahan."), "error");
                     }
                 }
-
             } catch (err) { 
                 tampilkanNotifikasi("Gagal menghubungi server Kasir!", "error"); 
                 console.error(err);
@@ -829,4 +800,4 @@
         cekStatusWarungDB(); 
     </script>
 </body>
-</html> 
+</html>
