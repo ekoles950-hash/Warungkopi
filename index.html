@@ -14,35 +14,50 @@
         }
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             color: #4a3623;
         }
         
-        /* Instruksi di atas input dengan teks lebih besar */
         .instruction-text {
             font-size: 1.2rem;
             font-weight: bold;
             color: #4a3623;
             margin-bottom: 10px;
             display: block;
+            margin-top: 20px;
         }
         
-        input, button { 
+        input, select, button { 
             padding: 15px; 
             font-size: 1.1rem; 
-            margin-bottom: 20px; 
+            margin-bottom: 10px; 
             width: 100%; 
             box-sizing: border-box; 
             border-radius: 8px;
             border: 1px solid #ccc;
         }
         
-        input:focus {
+        input:focus, select:focus {
             outline: none;
             border-color: #6F4E37;
             box-shadow: 0 0 5px rgba(111, 78, 55, 0.5);
         }
         
+        optgroup { font-weight: bold; color: #4a3623; }
+
+        /* Kotak Rincian Biaya */
+        #rincianBiaya {
+            display: none; 
+            background-color: #e9e3d9; 
+            padding: 15px; 
+            border-radius: 8px; 
+            margin-bottom: 10px;
+            color: #4a3623;
+        }
+        .baris-harga { display: flex; justify-content: space-between; margin: 5px 0; }
+        .garis-batas { border: 0.5px solid #ccc; margin: 10px 0; }
+        .total-harga { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; }
+
         button { 
             background-color: #6F4E37; 
             color: white; 
@@ -50,6 +65,7 @@
             cursor: pointer; 
             font-weight: bold;
             font-size: 1.2rem;
+            margin-top: 20px;
         }
         button:disabled { background-color: #a38c7a; cursor: not-allowed; }
         
@@ -74,20 +90,88 @@
     </div>
     
     <form id="topupForm">
-        <!-- Posisi instruksi diperjelas di atas kolom -->
-        <label for="noHp" class="instruction-text">Silakan Masukkan Nomor DANA Anda:</label>
+        
+        <label for="idLayanan" class="instruction-text">Pilih Produk Layanan:</label>
+        <select id="idLayanan" required>
+            <option value="" disabled selected>-- Silakan Pilih --</option>
+            
+            <optgroup label="DANA">
+                <option value="DN5" data-nominal="5000">DANA Rp 5.000</option>
+                <option value="DN10" data-nominal="10000">DANA Rp 10.000</option>
+                <option value="DN20" data-nominal="20000">DANA Rp 20.000</option>
+                <option value="DN50" data-nominal="50000">DANA Rp 50.000</option>
+            </optgroup>
+
+            <optgroup label="GO-PAY">
+                <option value="GP5000" data-nominal="5000">GoPay Rp 5.000</option>
+                <option value="GPD10" data-nominal="10000">GoPay Driver Rp 10.000</option>
+            </optgroup>
+
+            <optgroup label="ShopeePay">
+                <option value="SP20" data-nominal="20000">ShopeePay Rp 20.000</option>
+                <option value="SP25" data-nominal="25000">ShopeePay Rp 25.000</option>
+                <option value="SP40" data-nominal="40000">ShopeePay Rp 40.000</option>
+            </optgroup>
+        </select>
+
+        <div id="rincianBiaya">
+            <div class="baris-harga"><span>Nominal Layanan:</span> <span id="txtHarga">Rp 0</span></div>
+            <div class="baris-harga"><span>Biaya Admin:</span> <span id="txtAdmin">Rp 0</span></div>
+            <div class="garis-batas"></div>
+            <div class="total-harga"><span>Total Bayar:</span> <span id="txtTotal">Rp 0</span></div>
+        </div>
+
+        <label for="noHp" class="instruction-text">Masukkan Nomor Tujuan:</label>
         <input type="number" id="noHp" placeholder="Misal: 08123456789" required>
         
-        <button type="submit" id="submitBtn">Beli DANA 5000</button>
+        <button type="submit" id="submitBtn">Proses Pesanan</button>
     </form>
 
     <div id="statusBox"></div>
 
     <script>
+        // Logika untuk menampilkan Biaya Admin otomatis
+        const idLayananSelect = document.getElementById('idLayanan');
+        const rincianBiaya = document.getElementById('rincianBiaya');
+        const txtHarga = document.getElementById('txtHarga');
+        const txtAdmin = document.getElementById('txtAdmin');
+        const txtTotal = document.getElementById('txtTotal');
+
+        idLayananSelect.addEventListener('change', function() {
+            if (!this.value) {
+                rincianBiaya.style.display = 'none';
+                return;
+            }
+
+            // Ambil nilai nominal dari produk yang dipilih
+            const selectedOption = this.options[this.selectedIndex];
+            const nominal = parseInt(selectedOption.getAttribute('data-nominal'));
+            
+            let adminFee = 0;
+            
+            // Aturan Biaya Admin 
+            if (nominal >= 15000) {
+                adminFee = 5000;
+            } else {
+                adminFee = 2000; // Untuk 10.000 ke bawah
+            }
+
+            const total = nominal + adminFee;
+
+            // Format ke Rupiah dan tampilkan
+            txtHarga.innerText = 'Rp ' + nominal.toLocaleString('id-ID');
+            txtAdmin.innerText = 'Rp ' + adminFee.toLocaleString('id-ID');
+            txtTotal.innerText = 'Rp ' + total.toLocaleString('id-ID');
+            
+            rincianBiaya.style.display = 'block';
+        });
+
+        // Logika Pengiriman Data
         document.getElementById('topupForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const noHp = document.getElementById('noHp').value;
+            const idLayanan = document.getElementById('idLayanan').value; 
             const submitBtn = document.getElementById('submitBtn');
             const statusBox = document.getElementById('statusBox');
 
@@ -98,22 +182,19 @@
             statusBox.innerText = 'Menghubungkan ke Kasir (Termux)...';
 
             try {
-                // Nembak ke api/topup.js di Vercel
                 const response = await fetch('/api/topup', { 
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ noHp: noHp })
+                    body: JSON.stringify({ noHp: noHp, idLayanan: idLayanan })
                 });
                 
                 const data = await response.json();
 
-                // Ngebaca format balasan dari Village Payment
                 if (data.status === true) {
                     statusBox.className = 'success';
                     statusBox.innerText = "✅ Sukses: Transaksi sedang diproses server!";
                 } else {
                     statusBox.className = 'error';
-                    // Menangkap pesan error spesifik, misalnya "Saldo Tidak Mencukupi"
                     const pesanError = data.data && data.data.pesan ? data.data.pesan : (data.pesan || "Permintaan gagal diproses.");
                     statusBox.innerText = `❌ Gagal: ${pesanError}`;
                 }
@@ -123,7 +204,7 @@
                 console.error(error);
             } finally {
                 submitBtn.disabled = false;
-                submitBtn.innerText = 'Beli DANA 5000';
+                submitBtn.innerText = 'Proses Pesanan';
             }
         });
     </script>
