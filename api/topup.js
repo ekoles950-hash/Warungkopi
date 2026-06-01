@@ -4,7 +4,7 @@ export default async function handler(req, res) {
     }
 
     const { nomor, kode_produk } = req.body;
-    const termuxUrl = "https://grabwarung.mkz.my.id/topup.php";
+    const termuxUrl = "http://grabwarung.mkz.my.id/topup.php";
 
     try {
         const response = await fetch(termuxUrl, {
