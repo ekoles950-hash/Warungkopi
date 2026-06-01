@@ -1,36 +1,29 @@
 export default async function handler(req, res) {
+    // Pastikan hanya metode POST yang diizinkan
     if (req.method !== 'POST') {
-        return res.status(405).json({ status: false, pesan: 'Hanya menerima POST' });
+        return res.status(405).json({ error: 'Metode tidak diizinkan' });
     }
 
-    // 🚨 LINK BARU SESUAI HASIL TERMUX LO 🚨
-    const termuxUrl = "https://bedford-change-researchers-president.trycloudflare.com/topup.php";
+    const { nomor, kode_produk } = req.body;
 
-    const { noHp, idLayanan } = req.body;
+    // Alamat file PHP baru di hosting
+    const termuxUrl = "https://grabwarung.mkz.my.id/topup.php";
 
     try {
-        // Kirim data pesanan ke Termux
         const response = await fetch(termuxUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
             body: new URLSearchParams({
-                nomor: noHp,
-                kode_produk: idLayanan
+                nomor: nomor,
+                kode_produk: kode_produk
             })
         });
 
-        const textResult = await response.text();
-        
-        // Cek hasil dari OkeConnect
-        if (textResult.toUpperCase().includes("SUKSES") || textResult.toUpperCase().includes("PENDING") || textResult.includes("00")) {
-            return res.status(200).json({ status: true, pesan: "Transaksi Berhasil", data: textResult });
-        } else {
-            return res.status(200).json({ status: false, pesan: textResult || "Transaksi Gagal / Saldo Kurang" });
-        }
-
+        const data = await response.text();
+        res.status(200).send(data);
     } catch (error) {
-        return res.status(500).json({ status: false, pesan: "Server Warung Mati / Link Berubah" });
+        res.status(500).json({ error: 'Gagal menghubungi server hosting' });
     }
 }
