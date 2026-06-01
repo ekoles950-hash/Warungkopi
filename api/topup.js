@@ -10,7 +10,7 @@ export default async function handler(req, res) {
         const response = await fetch(termuxUrl, {
             method: 'POST',
             headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: new URLSearchParams({ nomor, kode_produk })
+            body: new URLSearchParams({ nomor,  kode_produk })
         });
 
         const data = await response.text();
