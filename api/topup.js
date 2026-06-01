@@ -1,12 +1,12 @@
 export default async function handler(req, res) {
-    // Pastikan hanya metode POST yang diizinkan
+    // Pastikan hanya metode POST yang diizinkan agar lebih aman
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Metode tidak diizinkan' });
     }
 
     const { nomor, kode_produk } = req.body;
 
-    // Alamat file PHP baru di hosting
+    // Link ke file topup.php di hosting kamu
     const termuxUrl = "https://grabwarung.mkz.my.id/topup.php";
 
     try {
@@ -21,9 +21,11 @@ export default async function handler(req, res) {
             })
         });
 
+        // Mengambil hasil dari server hosting
         const data = await response.text();
         res.status(200).send(data);
     } catch (error) {
-        res.status(500).json({ error: 'Gagal menghubungi server hosting' });
+        // Jika hosting tidak merespons
+        res.status(500).json({ error: 'Gagal menghubungi server Kasir' });
     }
 }
