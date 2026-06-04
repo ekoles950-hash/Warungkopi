@@ -2,13 +2,11 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Warung Kopi Siap Antar</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .hide-scroll::-webkit-scrollbar { display: none; }
         .hidden { display: none !important; }
     </style>
@@ -17,10 +15,10 @@
 
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg relative overflow-hidden">
         
-        <div class="bg-[#292524] p-4 text-center text-[#f59e0b] font-bold text-xl shadow-md border-b-4 border-[#d97706]">☕ WARUNG KOPI</div>
+        <div class="bg-[#292524] p-4 text-center text-[#f59e0b] font-bold text-xl sticky top-0 z-20">☕ WARUNG KOPI</div>
 
         <div id="halaman-beranda" class="p-4">
-            <h2 class="font-bold text-lg mb-3">Daftar Menu</h2>
+            <h2 class="font-bold text-lg mb-4">Daftar Menu</h2>
             <div id="ruang-menu" class="grid grid-cols-2 gap-4"></div>
         </div>
 
@@ -32,24 +30,23 @@
         </div>
 
         <div id="modal-checkout" class="hidden fixed inset-0 bg-black/60 z-50 flex justify-center items-end sm:items-center">
-            <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl h-[80vh] flex flex-col">
+            <div class="bg-white w-full max-w-md p-6 rounded-t-2xl shadow-2xl h-[80vh] flex flex-col">
                 <div class="flex justify-between items-center mb-4 border-b pb-2">
-                    <h2 class="text-xl font-bold">Keranjang</h2>
+                    <h2 class="text-xl font-bold">Keranjang (COD)</h2>
                     <button onclick="tutupCheckout()" class="text-3xl">&times;</button>
                 </div>
                 <div id="daftar-pesanan-checkout" class="flex-grow overflow-y-auto"></div>
                 <div class="border-t pt-4">
                     <div class="flex justify-between font-bold text-lg mb-4"><span>Total:</span><span id="total-harga-checkout">Rp 0</span></div>
                     <input type="text" id="nama-pemesan" class="w-full border-2 rounded-xl p-3 mb-4 font-bold" placeholder="Nama pemesan...">
-                    <button onclick="kirimPesananKopi()" class="w-full bg-[#d97706] text-white py-4 rounded-xl font-bold">Kirim Pesanan</button>
+                    <button onclick="kirimPesananCOD()" class="w-full bg-[#d97706] text-white py-4 rounded-xl font-bold">KIRIM PESANAN (COD)</button>
                 </div>
             </div>
         </div>
 
-        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1f2e] text-white flex justify-around items-center px-4 py-4 rounded-t-3xl z-40">
+        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1f2e] text-white flex justify-around items-center px-4 py-4 rounded-t-3xl z-40 shadow-2xl">
             <button onclick="bukaLacak()" class="flex flex-col items-center text-[10px]">🔍<br>LACAK</button>
             <button onclick="bukaBeranda()" class="flex flex-col items-center text-[10px]">🏠<br>BERANDA</button>
-            <button onclick="alert('Fitur Top Up Tidak Tersedia')" class="flex flex-col items-center text-[10px]">💳<br>TOP UP</button>
             <button onclick="bukaCheckout()" class="flex flex-col items-center text-[10px]">🛒<br>KERANJANG</button>
         </div>
     </div>
@@ -61,50 +58,22 @@
         
         let keranjang = JSON.parse(localStorage.getItem('keranjangWarungBasecamp')) || [];
 
-        // FUNGSI NAVIGASI
-        function bukaBeranda() {
-            document.getElementById('halaman-beranda').classList.remove('hidden');
-            document.getElementById('halaman-lacak').classList.add('hidden');
-            document.getElementById('modal-checkout').classList.add('hidden');
-        }
+        // Navigasi
+        function bukaBeranda() { document.getElementById('halaman-beranda').classList.remove('hidden'); document.getElementById('halaman-lacak').classList.add('hidden'); }
+        function bukaLacak() { document.getElementById('halaman-beranda').classList.add('hidden'); document.getElementById('halaman-lacak').classList.remove('hidden'); }
+        function bukaCheckout() { document.getElementById('modal-checkout').classList.remove('hidden'); updateTampilanKeranjang(); }
+        function tutupCheckout() { document.getElementById('modal-checkout').classList.add('hidden'); }
 
-        function bukaLacak() {
-            document.getElementById('halaman-beranda').classList.add('hidden');
-            document.getElementById('halaman-lacak').classList.remove('hidden');
-        }
-
-        function bukaCheckout() {
-            document.getElementById('modal-checkout').classList.remove('hidden');
-            updateTampilanKeranjang();
-        }
-
-        function tutupCheckout() {
-            document.getElementById('modal-checkout').classList.add('hidden');
-        }
-
-        // FUNGSI KERANJANG
-        function updateTampilanKeranjang() {
-            const listArea = document.getElementById('daftar-pesanan-checkout');
-            if (keranjang.length === 0) { listArea.innerHTML = "<div class='text-center p-4'>Keranjang Kosong</div>"; return; }
-            
-            let total = 0;
-            listArea.innerHTML = keranjang.map(item => {
-                total += (item.harga * item.jumlah);
-                return `
-                    <div class="flex justify-between items-center py-3 border-b">
-                        <span class="font-bold w-1/2">${item.nama}</span>
-                        <div class="flex items-center gap-3">
-                            <button onclick="ubahJumlah('${item.nama}', -1)" class="bg-gray-200 w-8 h-8 rounded-full">-</button>
-                            <span>${item.jumlah}</span>
-                            <button onclick="ubahJumlah('${item.nama}', 1)" class="bg-orange-500 text-white w-8 h-8 rounded-full">+</button>
-                        </div>
-                    </div>`;
-            }).join('');
-            document.getElementById('total-harga-checkout').innerText = `Rp ${total.toLocaleString()}`;
+        // Keranjang (+/-)
+        function tambahKeKeranjang(nama, harga) {
+            let item = keranjang.find(i => i.nama === nama);
+            if (item) item.jumlah++; else keranjang.push({ nama, harga, jumlah: 1 });
+            localStorage.setItem('keranjangWarungBasecamp', JSON.stringify(keranjang));
+            alert("Ditambahkan!");
         }
 
         function ubahJumlah(nama, change) {
-            const idx = keranjang.findIndex(i => i.nama === nama);
+            let idx = keranjang.findIndex(i => i.nama === nama);
             if (idx !== -1) {
                 keranjang[idx].jumlah += change;
                 if (keranjang[idx].jumlah <= 0) keranjang.splice(idx, 1);
@@ -113,11 +82,22 @@
             }
         }
 
-        function tambahKeKeranjang(nama, harga) {
-            const itemAda = keranjang.find(i => i.nama === nama);
-            if (itemAda) itemAda.jumlah += 1; else keranjang.push({ nama, harga, jumlah: 1 });
-            localStorage.setItem('keranjangWarungBasecamp', JSON.stringify(keranjang));
-            alert("Ditambahkan ke keranjang!");
+        function updateTampilanKeranjang() {
+            const listArea = document.getElementById('daftar-pesanan-checkout');
+            let total = 0;
+            listArea.innerHTML = keranjang.map(item => {
+                total += (item.harga * item.jumlah);
+                return `
+                    <div class="flex justify-between items-center py-3 border-b">
+                        <span class="font-bold w-1/2 text-sm">${item.nama}</span>
+                        <div class="flex items-center gap-3">
+                            <button onclick="ubahJumlah('${item.nama}', -1)" class="bg-gray-200 w-8 h-8 rounded-full">-</button>
+                            <span class="font-bold">${item.jumlah}</span>
+                            <button onclick="ubahJumlah('${item.nama}', 1)" class="bg-orange-500 text-white w-8 h-8 rounded-full">+</button>
+                        </div>
+                    </div>`;
+            }).join('');
+            document.getElementById('total-harga-checkout').innerText = `Rp ${total.toLocaleString()}`;
         }
 
         async function loadMenu() {
@@ -126,10 +106,17 @@
                 document.getElementById('ruang-menu').innerHTML = data.map(item => `
                     <div class="bg-white p-3 rounded-xl border">
                         <h3 class="font-bold text-sm">${item.nama_menu}</h3>
-                        <p class="text-orange-600 font-bold">Rp ${item.harga.toLocaleString()}</p>
+                        <p class="text-orange-600 font-bold text-sm">Rp ${item.harga.toLocaleString()}</p>
                         <button onclick="tambahKeKeranjang('${item.nama_menu.replace(/'/g, "\\'")}', ${item.harga})" class="w-full bg-orange-500 text-white py-2 rounded-lg mt-2 text-xs">BELI</button>
                     </div>`).join('');
             }
+        }
+
+        async function kirimPesananCOD() {
+            const nama = document.getElementById('nama-pemesan').value;
+            if(!nama || keranjang.length === 0) return alert("Isi nama dan pesanan!");
+            // Tambahkan logika kirim ke Supabase/Telegram Anda di sini
+            alert("Pesanan COD dikirim!");
         }
 
         loadMenu();
