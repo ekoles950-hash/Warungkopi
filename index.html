@@ -68,9 +68,11 @@
             <p class="text-center text-sm text-stone-200 mt-1"> <span class="animasi-jalan-maju">🚶‍♀️</span></p>
             <button onclick="bukaModalPin()" class="absolute right-4 top-1/2 -translate-y-1/2 text-xl opacity-60 hover:opacity-100 transition duration-300">⚙️</button>
         </div>
-                   <a href="/download.html" class="bg-white text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-lg active:scale-95 transition">
-            INSTAL APLIKASI👈📲
-        </a>
+        <div class="p-2 bg-white">
+            <a href="/download.html" class="inline-block bg-stone-100 text-blue-700 px-4 py-2 rounded-xl font-black text-[10px] uppercase shadow-md active:scale-95 transition">
+                INSTAL APLIKASI👈📲
+            </a>
+        </div>
 
         <!-- HALAMAN BERANDA -->
         <div class="p-4 bg-stone-50 min-h-screen" id="halaman-beranda">
@@ -270,7 +272,7 @@
             </div>
         </div>
 
-        <!-- MODAL PIIHAN METODE PEMBAYARAN BELANJA -->
+        <!-- MODAL PILIHAN METODE PEMBAYARAN BELANJA -->
         <div id="modal-pembayaran-topup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-700 text-center animate-[slideUp_0.2s_ease-out]">
                 <h2 class="text-white font-black text-xl mb-4 tracking-wide">PILIH METODE BAYAR</h2>
@@ -291,7 +293,7 @@
             </div>
         </div>
 
-        <!-- REKUEST ISI SALDO MANDIRI (SUDAH UPDATE NOMOR TRANSFER) -->
+        <!-- REKUEST ISI SALDO MANDIRI -->
         <div id="modal-isi-saldo-user" class="hidden fixed inset-0 bg-black/80 z-[110] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl border border-slate-700 animate-[slideUp_0.2s_ease-out]">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -384,6 +386,23 @@
             </div>
         </div>
 
+        <!-- NAVIGASI BAWAH -->
+        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1f2e] border-t border-gray-800 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)] z-40 flex justify-around items-center px-4 py-3 pb-safe rounded-t-3xl" id="nav-bawah">
+            <button onclick="bukaModalLacak()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative">
+                <span class="text-2xl">🔍</span><span class="text-[9px] font-extrabold mt-1 tracking-wide">LACAK</span>
+            </button>
+            <button onclick="bukaBeranda()" class="flex flex-col items-center text-[#22c55e] hover:text-green-400 transition relative bg-[#1f2937] p-3 rounded-2xl -mt-8 shadow-lg border border-gray-700">
+                <span class="text-3xl">🏠</span><span class="text-[9px] font-extrabold mt-1 tracking-wide text-white">BERANDA</span>
+            </button>
+            <button onclick="bukaTopUp()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative">
+                <span class="text-2xl">💳</span><span class="text-[9px] font-extrabold mt-1 tracking-wide text-center">TOP UP<br>E-WALLET</span>
+            </button>
+            <button onclick="bukaCheckout()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative pr-2">
+                <span class="text-2xl">🛒</span><span class="text-[9px] font-extrabold mt-1 tracking-wide">KERANJANG</span>
+                <span id="jumlah-item-bawah" class="absolute -top-1 right-0 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm hidden">0</span>
+            </button>
+        </div>
+
     </div>
 
     <script>
@@ -406,7 +425,7 @@
         let loggedInUser = localStorage.getItem('namaPelangganBasecamp') || null;
 
         // VARIABEL WARUNG KOPI
-        let keranjang = JSON.parse(localStorage.getItem('keranjangWarungBasecamp')) || [];
+        let keranjang = JSON.parse(localStorage.getItem('get_keranjangWarungBasecamp')) || [];
         let totalHarga = 0;
         let semuaMenuDB = [];
         let kategoriSaatIni = 'Semua';
@@ -418,13 +437,26 @@
         // VARIABEL STATUS WARUNG (BUKA/TUTUP)
         let isWarungBuka = true;
 
-        // ================= LOGIKA LOGIN & AKUN PELANGGAN (REAL-TIME) =================
+        // ================= LOGIKA LOGIN & AKUN PELANGGAN (DIPROTEKSI LENGKAP) =================
         async function cekLoginUser() {
             if (!loggedInUser) {
                 document.getElementById('halaman-login').classList.remove('hidden');
             } else {
-                document.getElementById('halaman-login').classList.add('hidden');
-                await muatDataPelanggan(loggedInUser);
+                try {
+                    // Validasi apakah user di local HP beneran sudah terdaftar di database baru
+                    const { data } = await clientDB.from('pelanggan').select('nama').eq('nama', loggedInUser).maybeSingle();
+                    if (!data) {
+                        // Kalau ternyata user ga ada di DB, reset dan paksa login ulang biar ga nge-bug
+                        localStorage.removeItem('namaPelangganBasecamp');
+                        loggedInUser = null;
+                        document.getElementById('halaman-login').classList.remove('hidden');
+                    } else {
+                        document.getElementById('halaman-login').classList.add('hidden');
+                        await muatDataPelanggan(loggedInUser);
+                    }
+                } catch (err) {
+                    document.getElementById('halaman-login').classList.add('hidden');
+                }
             }
         }
 
@@ -436,7 +468,7 @@
             btn.innerText = "MEMPROSES..."; btn.disabled = true;
 
             try {
-                const { data, error } = await clientDB.from('pelanggan').select('*').eq('nama', namaInput).maybeSingle();
+                const { data } = await clientDB.from('pelanggan').select('*').eq('nama', namaInput).maybeSingle();
                 
                 if (!data) {
                     await clientDB.from('pelanggan').insert([{ nama: namaInput, saldo: 0, koin: 0 }]);
@@ -504,7 +536,6 @@
             btn.innerText = "MEMPROSES..."; btn.disabled = true;
 
             try {
-                // 1. Catat antrean deposit ke Supabase
                 await clientDB.from('topup_saldo').insert([{
                     nama_pelanggan: loggedInUser, nominal: nominal, metode_bayar: metode, status: 'Pending'
                 }]);
@@ -514,7 +545,6 @@
                 const komponenGambar = document.getElementById('img-qris-pembayaran');
                 let instruksiTeks = '';
 
-                // PENCOCOKAN NOMOR TUJUAN TRANSFER SESUAI METODE
                 if (metode === 'QRIS') {
                     komponenGambar.classList.remove('hidden');
                     instruksiTeks = `Silakan SCAN barcode QRIS sebesar <span class="text-emerald-400 font-extrabold">Rp ${nominal.toLocaleString('id-ID')}</span> di bawah ini. Saldo otomatis masuk setelah dikonfirmasi Kasir.`;
@@ -529,11 +559,8 @@
                 }
 
                 document.getElementById('teks-sukses-topup').innerHTML = instruksiTeks;
-
-                // 2. Buka modal instruksi sukses
                 document.getElementById('modal-success-topup').classList.remove('hidden');
 
-                // 3. Laporan ke Telegram
                 const pesanTeleSaldo = `💰 *REKUEST ISI SALDO BARU* 💰\n\n👤 *Pelanggan:* ${loggedInUser}\n💵 *Nominal:* Rp ${nominal.toLocaleString('id-ID')}\n💳 *Metode:* VIA ${metode}\n⚡ *Status:* PENDING\n\n_Harap cek mutasi rekening anda. Jika sudah masuk, ubah baris antrean status menjadi Success di tabel topup_saldo Supabase._`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(pesanTeleSaldo)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
@@ -547,8 +574,8 @@
         // ================= KONTROL STATUS WARUNG & PIN =================
         async function cekStatusWarungDB() {
             try {
-                const { data, error } = await clientDB.from('pengaturan_warung').select('status_buka').eq('id', 1).single();
-                if (data !== null) {
+                const { data } = await clientDB.from('pengaturan_warung').select('status_buka').eq('id', 1).single();
+                if (data !== null && data !== undefined) {
                     isWarungBuka = data.status_buka;
                     document.getElementById('toggle-buka-tutup').checked = isWarungBuka;
                     perbaruiLabelStatus();
@@ -607,7 +634,7 @@
             }
         }
 
-        // ================= KONTROL NOTIFIKASI & NAVIGASI =================
+        // ================= KONTROL NOTIFIKASI =================
         function tampilkanNotifikasi(pesan, tipe = 'sukses') {
             const toast = document.getElementById('toast');
             const toastContent = document.getElementById('toast-content');
@@ -693,14 +720,25 @@
             }).subscribe();
 
 
-        // ================= LOGIKA WARUNG KOPI =================
+        // ================= LOGIKA AMBIL DATA MENU (DILINDUNGI PAWANG AMAN) =================
         async function ambilDataMenu() {
-            const { data } = await clientDB.from('menu_warung').select('*').order('nama_menu', { ascending: true });
-            if(data) { semuaMenuDB = data; renderTombolKategori(); renderMenu(); }
+            try {
+                const { data, error } = await clientDB.from('menu_warung').select('*').order('nama_menu', { ascending: true });
+                if (error) throw error;
+                if(data) { 
+                    semuaMenuDB = data; 
+                    renderTombolKategori(); 
+                    renderMenu(); 
+                }
+            } catch (err) {
+                console.error("Gagal memuat menu:", err);
+                tampilkanNotifikasi("Koneksi Supabase Menu Terganggu!", "error");
+            }
         }
 
         function renderTombolKategori() {
             const container = document.getElementById('kategori-container');
+            if(!container) return;
             container.innerHTML = '';
             let listKategori = ['Semua'];
             semuaMenuDB.forEach(item => { let kat = item.kategori ? item.kategori.trim() : 'Lainnya'; if (!listKategori.includes(kat)) listKategori.push(kat); });
@@ -715,6 +753,7 @@
 
         function renderMenu() {
             const ruangMenu = document.getElementById('ruang-menu');
+            if(!ruangMenu) return;
             ruangMenu.innerHTML = ''; 
             const dataDisaring = semuaMenuDB.filter(item => kategoriSaatIni === 'Semua' || (item.kategori ? item.kategori.trim() : 'Lainnya') === kategoriSaatIni);
             dataDisaring.forEach(item => {
@@ -752,6 +791,8 @@
             const badge = document.getElementById('jumlah-item-bawah');
             const listArea = document.getElementById('daftar-pesanan-checkout');
             const teksTotal = document.getElementById('total-harga-checkout');
+            if(!badge || !listArea || !teksTotal) return;
+            
             if (keranjang.length === 0) {
                 badge.classList.add('hidden');
                 listArea.innerHTML = `<div class="text-center py-6 text-stone-400">Kosong</div>`;
@@ -909,6 +950,7 @@
 
         function generateListNominal(idCode, providerName) {
             const container = document.getElementById('container-nominal');
+            if(!container) return;
             container.innerHTML = '';
             let daftarNominal = [];
             for (let i = 1000; i <= 10000; i += 1000) { daftarNominal.push({ nominal: i, harga: i + 2000 }); }
@@ -937,6 +979,7 @@
 
         async function loadRiwayatLive() {
             const container = document.getElementById('container-riwayat');
+            if(!container) return;
             let myTrxIds = JSON.parse(localStorage.getItem('my_basecamp_topup_ids')) || [];
             if (myTrxIds.length === 0) {
                 container.innerHTML = `<div class="text-center text-slate-500 py-4">Belum ada transaksi di HP ini.</div>`;
@@ -972,7 +1015,6 @@
             });
         }
 
-        // ================= KONTROL POP-UP METODE PEMBAYARAN TOP UP =================
         async function kirimTopUp() {
             if (!isWarungBuka) {
                 document.getElementById('modal-toko-tutup').classList.remove('hidden');
@@ -1071,11 +1113,11 @@
             }
         }
 
-        // INIT LOAD
+        // ================= JALUR EKSEKUSI UTAMA (INIT LOAD) =================
         updateTampilanKeranjang(); 
         ambilDataMenu();
         cekStatusWarungDB(); 
-        cekLoginUser(); 
+        cekLoginUser(); // Pengecekan Login & Sinkronisasi Saldo Otomatis
     </script>
 
 </body>
