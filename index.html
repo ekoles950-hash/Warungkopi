@@ -84,12 +84,13 @@
                         <span id="lbl-nama-beranda" class="text-stone-800 font-extrabold text-sm">-</span>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <div class="bg-amber-600/5 border border-amber-600/10 px-3 py-1.5 rounded-xl text-right">
+                <div class="flex gap-2 items-center">
+                    <div class="bg-amber-600/5 border border-amber-600/10 px-2.5 py-1.5 rounded-xl text-right relative flex flex-col items-end">
                         <span class="block text-[8px] text-stone-400 font-bold uppercase tracking-wider">Saldo</span>
-                        <span id="lbl-saldo-beranda" class="text-[#d97706] font-black text-xs">Rp 0</span>
+                        <span id="lbl-saldo-beranda" class="text-[#d97706] font-black text-xs block">Rp 0</span>
+                        <button onclick="bukaModalIsiSaldo()" class="text-[8px] font-black bg-[#d97706] text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-amber-700 transition">┼ ISI</button>
                     </div>
-                    <div class="bg-emerald-600/5 border border-emerald-600/10 px-3 py-1.5 rounded-xl text-right">
+                    <div class="bg-emerald-600/5 border border-emerald-600/10 px-2.5 py-3 rounded-xl text-right">
                         <span class="block text-[8px] text-stone-400 font-bold uppercase tracking-wider">Koin</span>
                         <span id="lbl-koin-beranda" class="text-emerald-600 font-black text-xs">0</span>
                     </div>
@@ -113,12 +114,13 @@
                         <span id="lbl-nama-topup" class="text-white font-extrabold text-sm">-</span>
                     </div>
                 </div>
-                <div class="flex gap-2">
-                    <div class="bg-blue-500/5 border border-blue-500/10 px-3 py-1.5 rounded-xl text-right">
+                <div class="flex gap-2 items-center">
+                    <div class="bg-blue-500/5 border border-blue-500/10 px-2.5 py-1.5 rounded-xl text-right flex flex-col items-end">
                         <span class="block text-[8px] text-slate-400 font-bold uppercase tracking-wider">Saldo</span>
-                        <span id="lbl-saldo-topup" class="text-blue-400 font-black text-xs">Rp 0</span>
+                        <span id="lbl-saldo-topup" class="text-blue-400 font-black text-xs block">Rp 0</span>
+                        <button onclick="bukaModalIsiSaldo()" class="text-[8px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-blue-600 transition">┼ ISI</button>
                     </div>
-                    <div class="bg-emerald-500/5 border border-emerald-500/10 px-3 py-1.5 rounded-xl text-right">
+                    <div class="bg-emerald-500/5 border border-emerald-500/10 px-2.5 py-3 rounded-xl text-right">
                         <span class="block text-[8px] text-slate-400 font-bold uppercase tracking-wider">Koin</span>
                         <span id="lbl-koin-topup" class="text-emerald-400 font-black text-xs">0</span>
                     </div>
@@ -268,33 +270,77 @@
             </div>
         </div>
 
-        <!-- NAVIGASI BAWAH -->
-        <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1f2e] border-t border-gray-800 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)] z-40 flex justify-around items-center px-4 py-3 pb-safe rounded-t-3xl" id="nav-bawah">
-            <button onclick="bukaModalLacak()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative">
-                <span class="text-2xl">🔍</span><span class="text-[9px] font-extrabold mt-1 tracking-wide">LACAK</span>
-            </button>
-            <button onclick="bukaBeranda()" class="flex flex-col items-center text-[#22c55e] hover:text-green-400 transition relative bg-[#1f2937] p-3 rounded-2xl -mt-8 shadow-lg border border-gray-700">
-                <span class="text-3xl">🏠</span><span class="text-[9px] font-extrabold mt-1 tracking-wide text-white">BERANDA</span>
-            </button>
-            <button onclick="bukaTopUp()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative">
-                <span class="text-2xl">💳</span><span class="text-[9px] font-extrabold mt-1 tracking-wide text-center">TOP UP<br>E-WALLET</span>
-            </button>
-            <button onclick="bukaCheckout()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative pr-2">
-                <span class="text-2xl">🛒</span><span class="text-[9px] font-extrabold mt-1 tracking-wide">KERANJANG</span>
-                <span id="jumlah-item-bawah" class="absolute -top-1 right-0 bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold shadow-sm hidden">0</span>
-            </button>
+        <!-- MODAL PIIHAN METODE PEMBAYARAN BELANJA -->
+        <div id="modal-pembayaran-topup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
+            <div class="bg-[#1E293B] w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-700 text-center animate-[slideUp_0.2s_ease-out]">
+                <h2 class="text-white font-black text-xl mb-4 tracking-wide">PILIH METODE BAYAR</h2>
+                <div class="bg-slate-800 p-4 rounded-xl mb-5 border border-slate-700 text-left text-xs text-slate-300 space-y-2">
+                    <p>📦 <span class="font-bold text-white">Produk:</span> <span id="pop-produk" class="text-blue-400 font-bold">-</span></p>
+                    <p>💰 <span class="font-bold text-white">Total Tagihan:</span> <span id="pop-harga" class="text-emerald-400 font-bold">-</span></p>
+                    <p>💳 <span class="font-bold text-white">Saldo Anda saat ini:</span> <span id="pop-saldo-anda" class="text-yellow-400 font-bold">-</span></p>
+                </div>
+                <div class="flex flex-col gap-2.5">
+                    <button onclick="eksekusiBayarTopUp('SALDO')" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-lg transition">
+                        📱 POTONG SALDO APLIKASI
+                    </button>
+                    <button onclick="eksekusiBayarTopUp('COD')" class="w-full bg-slate-700 hover:bg-slate-600 text-white py-3.5 rounded-xl font-black text-xs uppercase tracking-wider shadow-md transition">
+                        💵 BAYAR DI TEMPAT (COD)
+                    </button>
+                    <button onclick="tutupModalBayarTopUp()" class="w-full text-slate-500 text-xs font-bold mt-2 hover:text-white transition">BATAL</button>
+                </div>
+            </div>
         </div>
-        
+
+        <!-- REKUEST ISI SALDO MANDIRI (SUDAH UPDATE NOMOR TRANSFER) -->
+        <div id="modal-isi-saldo-user" class="hidden fixed inset-0 bg-black/80 z-[110] flex justify-center items-center p-5 backdrop-blur-sm">
+            <div class="bg-[#1E293B] w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl border border-slate-700 animate-[slideUp_0.2s_ease-out]">
+                <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
+                    <h2 class="text-white font-black text-lg italic tracking-wide">┼ DEPOSIT SALDO</h2>
+                    <button onclick="tutupModalIsiSaldo()" class="text-slate-400 hover:text-white text-2xl font-bold">&times;</button>
+                </div>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Pilih Nominal Top Up</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-bold text-white">
+                            <button onclick="setNominalIsi(10000)" class="btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition">10.000</button>
+                            <button onclick="setNominalIsi(20000)" class="btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition">20.000</button>
+                            <button onclick="setNominalIsi(50000)" class="btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition">50.000</button>
+                            <button onclick="setNominalIsi(100000)" class="btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition">100.000</button>
+                        </div>
+                        <input type="number" id="txt-nominal-custom" placeholder="Atau ketik nominal lain..." class="w-full p-3.5 mt-2 rounded-xl input-dark text-sm font-bold tracking-wider">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] font-black text-slate-400 uppercase mb-2 tracking-widest ml-1">Pilih Metode Pembayaran</label>
+                        <select id="sel-metode-isi" class="w-full p-3.5 rounded-xl input-dark text-xs font-bold outline-none border border-slate-700">
+                            <option value="QRIS">📸 SCAN QRIS MANDIRI</option>
+                            <option value="DANA">📱 TRANSFER DANA</option>
+                            <option value="GOPAY">💚 TRANSFER GO-PAY</option>
+                            <option value="SHOPEE">🟠 TRANSFER SHOPEEPAY</option>
+                        </select>
+                    </div>
+
+                    <div class="bg-blue-500/10 p-3 rounded-xl border border-blue-500/20 text-[10px] text-slate-300 leading-relaxed">
+                        💡 <span class="font-bold text-white">Cara konfirmasi:</span> Setelah klik kirim, silakan lakukan pembayaran sesuai nomor admin yang tertera di layar berikutnya.
+                    </div>
+
+                    <button onclick="kirimRekuestIsiSaldo()" id="btn-proses-isi-saldo" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-4 rounded-xl font-black text-xs uppercase tracking-widest shadow-lg transition">
+                        KIRIM PERMINTAAN
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <div id="modal-success-topup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2rem] p-8 shadow-2xl border border-blue-500/50 text-center animate-[slideUp_0.3s_ease-out]">
                 <div class="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-blue-400">
                     <span class="text-5xl">🛵</span>
                 </div>
-                <h2 class="text-white font-black text-2xl mb-3 tracking-wide">TOP UP COD BERHASIL!</h2>
+                <h2 class="text-white font-black text-2xl mb-3 tracking-wide">TRANSAKSI BERHASIL!</h2>
                 <div class="bg-slate-800 p-4 rounded-xl mb-6 border border-slate-700">
-                    <p class="text-slate-300 text-sm font-medium leading-relaxed">
-                        Sediakan uang kes untuk pembayaran karena admin sedang menuju ke lokasi <span class="text-yellow-400 font-bold italic">jikot dowet</span>.
-                    </p>
+                    <p id="teks-sukses-topup" class="text-slate-300 text-sm font-medium leading-relaxed"></p>
+                    <img id="img-qris-pembayaran" src="qris.jpg" class="hidden mx-auto my-4 max-w-[180px] rounded-xl border-4 border-white shadow-lg">
                 </div>
                 <button onclick="tutupModalSuccessTopup()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-extrabold py-4 rounded-xl shadow-[0_4px_20px_rgba(37,99,235,0.4)] active:scale-95 transition tracking-wider text-sm uppercase">
                     SIAP, MANTAP!
@@ -390,15 +436,12 @@
             btn.innerText = "MEMPROSES..."; btn.disabled = true;
 
             try {
-                // 1. Cek apakah nama sudah terdaftar di tabel pelanggan
                 const { data, error } = await clientDB.from('pelanggan').select('*').eq('nama', namaInput).maybeSingle();
                 
                 if (!data) {
-                    // 2. Jika nama belum terdaftar, buat akun baru otomatis dengan saldo 0 koin 0
                     await clientDB.from('pelanggan').insert([{ nama: namaInput, saldo: 0, koin: 0 }]);
                 }
 
-                // 3. Simpan permanen tanda pengenal di Chrome HP Pelanggan
                 localStorage.setItem('namaPelangganBasecamp', namaInput);
                 loggedInUser = namaInput;
                 
@@ -416,7 +459,6 @@
             try {
                 const { data } = await clientDB.from('pelanggan').select('*').eq('nama', nama).single();
                 if (data) {
-                    // Update teks kartu dashboard di halaman beranda & topup
                     document.getElementById('lbl-nama-beranda').innerText = data.nama;
                     document.getElementById('lbl-saldo-beranda').innerText = `Rp ${data.saldo.toLocaleString('id-ID')}`;
                     document.getElementById('lbl-koin-beranda').innerText = data.koin;
@@ -425,13 +467,81 @@
                     document.getElementById('lbl-saldo-topup').innerText = `Rp ${data.saldo.toLocaleString('id-ID')}`;
                     document.getElementById('lbl-koin-topup').innerText = data.koin;
 
-                    // Otomatis masukkan nama ke kolom input pesanan (bikin read-only/tidak bisa diotak-atik)
                     document.getElementById('nama_pelanggan_topup').value = data.nama;
                     document.getElementById('nama_pelanggan_topup').readOnly = true;
                     document.getElementById('nama-pemesan').value = data.nama;
                     document.getElementById('nama-pemesan').readOnly = true;
                 }
             } catch (e) {}
+        }
+
+        // ================= KONTROL MODAL REKUEST ISI SALDO MANDIRI =================
+        function bukaModalIsiSaldo() {
+            document.getElementById('modal-isi-saldo-user').classList.remove('hidden');
+            document.getElementById('txt-nominal-custom').value = '';
+            document.querySelectorAll('.btn-nominal-isi').forEach(btn => btn.className = 'btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition');
+        }
+        function tutupModalIsiSaldo() {
+            document.getElementById('modal-isi-saldo-user').classList.add('hidden');
+        }
+        function setNominalIsi(angka) {
+            document.getElementById('txt-nominal-custom').value = angka;
+            document.querySelectorAll('.btn-nominal-isi').forEach(btn => {
+                if (parseInt(btn.innerText.replace(/\./g, '')) === angka) {
+                    btn.className = 'btn-nominal-isi bg-blue-600 p-3 rounded-xl border border-blue-500 text-white transition';
+                } else {
+                    btn.className = 'btn-nominal-isi bg-slate-800 p-3 rounded-xl border border-slate-700 hover:border-blue-500 transition';
+                }
+            });
+        }
+        
+        async function kirimRekuestIsiSaldo() {
+            const nominal = parseInt(document.getElementById('txt-nominal-custom').value);
+            const metode = document.getElementById('sel-metode-isi').value;
+            const btn = document.getElementById('btn-proses-isi-saldo');
+
+            if (!nominal || nominal <= 0) return tampilkanNotifikasi("Masukkan nominal deposit yang benar!", "error");
+            btn.innerText = "MEMPROSES..."; btn.disabled = true;
+
+            try {
+                // 1. Catat antrean deposit ke Supabase
+                await clientDB.from('topup_saldo').insert([{
+                    nama_pelanggan: loggedInUser, nominal: nominal, metode_bayar: metode, status: 'Pending'
+                }]);
+
+                tutupModalIsiSaldo();
+                
+                const komponenGambar = document.getElementById('img-qris-pembayaran');
+                let instruksiTeks = '';
+
+                // PENCOCOKAN NOMOR TUJUAN TRANSFER SESUAI METODE
+                if (metode === 'QRIS') {
+                    komponenGambar.classList.remove('hidden');
+                    instruksiTeks = `Silakan SCAN barcode QRIS sebesar <span class="text-emerald-400 font-extrabold">Rp ${nominal.toLocaleString('id-ID')}</span> di bawah ini. Saldo otomatis masuk setelah dikonfirmasi Kasir.`;
+                } else {
+                    komponenGambar.classList.add('hidden');
+                    let nomorTujuanAdmin = '';
+                    if (metode === 'GOPAY') nomorTujuanAdmin = '082243047166';
+                    else if (metode === 'DANA') nomorTujuanAdmin = '085600409940';
+                    else if (metode === 'SHOPEE') nomorTujuanAdmin = '085600409940';
+
+                    instruksiTeks = `Silakan lakukan transfer sebesar <span class="text-emerald-400 font-extrabold">Rp ${nominal.toLocaleString('id-ID')}</span> via <span class="font-black text-white">${metode}</span> ke nomor tujuan Admin berikut:<br><span class="text-yellow-400 font-black tracking-widest text-lg block my-2 bg-slate-900/50 py-2 rounded-xl border border-slate-700/60">${nomorTujuanAdmin}</span>Saldo otomatis masuk ke aplikasi setelah dikonfirmasi Kasir.`;
+                }
+
+                document.getElementById('teks-sukses-topup').innerHTML = instruksiTeks;
+
+                // 2. Buka modal instruksi sukses
+                document.getElementById('modal-success-topup').classList.remove('hidden');
+
+                // 3. Laporan ke Telegram
+                const pesanTeleSaldo = `💰 *REKUEST ISI SALDO BARU* 💰\n\n👤 *Pelanggan:* ${loggedInUser}\n💵 *Nominal:* Rp ${nominal.toLocaleString('id-ID')}\n💳 *Metode:* VIA ${metode}\n⚡ *Status:* PENDING\n\n_Harap cek mutasi rekening anda. Jika sudah masuk, ubah baris antrean status menjadi Success di tabel topup_saldo Supabase._`;
+                fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(pesanTeleSaldo)}&parse_mode=Markdown`, { mode: 'no-cors' });
+
+            } catch (err) {
+                tampilkanNotifikasi("Gagal mengirim permintaan deposit!", "error");
+            } finally {
+                btn.innerText = "KIRIM PERMINTAAN"; btn.disabled = false;
+            }
         }
 
         // ================= KONTROL STATUS WARUNG & PIN =================
@@ -573,7 +683,6 @@
                  document.getElementById('toggle-buka-tutup').checked = isWarungBuka;
                  perbaruiLabelStatus();
             })
-            // REAL-TIME UPDATE SALDO DAN KOIN DI LAYAR HP PELANGGAN LIVE DARI KASIR
             .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'pelanggan' }, payload => {
                  if (loggedInUser && payload.new.nama === loggedInUser) {
                      document.getElementById('lbl-saldo-beranda').innerText = `Rp ${payload.new.saldo.toLocaleString('id-ID')}`;
@@ -688,7 +797,6 @@
 
                 if (error) throw error;
 
-                // SISTEM HADIAH: Otomatis Tambah Koin +1 ke Akun Supabase Pelanggan
                 if (loggedInUser) {
                     const { data: pData } = await clientDB.from('pelanggan').select('koin').eq('nama', loggedInUser).single();
                     if (pData) {
@@ -696,7 +804,6 @@
                     }
                 }
 
-                // Telegram Kopi
                 let detailPesanan = keranjang.map(i => `• ${i.jumlah}x ${i.nama}`).join('%0A');
                 let pesanTele = `🔔 *PESANAN BARU MASUK!*%0A%0A👤 *Nama:* ${nama}%0A🛍️ *Pesanan:*%0A${detailPesanan}%0A%0A💰 *Total:* Rp ${totalHarga.toLocaleString('id-ID')}%0A%0A🚶 *Segera Proses via Dashboard Admin!*`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_KOPI}/sendMessage?chat_id=${TELE_ID_KOPI}&text=${pesanTele}&parse_mode=Markdown`, { mode: 'no-cors' });
@@ -791,8 +898,6 @@
             skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0;
             generateListNominal(idCode, providerName);
             document.getElementById('form-input-dinamis').classList.remove('hidden');
-            
-            // Fokus otomatis langsung ke nomor HP, karena nama sudah terisi permanen dari login
             document.getElementById('nomor_hp').focus();
         }
 
@@ -867,6 +972,7 @@
             });
         }
 
+        // ================= KONTROL POP-UP METODE PEMBAYARAN TOP UP =================
         async function kirimTopUp() {
             if (!isWarungBuka) {
                 document.getElementById('modal-toko-tutup').classList.remove('hidden');
@@ -880,23 +986,68 @@
             if (!noHp) return tampilkanNotifikasi("Isi nomor HP tujuan dulu Mas!", "error");
             if (!skuCodeTerpilih) return tampilkanNotifikasi("Pilih nominal saldonya dulu Mas!", "error");
 
+            try {
+                const { data } = await clientDB.from('pelanggan').select('saldo').eq('nama', loggedInUser).single();
+                const saldoAktif = data ? data.saldo : 0;
+
+                document.getElementById('pop-produk').innerText = namaProdukTerpilih;
+                document.getElementById('pop-harga').innerText = `Rp ${hargaJualTerpilih.toLocaleString('id-ID')}`;
+                document.getElementById('pop-saldo-anda').innerText = `Rp ${saldoAktif.toLocaleString('id-ID')}`;
+
+                document.getElementById('modal-pembayaran-topup').classList.remove('hidden');
+            } catch (err) {
+                tampilkanNotifikasi("Gagal memuat sistem pembayaran!", "error");
+            }
+        }
+
+        function tutupModalBayarTopUp() {
+            document.getElementById('modal-pembayaran-topup').classList.add('hidden');
+        }
+
+        async function eksekusiBayarTopUp(metode) {
+            tutupModalBayarTopUp();
+            
+            const namaPelanggan = document.getElementById('nama_pelanggan_topup').value.trim();
+            const noHp = document.getElementById('nomor_hp').value.trim();
             const btn = document.getElementById('btn-submit-topup');
+            
             btn.innerText = "MEMPROSES..."; btn.disabled = true;
 
             try {
+                let infoMetodeNotif = "BAYAR DI TEMPAT (COD)";
+                
+                if (metode === 'SALDO') {
+                    const { data: pData } = await clientDB.from('pelanggan').select('saldo, koin').eq('nama', loggedInUser).single();
+                    
+                    if (!pData || pData.saldo < hargaJualTerpilih) {
+                        tampilkanNotifikasi("Saldo Aplikasi tidak cukup! Silakan gunakan COD.", "error");
+                        btn.innerText = "KIRIM TOP UP"; btn.disabled = false;
+                        return;
+                    }
+                    
+                    await clientDB.from('pelanggan').update({ 
+                        saldo: pData.saldo - hargaJualTerpilih, 
+                        koin: pData.koin + 1 
+                    }).eq('nama', loggedInUser);
+                    
+                    infoMetodeNotif = "SALDO APLIKASI (POTONG OTOMATIS)";
+                    document.getElementById('teks-sukses-topup').innerText = "Saldo aplikasi berhasil dipotong otomatis. Selesai! Pesanan langsung diproses.";
+                } 
+                else {
+                    if (loggedInUser) {
+                        const { data: pData } = await clientDB.from('pelanggan').select('koin').eq('nama', loggedInUser).single();
+                        if (pData) {
+                            await clientDB.from('pelanggan').update({ koin: pData.koin + 1 }).eq('nama', loggedInUser);
+                        }
+                    }
+                    document.getElementById('teks-sukses-topup').innerText = "Sediakan uang kes untuk pembayaran karena admin sedang menuju ke lokasi jikot dowet.";
+                }
+
                 const { data, error } = await clientDB.from('pesanan_pulsa').insert([{
                     nama_pembeli: namaPelanggan, nama_produk: namaProdukTerpilih, sku_code: skuCodeTerpilih, nomor_tujuan: noHp, harga_jual: hargaJualTerpilih, status: 'pending'
                 }]).select();
 
                 if (error || !data) throw error;
-
-                // SISTEM HADIAH: Otomatis Tambah Koin +1 ke Akun Supabase Pelanggan
-                if (loggedInUser) {
-                    const { data: pData } = await clientDB.from('pelanggan').select('koin').eq('nama', loggedInUser).single();
-                    if (pData) {
-                        await clientDB.from('pelanggan').update({ koin: pData.koin + 1 }).eq('nama', loggedInUser);
-                    }
-                }
 
                 document.getElementById('modal-success-topup').classList.remove('hidden');
 
@@ -906,7 +1057,7 @@
 
                 loadRiwayatLive();
 
-                const pesanTele = `🔔 *ADA ANTREAN TOP UP MASUK* 🔔\n\n👤 *Nama:* ${namaPelanggan}\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n⚡ *Status:* PENDING\n\n_Harap buka adminpulsa.html untuk memproses_`;
+                const pesanTele = `🔔 *ADA ANTREAN TOP UP MASUK* 🔔\n\n👤 *Nama:* ${namaPelanggan}\n🎯 *No Tujuan:* ${noHp}\n📦 *Produk:* ${namaProdukTerpilih}\n🆔 *SKU Code:* ${skuCodeTerpilih}\n💵 *Harga Jual:* Rp ${hargaJualTerpilih.toLocaleString('id-ID')}\n💳 *Metode:* ${infoMetodeNotif}\n⚡ *Status:* PENDING\n\n_Harap buka adminpulsa.html untuk memproses_`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(pesanTele)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
                 document.getElementById('nomor_hp').value = '';
@@ -914,7 +1065,7 @@
                 gantiEWallet();
 
             } catch (err) { 
-                tampilkanNotifikasi("Gagal simpan database!", "error"); 
+                tampilkanNotifikasi("Gagal memproses transaksi!", "error"); 
             } finally { 
                 btn.innerText = "KIRIM TOP UP"; btn.disabled = false; 
             }
@@ -924,7 +1075,7 @@
         updateTampilanKeranjang(); 
         ambilDataMenu();
         cekStatusWarungDB(); 
-        cekLoginUser(); // Pengecekan Login Koin Otomatis Saat Aplikasi Dimuat
+        cekLoginUser(); 
     </script>
 
 </body>
