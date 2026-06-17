@@ -79,7 +79,7 @@
         <!-- ================= HALAMAN BERANDA ================= -->
         <div class="p-4 bg-stone-50 min-h-screen" id="halaman-beranda">
             
-            <!-- Dashboard Card Akun (Light Mode Beranda) -->
+            <!-- Tampilan Dashboard Akun (Light Mode Beranda) -->
             <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4 flex justify-between items-center text-xs">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 bg-amber-500/10 rounded-full flex items-center justify-center text-base">👤</div>
@@ -109,7 +109,7 @@
         <!-- ================= HALAMAN TOP UP E-WALLET ================= -->
         <div class="bg-[#0F172A] min-h-screen flex-col items-center p-4 pt-8 pb-24 hidden" id="halaman-topup">
             
-            <!-- Dashboard Card Akun (Dark Mode Top Up) -->
+            <!-- Tampilan Dashboard Akun (Dark Mode Top Up) -->
             <div class="w-full bg-[#1E293B] p-4 rounded-2xl border border-slate-800/80 mb-4 flex justify-between items-center text-xs">
                 <div class="flex items-center gap-2.5">
                     <div class="w-9 h-9 bg-blue-500/10 rounded-full flex items-center justify-center text-base">👤</div>
@@ -420,13 +420,15 @@
         const SUPABASE_KEY = 'sb_publishable_yO2CBmW5iJ8UKXw802hvXA_nAz3gr9X';
         const clientDB = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // API CREDENTIAL SECURITY 
-        const TELE_TOKEN_KOPI = '885434229:AAF3dBZvDDItaPS08hhYI_-0Q4ccm-dKgPs';
-        const TELE_ID_KOPI = '849862290';
-        const TELE_TOKEN_TOPUP = '885434229:AAF3dBZvDDItaPS08hhYI_-0Q4ccm-dKgPs';
-        const TELE_ID_TOPUP = '849862290'; 
-        const PUSH_USER = 'YOUR_PUSHOVER_USER_KEY';  
-        const PUSH_TOKEN = 'YOUR_PUSHOVER_APP_TOKEN'; 
+        // API CREDENTIAL SECURITY
+        const TELE_TOKEN_KOPI = '8854342299:AAF3dBZvDDItaPS08hhYI_-0Q4ccm-dKgPs';
+        const TELE_ID_KOPI = '8498622906';
+        const TELE_TOKEN_TOPUP = '8854342299:AAF3dBZvDDItaPS08hhYI_-0Q4ccm-dKgPs';
+        const TELE_ID_TOPUP = '8498622906'; 
+        
+        // JIKA MAU ISI KEY PUSHOVER DI SINI, JIKA TIDAK MAU ISI BIARKAN SAJA STRINYA KOSONG KODE AMAN
+        const PUSH_USER = 'KODE_USER_KEY_PUSHOVER_MU';  
+        const PUSH_TOKEN = 'KODE_APP_TOKEN_PUSHOVER_MU'; 
 
         // SYSTEM SCOPE STATE VARIABLES
         let loggedInUser = localStorage.getItem('namaPelangganBasecamp') || null;
@@ -554,8 +556,8 @@
                 const tMsg = `💰 *REKUEST ISI SALDO BARU* 💰\n\n👤 *Pelanggan:* ${loggedInUser}\n💵 *Nominal:* Rp ${nominal.toLocaleString('id-ID')}\n💳 *Metode:* VIA ${metode}\n⚡ *Status:* PENDING`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(tMsg)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
-                // SEND PUSHOVER GATEWAY DOCKER 
-                if (PUSH_USER !== 'YOUR_PUSHOVER_USER_KEY' && PUSH_TOKEN !== 'YOUR_PUSHOVER_APP_TOKEN') {
+                // SEND PUSHOVER SECURITY GATEWAY
+                if (PUSH_USER !== 'KODE_USER_KEY_PUSHOVER_MU' && PUSH_TOKEN !== 'KODE_APP_TOKEN_PUSHOVER_MU') {
                     const dataPush = new FormData();
                     dataPush.append('token', PUSH_TOKEN); dataPush.append('user', PUSH_USER);
                     dataPush.append('title', '💰 DEPOSIT SALDO BARU!');
@@ -611,7 +613,7 @@
             lbl.className = isWarungBuka ? "font-extrabold text-green-600 text-lg" : "font-extrabold text-red-600 text-lg";
         }
 
-        // ================= NOTIFIKASI & NAVIGATION VIEW CONTROL =================
+        // ================= NOTIFIKASI & NAVIGATION CONTROL =================
         function tampilkanNotifikasi(pesan, tipe = 'sukses') {
             const toast = document.getElementById('toast'); const tc = document.getElementById('toast-content');
             tc.className = tipe === 'sukses' ? 'px-6 py-3 rounded-full shadow-lg text-sm font-bold text-white flex items-center justify-center gap-2 bg-green-500 w-full' : 'px-6 py-3 rounded-full shadow-lg text-sm font-bold text-white flex items-center justify-center gap-2 bg-red-500 w-full';
@@ -628,7 +630,7 @@
         function bukaTopUp() { tutupSemuaHalaman(); document.getElementById('halaman-topup').classList.remove('hidden'); document.getElementById('halaman-topup').classList.add('flex'); loadRiwayatLive(); }
         function bukaLacakVisual() { tutupSemuaHalaman(); document.getElementById('halaman-lacak-visual').classList.remove('hidden'); document.getElementById('halaman-lacak-visual').classList.add('flex'); perbaruiVisualLacak(); }
 
-        // ================= BACKBONE REAL-TIME PIPELINE =================
+        // ================= REAL-TIME SINKRONISASI DATABASE =================
         clientDB.channel('public:semua_perubahan')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pesanan_warung' }, payload => {
                 let r = JSON.parse(localStorage.getItem('riwayatWarungBasecamp')) || [];
@@ -649,7 +651,7 @@
                  }
             }).subscribe();
 
-        // ================= CORE DRIVER COFFEE MENU =================
+        // ================= LOGIKA UTAMA OPERASIONAL MENU =================
         async function ambilDataMenu() {
             try {
                 const { data, error } = await clientDB.from('menu_warung').select('*').order('nama_menu', { ascending: true });
@@ -657,6 +659,7 @@
             } catch (err) { tampilkanNotifikasi("Koneksi Database Terganggu!", "error"); }
         }
 
+        UX=true;
         function renderTombolKategori() {
             const c = document.getElementById('kategori-container'); if(!c) return; c.innerHTML = ''; let l = ['Semua'];
             semuaMenuDB.forEach(i => { let k = i.kategori ? i.kategori.trim() : 'Lainnya'; if (!l.includes(k)) l.push(k); });
@@ -720,7 +723,6 @@
                 }
 
                 let detail = keranjang.map(i => `• ${i.jumlah}x ${i.nama}`).join('%0A');
-                // SUNTIKKAN FITUR 2: Bawa keterangan metode COD ke Telegram Pembelian Kopi
                 let pTele = `🔔 *PESANAN BARU MASUK!*%0A%0A👤 *Nama:* ${name}%0A🛍️ *Pesanan:*%0A${detail}%0A%0A💰 *Total:* Rp ${totalHarga.toLocaleString('id-ID')}%0A%0A💳 *Metode:* 💵 BAYAR DI TEMPAT (COD)%0A%0A🚶 *Segera Proses via Dashboard Admin!*`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_KOPI}/sendMessage?chat_id=${TELE_ID_KOPI}&text=${pTele}&parse_mode=Markdown`, { mode: 'no-cors' });
 
@@ -758,7 +760,7 @@
             else if (pesananAktif.status === 'Selesai') { ts.innerText = "PESANAN TIBA"; ik.style.left = "75%"; ik.style.top = "15%"; ik.classList.add('kurir-diam'); pm.innerText = '"Pesanan sudah sampai. Selamat ngopi dan udut! ☕🚬"'; }
         }
 
-        // ================= AUTOMATED EWALLET DRIVER =================
+        // ================= SINKRONISASI GERBANG TOP UP AGEN =================
         function pilihEWallet(idCode, providerName) { providerTerpilih = providerName; document.getElementById('pilih-dompet-container').classList.add('hidden'); document.getElementById('label-dompet-terpilih').innerText = providerName; document.getElementById('ikon-dompet-terpilih').innerText = idCode; skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0; generateListNominal(idCode, providerName); document.getElementById('form-input-dinamis').classList.remove('hidden'); document.getElementById('nomor_hp').focus(); }
         function gantiEWallet() { document.getElementById('form-input-dinamis').classList.add('hidden'); document.getElementById('pilih-dompet-container').classList.remove('hidden'); document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active')); }
 
@@ -800,7 +802,7 @@
                 let mNotif = "BAYAR DI TEMPAT (COD)";
                 if (metode === 'SALDO') {
                     const { data: pData } = await clientDB.from('pelanggan').select('saldo, koin').eq('nama', loggedInUser).single();
-                    if (!pData || pData.saldo < hargaJualTerpisser) { tampilkanNotifikasi("Saldo tidak cukup! Gunakan COD.", "error"); btn.innerText = "KIRIM TOP UP"; btn.disabled = false; return; }
+                    if (!pData || pData.saldo < hargaJualTerpilih) { tampilkanNotifikasi("Saldo tidak cukup! Gunakan COD.", "error"); btn.innerText = "KIRIM TOP UP"; btn.disabled = false; return; }
                     await clientDB.from('pelanggan').update({ saldo: pData.saldo - hargaJualTerpilih, koin: pData.koin + 1 }).eq('nama', loggedInUser); mNotif = "SALDO APLIKASI (POTONG OTOMATIS)";
                     document.getElementById('teks-sukses-topup').innerText = "Saldo berhasil dipotong. Selesai! Pesanan langsung diproses.";
                 } else {
@@ -817,8 +819,8 @@
             } catch (err) { tampilkanNotifikasi("Gagal memproses!", "error"); } finally { btn.innerText = "KIRIM TOP UP"; btn.disabled = false; }
         }
 
-        // INITIAL ENGINE LOADER
-        updateTampilanKeranjang(); ambilDataMenu(); cekStatusWarungDB(); cekLoginUser();
+        // INITIAL SYSTEM BOOTSTRAPPER
+        updateTampilanKeranjang(); ambilDataMenu();拦截=true; cekStatusWarungDB(); cekLoginUser();
     </script>
 </body>
 </html>
