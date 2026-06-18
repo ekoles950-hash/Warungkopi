@@ -44,7 +44,6 @@
 </head>
 <body class="bg-stone-100 pb-24">
 
-    <!-- ================= HALAMAN LOGIN AWAL ================= -->
     <div id="halaman-login" class="hidden fixed inset-0 bg-[#0F172A] z-[200] flex justify-center items-center p-5">
         <div class="bg-[#1E293B] w-full max-w-sm rounded-[2.5rem] p-8 shadow-2xl border border-slate-800 text-center animate-[slideUp_0.3s_ease-out]">
             <div class="w-20 h-20 bg-blue-500/10 rounded-full flex items-center justify-center mx-auto mb-6 border-2 border-blue-500/30 text-4xl">☕</div>
@@ -57,14 +56,12 @@
         </div>
     </div>
 
-    <!-- TOAST NOTIFIKASI -->
     <div id="toast" class="fixed top-6 left-1/2 transform -translate-x-1/2 -translate-y-24 opacity-0 z-[100] transition-all duration-300 pointer-events-none w-[90%] max-w-sm">
         <div id="toast-content" class="px-6 py-3 rounded-full shadow-2xl text-sm font-bold text-white flex items-center justify-center gap-2"></div>
     </div>
 
     <div class="max-w-md mx-auto bg-white min-h-screen shadow-lg overflow-hidden border border-stone-200 relative">
         
-        <!-- HEADER UTAMA -->
         <div class="bg-[#292524] text-amber-50 p-4 sticky top-0 z-10 shadow-md border-b-4 border-[#d97706] relative" id="header-utama">
             <h1 class="text-xl font-extrabold text-center tracking-wide text-[#f59e0b] leading-snug">☕PINGIN NGOPI KARO UDUT TAPI MAGER WARUNG KOPI SIAP ANTAR</h1>
             <p class="text-center text-sm text-stone-200 mt-1"> <span class="animasi-jalan-maju">🚶‍♀️</span></p>
@@ -76,35 +73,28 @@
             </a>
         </div>
 
-        <!-- ================= HALAMAN BERANDA ================= -->
         <div class="p-4 bg-stone-50 min-h-screen" id="halaman-beranda">
             
-            <!-- Dashboard Card Akun Modern (Light Mode Beranda dengan Slot Tagihan/Hutang) -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-stone-200 mb-4 flex justify-between items-center text-xs">
-                <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <div class="w-8 h-8 bg-amber-500/10 rounded-full flex items-center justify-center text-base shrink-0">👤</div>
+            <div class="bg-white rounded-2xl p-3 shadow-sm border border-stone-200 mb-4 grid grid-cols-4 gap-1.5 text-[10px] items-center">
+                <div class="flex items-center gap-1 min-w-0">
+                    <div class="w-6 h-6 bg-amber-500/10 rounded-full flex items-center justify-center text-xs shrink-0">👤</div>
                     <div class="flex flex-col min-w-0">
-                        <span class="text-stone-400 text-[8px] uppercase tracking-wider font-bold">Akun</span>
-                        <span id="lbl-nama-beranda" class="text-stone-800 font-extrabold text-sm truncate">-</span>
+                        <span class="text-stone-400 font-bold uppercase text-[7px]">Akun</span>
+                        <span id="lbl-nama-beranda" class="text-stone-800 font-extrabold truncate text-xs">-</span>
                     </div>
                 </div>
-                <div class="flex gap-1.5 items-center shrink-0">
-                    <!-- Kotak Tagihan Hutang -->
-                    <div class="bg-red-600/5 border border-red-600/10 px-2 py-2 rounded-xl text-right">
-                        <span class="block text-[7px] text-stone-400 font-bold uppercase tracking-wider">Tagihan</span>
-                        <span id="lbl-tagihan-beranda" class="text-red-600 font-black text-[10px] block">Rp 0</span>
-                    </div>
-                    <!-- Kotak Saldo -->
-                    <div class="bg-amber-600/5 border border-amber-600/10 px-2.5 py-1 rounded-xl text-right relative flex flex-col items-end justify-center">
-                        <span class="block text-[7px] text-stone-400 font-bold uppercase tracking-wider">Saldo</span>
-                        <span id="lbl-saldo-beranda" class="text-[#d97706] font-black text-[10px] block">Rp 0</span>
-                        <button onclick="bukaModalIsiSaldo()" class="text-[7px] font-black bg-[#d97706] text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-amber-700 transition">┼ ISI</button>
-                    </div>
-                    <!-- Kotak Koin -->
-                    <div class="bg-emerald-600/5 border border-emerald-600/10 px-2 py-2.5 rounded-xl text-right">
-                        <span class="block text-[7px] text-stone-400 font-bold uppercase tracking-wider">Koin</span>
-                        <span id="lbl-koin-beranda" class="text-emerald-600 font-black text-[10px] block">0</span>
-                    </div>
+                <div class="bg-red-600/5 border border-red-600/10 p-1 rounded-xl text-center">
+                    <span class="block text-[6.5px] text-stone-400 font-bold uppercase tracking-tighter leading-tight">Tagihan</span>
+                    <span id="lbl-tagihan-beranda" class="text-red-600 font-black text-[11px] block mt-0.5">Rp 0</span>
+                </div>
+                <div class="bg-amber-600/5 border border-amber-600/10 p-1 rounded-xl text-center flex flex-col items-center justify-center">
+                    <span class="block text-[6.5px] text-stone-400 font-bold uppercase tracking-tighter leading-tight">Saldo</span>
+                    <span id="lbl-saldo-beranda" class="text-[#d97706] font-black text-[11px] block">Rp 0</span>
+                    <button onclick="bukaModalIsiSaldo()" class="text-[7px] font-black bg-[#d97706] text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-amber-700 transition">┼ ISI</button>
+                </div>
+                <div class="bg-emerald-600/5 border border-emerald-600/10 p-1 rounded-xl text-center">
+                    <span class="block text-[6.5px] text-stone-400 font-bold uppercase tracking-tighter leading-tight">Koin</span>
+                    <span id="lbl-koin-beranda" class="text-emerald-600 font-black text-[11px] block mt-0.5">0</span>
                 </div>
             </div>
 
@@ -113,35 +103,28 @@
             <div id="ruang-menu" class="grid grid-cols-2 gap-4"></div>
         </div>
 
-        <!-- ================= HALAMAN TOP UP E-WALLET ================= -->
         <div class="bg-[#0F172A] min-h-screen flex-col items-center p-4 pt-8 pb-24 hidden" id="halaman-topup">
             
-            <!-- Dashboard Card Akun Modern (Dark Mode Top Up dengan Slot Tagihan/Hutang) -->
-            <div class="w-full bg-[#1E293B] p-4 rounded-2xl border border-slate-800/80 mb-4 flex justify-between items-center text-xs">
-                <div class="flex items-center gap-2 flex-1 min-w-0">
-                    <div class="w-8 h-8 bg-blue-500/10 rounded-full flex items-center justify-center text-base shrink-0">👤</div>
+            <div class="w-full bg-[#1E293B] p-3 rounded-2xl border border-slate-800 mb-4 grid grid-cols-4 gap-1.5 text-[10px] items-center">
+                <div class="flex items-center gap-1 min-w-0">
+                    <div class="w-6 h-6 bg-blue-500/10 rounded-full flex items-center justify-center text-xs shrink-0">👤</div>
                     <div class="flex flex-col min-w-0">
-                        <span class="text-slate-400 text-[8px] uppercase tracking-wider font-bold">Akun</span>
-                        <span id="lbl-nama-topup" class="text-white font-extrabold text-sm truncate">-</span>
+                        <span class="text-slate-400 font-bold uppercase text-[7px]">Akun</span>
+                        <span id="lbl-nama-topup" class="text-white font-extrabold truncate text-xs">-</span>
                     </div>
                 </div>
-                <div class="flex gap-1.5 items-center shrink-0">
-                    <!-- Kotak Tagihan Hutang -->
-                    <div class="bg-red-500/10 border border-red-500/20 px-2 py-2 rounded-xl text-right">
-                        <span class="block text-[7px] text-slate-400 font-bold uppercase tracking-wider">Tagihan</span>
-                        <span id="lbl-tagihan-topup" class="text-red-400 font-black text-[10px] block">Rp 0</span>
-                    </div>
-                    <!-- Kotak Saldo -->
-                    <div class="bg-blue-500/5 border border-blue-500/10 px-2.5 py-1 rounded-xl text-right flex flex-col items-end justify-center">
-                        <span class="block text-[7px] text-slate-400 font-bold uppercase tracking-wider">Saldo</span>
-                        <span id="lbl-saldo-topup" class="text-blue-400 font-black text-[10px] block">Rp 0</span>
-                        <button onclick="bukaModalIsiSaldo()" class="text-[7px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-blue-600 transition">┼ ISI</button>
-                    </div>
-                    <!-- Kotak Koin -->
-                    <div class="bg-emerald-500/5 border border-emerald-500/10 px-2 py-2.5 rounded-xl text-right">
-                        <span class="block text-[7px] text-slate-400 font-bold uppercase tracking-wider">Koin</span>
-                        <span id="lbl-koin-topup" class="text-emerald-400 font-black text-[10px] block">0</span>
-                    </div>
+                <div class="bg-red-500/10 border border-red-500/20 p-1 rounded-xl text-center">
+                    <span class="block text-[6.5px] text-slate-400 font-bold uppercase tracking-tighter leading-tight">Tagihan</span>
+                    <span id="lbl-tagihan-topup" class="text-red-400 font-black text-[11px] block mt-0.5">Rp 0</span>
+                </div>
+                <div class="bg-blue-500/5 border border-blue-500/10 p-1 rounded-xl text-center flex flex-col items-center justify-center">
+                    <span class="block text-[6.5px] text-slate-400 font-bold uppercase tracking-tighter leading-tight">Saldo</span>
+                    <span id="lbl-saldo-topup" class="text-blue-400 font-black text-[11px] block">Rp 0</span>
+                    <button onclick="bukaModalIsiSaldo()" class="text-[7px] font-black bg-blue-500 text-white px-1.5 py-0.5 rounded mt-0.5 tracking-wider hover:bg-blue-600 transition">┼ ISI</button>
+                </div>
+                <div class="bg-emerald-500/5 border border-emerald-500/10 p-1 rounded-xl text-center">
+                    <span class="block text-[6.5px] text-slate-400 font-bold uppercase tracking-tighter leading-tight">Koin</span>
+                    <span id="lbl-koin-topup" class="text-emerald-400 font-black text-[11px] block mt-0.5">0</span>
                 </div>
             </div>
 
@@ -213,7 +196,6 @@
             </div>
         </div>
 
-        <!-- ================= TRACKING VISUAL COURIER ================= -->
         <div class="min-h-screen bg-[#131722] text-white p-5 flex-col items-center pt-8 pb-24 hidden" id="halaman-lacak-visual">
             <h3 class="text-[#22c55e] font-extrabold text-xs tracking-[0.2em] mb-3 text-center">LIVE TRACKING</h3>
             <h1 id="teks-status-lacak" class="text-2xl font-extrabold italic text-white mb-10 text-center tracking-wide">MENCARI PESANAN...</h1>
@@ -242,7 +224,6 @@
             </button>
         </div>
 
-        <!-- MODAL LACAK MANUAL -->
         <div id="modal-lacak" class="hidden fixed inset-0 bg-black/80 z-50 flex justify-center items-center p-5">
             <div class="bg-[#242b3d] w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-gray-700 relative animate-[slideUp_0.2s_ease-out]">
                 <button onclick="tutupModalLacak()" class="absolute top-5 right-6 text-gray-400 hover:text-white text-2xl font-light">&times;</button>
@@ -254,7 +235,6 @@
             </div>
         </div>
 
-        <!-- MODAL CHECKOUT -->
         <div id="modal-checkout" class="hidden fixed inset-0 bg-black/60 z-50 flex justify-center items-end sm:items-center">
             <div class="bg-white w-full max-w-md p-6 rounded-t-2xl sm:rounded-2xl shadow-2xl animate-[slideUp_0.3s_ease-out] max-h-[90vh] flex flex-col">
                 <div class="flex justify-between items-center mb-4 border-b pb-2 shrink-0">
@@ -289,7 +269,6 @@
             </div>
         </div>
 
-        <!-- MODAL PILIHAN METODE PEMBAYARAN BELANJA TOP UP -->
         <div id="modal-pembayaran-topup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2rem] p-6 shadow-2xl border border-slate-700 text-center animate-[slideUp_0.2s_ease-out]">
                 <h2 class="text-white font-black text-xl mb-4 tracking-wide">PILIH METODE BAYAR</h2>
@@ -310,7 +289,6 @@
             </div>
         </div>
 
-        <!-- MODAL ISI SALDO MANDIRI (DEPOSIT USER) -->
         <div id="modal-isi-saldo-user" class="hidden fixed inset-0 bg-black/80 z-[110] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2.5rem] p-6 shadow-2xl border border-slate-700 animate-[slideUp_0.2s_ease-out]">
                 <div class="flex justify-between items-center mb-4 border-b border-slate-700 pb-2">
@@ -351,7 +329,6 @@
             </div>
         </div>
 
-        <!-- MODAL NOTIFIKASI SUKSES DISPATCHER -->
         <div id="modal-success-topup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-[#1E293B] w-full max-w-sm rounded-[2rem] p-8 shadow-2xl border border-blue-500/50 text-center animate-[slideUp_0.3s_ease-out]">
                 <div class="w-24 h-24 bg-blue-500/20 rounded-full flex items-center justify-center mx-auto mb-5 border-2 border-blue-400">
@@ -368,7 +345,6 @@
             </div>
         </div>
 
-        <!-- MODAL TOKO TUTUP -->
         <div id="modal-toko-tutup" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5 backdrop-blur-sm">
             <div class="bg-red-600 w-full max-w-sm rounded-[2rem] p-8 shadow-2xl text-center border-4 border-red-800 animate-[slideUp_0.3s_ease-out]">
                 <span class="text-6xl block mb-4">⛔</span>
@@ -378,7 +354,6 @@
             </div>
         </div>
 
-        <!-- MODAL SECURITY PIN ADMIN -->
         <div id="modal-pin" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5">
             <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center animate-[slideUp_0.2s_ease-out]">
                 <h2 class="text-stone-800 font-extrabold text-xl mb-2">Akses Admin 🔒</h2>
@@ -391,7 +366,6 @@
             </div>
         </div>
 
-        <!-- MODAL SEETING STATUS ADMIN PANEL -->
         <div id="modal-admin-status" class="hidden fixed inset-0 bg-black/80 z-[100] flex justify-center items-center p-5">
             <div class="bg-white w-full max-w-sm rounded-2xl p-6 shadow-2xl text-center animate-[slideUp_0.2s_ease-out]">
                 <h2 class="text-stone-800 font-extrabold text-xl mb-6">Pengaturan Warung ⚙️</h2>
@@ -406,7 +380,6 @@
             </div>
         </div>
 
-        <!-- NAVIGASI BAWAH NAVIGATION -->
         <div class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#1a1f2e] border-t border-gray-800 shadow-[0_-10px_20px_-5px_rgba(0,0,0,0.5)] z-40 flex justify-around items-center px-4 py-3 pb-safe rounded-t-3xl" id="nav-bawah">
             <button onclick="bukaModalLacak()" class="flex flex-col items-center text-gray-400 hover:text-white transition relative">
                 <span class="text-2xl">🔍</span><span class="text-[9px] font-extrabold mt-1 tracking-wide">LACAK</span>
@@ -425,7 +398,6 @@
 
     </div>
 
-    <!-- ================= JAVASCRIPT LOGIC ENGINE ================= -->
     <script>
         const PIN_RAHASIA = '1234'; 
 
@@ -440,6 +412,7 @@
         const TELE_TOKEN_TOPUP = '8854342299:AAF3dBZvDDItaPS08hhYI_-0Q4ccm-dKgPs';
         const TELE_ID_TOPUP = '8498622906'; 
         
+        // FORMAT SENSOR INTERFACES - JIKA MAU DIISI SILAKAN, JIKA KOSONG AMAN TIDAK CRASH
         const PUSH_USER = 'KODE_USER_KEY_PUSHOVER_MU';  
         const PUSH_TOKEN = 'KODE_APP_TOKEN_PUSHOVER_MU'; 
 
@@ -571,7 +544,7 @@
                 const tMsg = `💰 *REKUEST ISI SALDO BARU* 💰\n\n👤 *Pelanggan:* ${loggedInUser}\n💵 *Nominal:* Rp ${nominal.toLocaleString('id-ID')}\n💳 *Metode:* VIA ${metode}\n⚡ *Status:* PENDING`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_TOPUP}/sendMessage?chat_id=${TELE_ID_TOPUP}&text=${encodeURIComponent(tMsg)}&parse_mode=Markdown`, { mode: 'no-cors' });
 
-                // SEND PUSHOVER SECURITY GATEWAY
+                // SEND PUSHOVER GATEWAY
                 if (PUSH_USER !== 'KODE_USER_KEY_PUSHOVER_MU' && PUSH_TOKEN !== 'KODE_APP_TOKEN_PUSHOVER_MU' && PUSH_USER !== '' && PUSH_TOKEN !== '') {
                     const dataPush = new FormData();
                     dataPush.append('token', PUSH_TOKEN); dataPush.append('user', PUSH_USER);
@@ -645,15 +618,15 @@
         function bukaTopUp() { tutupSemuaHalaman(); document.getElementById('halaman-topup').classList.remove('hidden'); document.getElementById('halaman-topup').classList.add('flex'); loadRiwayatLive(); }
         function bukaLacakVisual() { tutupSemuaHalaman(); document.getElementById('halaman-lacak-visual').classList.remove('hidden'); document.getElementById('halaman-lacak-visual').classList.add('flex'); perbaruiVisualLacak(); }
 
-        // ================= REAL-TIME SINKRONISASI DATABASE =================
+        // ================= REAL-TIME REALTIME DATA SYNCHRONIZER =================
         clientDB.channel('public:semua_perubahan')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'pesanan_warung' }, payload => {
-                let r = JSON.parse(localStorage.getItem('riwayatWarungBasecamp')) || [];
+                let r = JSON.parse(localStorage.getItem('rianjangWarungBasecamp')) || [];
                 if (payload.eventType === 'UPDATE') {
-                    let idx = r.findIndex(item => item.id === payload.new.id); if (idx !== -1) { r[idx].status = payload.new.status; localStorage.setItem('riwayatWarungBasecamp', JSON.stringify(r)); }
+                    let idx = r.findIndex(item => item.id === payload.new.id); if (idx !== -1) { r[idx].status = payload.new.status; localStorage.setItem('rianjangWarungBasecamp', JSON.stringify(r)); }
                     if (pesananAktif && pesananAktif.id === payload.new.id && !document.getElementById('halaman-lacak-visual').classList.contains('hidden')) { pesananAktif.status = payload.new.status; perbaruiVisualLacak(); }
                 } else if (payload.eventType === 'DELETE') {
-                    let idx = r.findIndex(item => item.id === payload.old.id); if (idx !== -1) { r.splice(idx, 1); localStorage.setItem('riwayatWarungBasecamp', JSON.stringify(r)); }
+                    let idx = r.findIndex(item => item.id === payload.old.id); if (idx !== -1) { r.splice(idx, 1); localStorage.setItem('rianjangWarungBasecamp', JSON.stringify(r)); }
                     if (pesananAktif && pesananAktif.id === payload.old.id && !document.getElementById('halaman-lacak-visual').classList.contains('hidden')) { tampilkanNotifikasi("Pesanan Kopi direset Admin.", "error"); setTimeout(() => { bukaBeranda(); }, 2500); }
                 }
             })
@@ -668,7 +641,7 @@
                  }
             }).subscribe();
 
-        // ================= LOGIKA UTAMA OPERASIONAL MENU =================
+        // ================= CORE DRIVER COFFEE MENU =================
         async function ambilDataMenu() {
             try {
                 const { data, error } = await clientDB.from('menu_warung').select('*').order('nama_menu', { ascending: true });
@@ -742,9 +715,9 @@
                 let pTele = `🔔 *PESANAN BARU MASUK!*%0A%0A👤 *Nama:* ${name}%0A🛍️ *Pesanan:*%0A${detail}%0A%0A💰 *Total:* Rp ${totalHarga.toLocaleString('id-ID')}%0A%0A💳 *Metode:* 💵 BAYAR DI TEMPAT (COD)%0A%0A🚶 *Segera Proses via Dashboard Admin!*`;
                 fetch(`https://api.telegram.org/bot${TELE_TOKEN_KOPI}/sendMessage?chat_id=${TELE_ID_KOPI}&text=${pTele}&parse_mode=Markdown`, { mode: 'no-cors' });
 
-                let r = JSON.parse(localStorage.getItem('riwayatWarungBasecamp')) || [];
+                let r = JSON.parse(localStorage.getItem('rianjangWarungBasecamp')) || [];
                 const pBaru = { id: data[0].id, status: 'Pending', tanggal: new Date().toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }), nama_pemesan: name, total_harga: totalHarga, metode: 'COD', detail_pesanan: keranjang };
-                r.unshift(pBaru); localStorage.setItem('riwayatWarungBasecamp', JSON.stringify(r));
+                r.unshift(pBaru); localStorage.setItem('rianjangWarungBasecamp', JSON.stringify(r));
                 
                 keranjang = []; localStorage.setItem('keranjangWarungBasecamp', JSON.stringify(keranjang)); 
                 updateTampilanKeranjang(); tutupCheckout();
@@ -776,7 +749,7 @@
             else if (pesananAktif.status === 'Selesai') { ts.innerText = "PESANAN TIBA"; ik.style.left = "75%"; ik.style.top = "15%"; ik.classList.add('kurir-diam'); pm.innerText = '"Pesanan sudah sampai. Selamat ngopi dan udut! ☕🚬"'; }
         }
 
-        // ================= AUTOMATED EWALLET DRIVER =================
+        // ================= LOGIKA TOP UP E-WALLET MANDIRI =================
         function pilihEWallet(idCode, providerName) { providerTerpilih = providerName; document.getElementById('pilih-dompet-container').classList.add('hidden'); document.getElementById('label-dompet-terpilih').innerText = providerName; document.getElementById('ikon-dompet-terpilih').innerText = idCode; skuCodeTerpilih = ''; namaProdukTerpilih = ''; hargaJualTerpilih = 0; generateListNominal(idCode, providerName); document.getElementById('form-input-dinamis').classList.remove('hidden'); document.getElementById('nomor_hp').focus(); }
         function gantiEWallet() { document.getElementById('form-input-dinamis').classList.add('hidden'); document.getElementById('pilih-dompet-container').classList.remove('hidden'); document.querySelectorAll('.wallet-card').forEach(card => card.classList.remove('active')); }
 
@@ -800,6 +773,7 @@
             data.forEach(i => { const w = new Date(i.created_at).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }); c.innerHTML += `<div class="bg-slate-900/40 p-3 rounded-xl border border-slate-800 flex justify-between items-center"><div class="flex flex-col text-left gap-0.5"><span class="font-black text-white text-xs">${i.nama_produk}</span><span class="text-[10px] text-slate-400 font-mono tracking-wider">Tujuan: ${i.nomor_tujuan}</span><span class="text-[9px] text-slate-500 font-bold">${w} WIB</span></div><div class="flex flex-col items-end gap-1"><span class="font-extrabold text-emerald-400 text-xs">Rp ${parseInt(i.harga_jual).toLocaleString('id-ID')}</span>${i.status === 'success' ? '<span class="px-1.5 py-0.5 bg-green-500/10 text-green-400 text-[8px] font-black uppercase rounded tracking-wider border border-green-500/20">Success</span>' : '<span class="px-1.5 py-0.5 bg-yellow-500/10 text-yellow-500 text-[8px] font-black uppercase rounded tracking-wider border border-yellow-500/20">Pending</span>'}</div></div>`; });
         }
 
+        // ================= KONTROL CEK LIMIT HUTANG DI KIRIM TOP UP =================
         async function kirimTopUp() {
             if (!isWarungBuka) { document.getElementById('modal-toko-tutup').classList.remove('hidden'); return; }
             const np = document.getElementById('nama_pelanggan_topup').value.trim(); const hp = document.getElementById('nomor_hp').value.trim();
