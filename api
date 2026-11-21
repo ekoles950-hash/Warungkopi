@@ -1,0 +1,79 @@
+export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') return res.status(204).end();
+
+  const SUPABASE_REST = 'https://sjuhzjkmcupriugeikqo.supabase.co/rest/v1';
+  const SUPABASE_KEY = 'sb_publishable_TV9Qm6Ck2JZh-oGD4_6rMQ_wnjPcl5p';
+
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': `Bearer ${SUPABASE_KEY}`,
+    'Content-Type': 'application/json',
+    'Prefer': 'return=representation'
+  };
+
+  const { router_id, token, cpu, free_mem, total_mem, uptime, hotspot, pppoe, ver, done_id } = req.query;
+
+  if (!router_id || !token) {
+    return res.status(400).send('ERR:MISSING_AUTH');
+  }
+
+  try {
+    // 1. Validasi router_id & router_token
+    const checkRes = await fetch(
+      `${SUPABASE_REST}/routers?router_id=eq.${encodeURIComponent(router_id)}&router_token=eq.${encodeURIComponent(token)}&select=router_id`,
+      { headers }
+    );
+    const validRouter = await checkRes.json();
+    if (!validRouter || validRouter.length === 0) {
+      return res.status(401).send('ERR:INVALID_TOKEN');
+    }
+
+    // 2. Tandai perintah selesai jika MikroTik mengirim done_id
+    if (done_id) {
+      await fetch(`${SUPABASE_REST}/router_commands?id=eq.${encodeURIComponent(done_id)}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({ status: 'done', executed_at: new Date().toISOString() })
+      });
+    }
+
+    // 3. Update status router terbaru (hanya jika parameter cpu dikirim)
+    if (cpu !== undefined) {
+      await fetch(`${SUPABASE_REST}/routers?router_id=eq.${encodeURIComponent(router_id)}`, {
+        method: 'PATCH',
+        headers,
+        body: JSON.stringify({
+          cpu_load: `${cpu}%`,
+          free_memory: `${free_mem || 0} MB`,
+          total_memory: `${total_mem || 0} MB`,
+          uptime: uptime || '-',
+          hotspot_active: parseInt(hotspot || '0', 10),
+          pppoe_active: parseInt(pppoe || '0', 10),
+          routeros_version: ver || '-',
+          last_seen: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        })
+      });
+    }
+
+    // 4. Ambil 1 perintah pending terlama untuk dijalankan MikroTik
+    const cmdRes = await fetch(
+      `${SUPABASE_REST}/router_commands?router_id=eq.${encodeURIComponent(router_id)}&status=eq.pending&order=id.asc&limit=1`,
+      { headers }
+    );
+    const cmds = await cmdRes.json();
+
+    if (cmds && cmds.length > 0) {
+      const cmd = cmds[0];
+      return res.status(200).send(`CMD|${cmd.id}|${cmd.command_payload}`);
+    }
+
+    return res.status(200).send('OK');
+  } catch (err) {
+    return res.status(500).send('ERR:SERVER');
+  }
+}
