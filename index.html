@@ -1,63 +1,318 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WiFi Manager - Termux</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Router Dashboard - Basecamp & Sengkuni Net</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen p-4">
-    <div class="max-w-md mx-auto space-y-4">
-        <h1 class="text-xl font-bold text-center text-indigo-400">📶 Android WiFi Manager</h1>
-        
-        <!-- Status Card -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
-            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold">Status Koneksi</h2>
-            <div id="status" class="mt-2 text-sm text-slate-300">Memuat status...</div>
+<body class="bg-slate-50 text-slate-800 min-h-screen pb-10">
+  <div class="max-w-md mx-auto px-4 pt-5 space-y-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between bg-white p-3 rounded-2xl shadow-sm border border-slate-200">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-xl bg-indigo-600 text-white font-bold flex items-center justify-center">N</div>
+        <div>
+          <h1 class="font-bold text-sm leading-tight">MikroTik Cloud Panel</h1>
+          <p class="text-[11px] text-slate-400">Basecamp & Sengkuni Net</p>
         </div>
-
-        <!-- Scan Button -->
-        <button onclick="scanWifi()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-xl transition shadow-md">
-            Scan Jaringan Wi-Fi Sekitar
-        </button>
-
-        <!-- Result List -->
-        <div class="bg-slate-800 p-4 rounded-xl border border-slate-700 shadow-lg">
-            <h2 class="text-sm text-slate-400 uppercase tracking-wider font-semibold mb-2">Daftar Wi-Fi</h2>
-            <div id="wifi-list" class="space-y-2 text-sm text-slate-300">Tekan tombol scan di atas.</div>
-        </div>
+      </div>
+      <div class="flex items-center gap-2">
+        <select id="routerSelect" onchange="selectRouter()" class="text-xs font-semibold bg-slate-100 border border-slate-200 rounded-lg px-2.5 py-1.5 outline-none"></select>
+        <button onclick="loadRouters()" class="p-2 bg-slate-100 hover:bg-slate-200 rounded-lg text-xs font-bold" title="Refresh">↻</button>
+      </div>
     </div>
 
-    <script>
-        async function fetchStatus() {
-            try {
-                const res = await fetch('http://localhost:3000/status');
-                const data = await res.json();
-                document.getElementById('status').innerHTML = `SSID: <b>${data.ssid || 'Tidak terhubung'}</b><br>BSSID: ${data.bssid || '-'}<br>Link Speed: ${data.link_speed_mbps || 0} Mbps`;
-            } catch (err) {
-                document.getElementById('status').innerText = 'Gagal terhubung ke backend Termux.';
-            }
-        }
+    <!-- Alert Koneksi -->
+    <div id="alertBox" class="hidden p-3.5 rounded-2xl border text-xs leading-relaxed"></div>
 
-        async function scanWifi() {
-            document.getElementById('wifi-list').innerText = 'Memindai jaringan...';
-            try {
-                const res = await fetch('http://localhost:3000/scan');
-                const networks = await res.json();
-                let html = '';
-                networks.forEach(net => {
-                    html += `<div class="p-2 bg-slate-900 rounded border border-slate-700 flex justify-between items-center">
-                        <div><b>${net.ssid}</b><br><span class="text-xs text-slate-400">Signal: ${net.rssi} dBm</span></div>
-                        <span class="text-xs bg-indigo-900 text-indigo-300 px-2 py-1 rounded">Tersedia</span>
-                    </div>`;
-                });
-                document.getElementById('wifi-list').innerHTML = html || 'Tidak ada jaringan ditemukan.';
-            } catch (err) {
-                document.getElementById('wifi-list').innerText = 'Gagal memindai jaringan.';
-            }
-        }
+    <!-- Kartu Utama Router -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex items-center justify-between">
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 id="rName" class="font-bold text-base">Memuat...</h2>
+          <span id="rBadge" class="text-[11px] px-2 py-0.5 rounded-full font-semibold bg-slate-100 text-slate-500">...</span>
+        </div>
+        <p id="rLastSeen" class="text-xs text-slate-400 mt-1">Sinkronisasi terakhir: -</p>
+      </div>
+      <button onclick="toggleScriptModal()" class="px-3 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 font-semibold text-xs rounded-xl border border-indigo-200">
+        Script Terminal
+      </button>
+    </div>
 
-        fetchStatus();
-    </script>
+    <!-- Grid Statistik -->
+    <div class="grid grid-cols-2 gap-3">
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">Hotspot aktif</p>
+        <p id="statHotspot" class="text-lg font-bold mt-1">N/A</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">PPPoE aktif</p>
+        <p id="statPppoe" class="text-lg font-bold mt-1">N/A</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">CPU</p>
+        <p id="statCpu" class="text-lg font-bold mt-1">N/A</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">RAM Bebas</p>
+        <p id="statRam" class="text-lg font-bold mt-1">N/A</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">RouterOS</p>
+        <p id="statVer" class="text-sm font-bold mt-1 truncate">N/A</p>
+      </div>
+      <div class="bg-white p-3.5 rounded-2xl shadow-sm border border-slate-200">
+        <p class="text-xs text-slate-400">Uptime</p>
+        <p id="statUptime" class="text-sm font-bold mt-1 truncate">N/A</p>
+      </div>
+    </div>
+
+    <!-- Buat Voucher Hotspot -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Buat Voucher Hotspot</h3>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="vUser" type="text" placeholder="Kode / Username" class="text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none">
+        <input id="vPass" type="text" placeholder="Password (opsional)" class="text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none">
+      </div>
+      <div class="grid grid-cols-2 gap-2">
+        <input id="vProfile" type="text" value="default" placeholder="Profile (misal: 3Jam)" class="text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none">
+        <input id="vLimit" type="text" value="3h" placeholder="Limit Uptime (3h/1d)" class="text-xs p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none">
+      </div>
+      <button onclick="createVoucher()" class="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-sm">
+        + Kirim Voucher ke MikroTik
+      </button>
+    </div>
+
+    <!-- Eksekusi Perintah Terminal Custom -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2.5">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Perintah Terminal Manual</h3>
+      <input id="customCmd" type="text" placeholder='Contoh: /ip hotspot active remove [find user="abc"]' class="w-full text-xs font-mono p-2.5 rounded-xl border border-slate-200 bg-slate-50 outline-none">
+      <button onclick="sendCustomCommand()" class="w-full py-2.5 bg-slate-800 hover:bg-slate-900 text-white text-xs font-bold rounded-xl">
+        Jalankan di MikroTik
+      </button>
+    </div>
+
+    <!-- Log Antrean Perintah -->
+    <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 space-y-2">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500">Riwayat Perintah Terakhir</h3>
+      <div id="cmdHistory" class="space-y-2 text-xs text-slate-500">Memuat riwayat...</div>
+    </div>
+  </div>
+
+  <!-- Modal Script MikroTik -->
+  <div id="scriptModal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-4 space-y-3 shadow-xl">
+      <div class="flex justify-between items-center">
+        <h3 class="font-bold text-sm">Paste ke Terminal MikroTik</h3>
+        <button onclick="toggleScriptModal()" class="text-slate-400 hover:text-slate-700 font-bold">✕</button>
+      </div>
+      <p class="text-xs text-slate-500">Salin script di bawah ini lalu paste di menu <b>New Terminal</b> Winbox / Aplikasi MikroTik:</p>
+      <textarea id="mikrotikScriptBox" rows="9" readonly class="w-full text-[11px] font-mono p-2.5 rounded-xl bg-slate-900 text-emerald-400 outline-none"></textarea>
+      <button onclick="copyScript()" id="copyBtn" class="w-full py-2.5 bg-indigo-600 text-white text-xs font-bold rounded-xl">
+        Copy Script Terminal
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_REST = 'https://sjuhzjkmcupriugeikqo.supabase.co/rest/v1';
+    const SUPABASE_KEY = 'sb_publishable_TV9Qm6Ck2JZh-oGD4_6rMQ_wnjPcl5p';
+    const VERCEL_SYNC_URL = `${window.location.origin}/api/sync`;
+
+    const headers = {
+      'apikey': SUPABASE_KEY,
+      'Authorization': `Bearer ${SUPABASE_KEY}`,
+      'Content-Type': 'application/json'
+    };
+
+    let routersList = [];
+    let activeRouter = null;
+
+    async function loadRouters() {
+      try {
+        const res = await fetch(`${SUPABASE_REST}/routers?select=*&order=router_id.asc`, { headers });
+        routersList = await res.json();
+
+        const select = document.getElementById('routerSelect');
+        const prevId = activeRouter ? activeRouter.router_id : null;
+        select.innerHTML = '';
+
+        routersList.forEach(r => {
+          const opt = document.createElement('option');
+          opt.value = r.router_id;
+          opt.textContent = r.router_id;
+          select.appendChild(opt);
+        });
+
+        if (prevId && routersList.some(r => r.router_id === prevId)) {
+          select.value = prevId;
+        }
+        selectRouter();
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function selectRouter() {
+      const id = document.getElementById('routerSelect').value;
+      activeRouter = routersList.find(r => r.router_id === id);
+      if (!activeRouter) return;
+
+      document.getElementById('rName').textContent = activeRouter.router_id;
+
+      // Cek apakah last_seen < 45 detik yang lalu
+      const lastSeenMs = new Date(activeRouter.last_seen).getTime();
+      const diffSec = Math.floor((Date.now() - lastSeenMs) / 1000);
+      const isOnline = activeRouter.routeros_version !== '-' && diffSec <= 45;
+
+      const badge = document.getElementById('rBadge');
+      const alertBox = document.getElementById('alertBox');
+
+      if (isOnline) {
+        badge.textContent = '● Online';
+        badge.className = 'text-[11px] px-2 py-0.5 rounded-full font-semibold bg-emerald-100 text-emerald-700';
+        alertBox.classList.add('hidden');
+      } else {
+        badge.textContent = '● Terputus';
+        badge.className = 'text-[11px] px-2 py-0.5 rounded-full font-semibold bg-rose-100 text-rose-700';
+        alertBox.className = 'p-3.5 rounded-2xl border border-indigo-200 bg-indigo-50/70 text-xs leading-relaxed text-slate-700';
+        alertBox.innerHTML = `<b>${activeRouter.router_id} · Menunggu Koneksi</b><br>Pastikan script sudah dipaste sampai selesai di Terminal MikroTik, lalu tunggu 15 detik.`;
+        alertBox.classList.remove('hidden');
+      }
+
+      document.getElementById('rLastSeen').textContent = `Update terakhir: ${new Date(activeRouter.last_seen).toLocaleTimeString('id-ID')}`;
+      document.getElementById('statHotspot').textContent = isOnline ? activeRouter.hotspot_active : 'N/A';
+      document.getElementById('statPppoe').textContent = isOnline ? activeRouter.pppoe_active : 'N/A';
+      document.getElementById('statCpu').textContent = isOnline ? activeRouter.cpu_load : 'N/A';
+      document.getElementById('statRam').textContent = isOnline ? `${activeRouter.free_memory} / ${activeRouter.total_memory}` : 'N/A';
+      document.getElementById('statVer').textContent = isOnline ? activeRouter.routeros_version : 'N/A';
+      document.getElementById('statUptime').textContent = isOnline ? activeRouter.uptime : 'N/A';
+
+      generateMikrotikScript(activeRouter);
+      loadCommandHistory(activeRouter.router_id);
+    }
+
+    function generateMikrotikScript(r) {
+      const script = `/system script remove [find name="netkar-sync"]
+/system scheduler remove [find name="netkar-sync-job"]
+
+/system script add name="netkar-sync" policy=read,write,test,policy source={
+  :local baseUrl "${VERCEL_SYNC_URL}"
+  :local routerId "${r.router_id}"
+  :local routerToken "${r.router_token}"
+
+  :local cpu [/system resource get cpu-load]
+  :local freeMem ([/system resource get free-memory] / 1048576)
+  :local totalMem ([/system resource get total-memory] / 1048576)
+  :local up [/system resource get uptime]
+  :local ver [/system resource get version]
+  :local hs [:len [/ip hotspot active find]]
+  :local ppp [:len [/ppp active find]]
+
+  :local fullUrl ($baseUrl . "?router_id=" . $routerId . "&token=" . $routerToken . "&cpu=" . $cpu . "&free_mem=" . $freeMem . "&total_mem=" . $totalMem . "&uptime=" . $up . "&hotspot=" . $hs . "&pppoe=" . $ppp . "&ver=" . $ver)
+
+  :do {
+    :local res [/tool fetch url=$fullUrl mode=https check-certificate=no as-value output=user]
+    :local body ($res->"data")
+
+    :if ([:pick $body 0 4] = "CMD|") do={
+      :local rest [:pick $body 4 [:len $body]]
+      :local sep [:find $rest "|"]
+      :local cmdId [:pick $rest 0 $sep]
+      :local cmdScript [:pick $rest ($sep + 1) [:len $rest]]
+
+      [:parse $cmdScript]
+
+      :local ackUrl ($baseUrl . "?router_id=" . $routerId . "&token=" . $routerToken . "&done_id=" . $cmdId)
+      /tool fetch url=$ackUrl mode=https check-certificate=no output=none
+    }
+  } on-error={
+    :log warning "netkar-sync: gagal terhubung ke server"
+  }
+}
+
+/system scheduler add name="netkar-sync-job" interval=15s on-event="/system script run netkar-sync" start-time=startup`;
+
+      document.getElementById('mikrotikScriptBox').value = script;
+    }
+
+    async function queueCommand(type, payload) {
+      if (!activeRouter) return;
+      await fetch(`${SUPABASE_REST}/router_commands`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          router_id: activeRouter.router_id,
+          command_type: type,
+          command_payload: payload,
+          status: 'pending'
+        })
+      });
+      loadCommandHistory(activeRouter.router_id);
+    }
+
+    async function createVoucher() {
+      const user = document.getElementById('vUser').value.trim();
+      const pass = document.getElementById('vPass').value.trim() || user;
+      const profile = document.getElementById('vProfile').value.trim() || 'default';
+      const limit = document.getElementById('vLimit').value.trim() || '3h';
+
+      if (!user) return alert('Isi kode/username voucher dulu!');
+
+      const cmd = `/ip hotspot user add name="${user}" password="${pass}" profile="${profile}" limit-uptime="${limit}" comment="web-panel"`;
+      await queueCommand('add_voucher', cmd);
+
+      document.getElementById('vUser').value = '';
+      document.getElementById('vPass').value = '';
+      alert(`Voucher "${user}" masuk antrean! Akan dieksekusi MikroTik maksimal dalam 15 detik.`);
+    }
+
+    async function sendCustomCommand() {
+      const cmd = document.getElementById('customCmd').value.trim();
+      if (!cmd) return alert('Isi perintah RouterOS terlebih dahulu!');
+      await queueCommand('custom_cmd', cmd);
+      document.getElementById('customCmd').value = '';
+      alert('Perintah masuk antrean eksekusi!');
+    }
+
+    async function loadCommandHistory(routerId) {
+      const res = await fetch(`${SUPABASE_REST}/router_commands?router_id=eq.${routerId}&order=id.desc&limit=5`, { headers });
+      const list = await res.json();
+      const container = document.getElementById('cmdHistory');
+
+      if (!list || list.length === 0) {
+        container.innerHTML = '<p class="text-slate-400">Belum ada perintah yang dikirim.</p>';
+        return;
+      }
+
+      container.innerHTML = list.map(item => `
+        <div class="p-2.5 rounded-xl bg-slate-50 border border-slate-200 flex justify-between items-center gap-2">
+          <div class="truncate">
+            <span class="font-mono text-[11px] text-slate-700">${item.command_payload}</span>
+          </div>
+          <span class="shrink-0 text-[10px] px-2 py-0.5 rounded-full font-bold ${item.status === 'done' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}">
+            ${item.status === 'done' ? 'Selesai' : 'Antre'}
+          </span>
+        </div>
+      `).join('');
+    }
+
+    function toggleScriptModal() {
+      document.getElementById('scriptModal').classList.toggle('hidden');
+    }
+
+    function copyScript() {
+      const box = document.getElementById('mikrotikScriptBox');
+      box.select();
+      navigator.clipboard.writeText(box.value);
+      const btn = document.getElementById('copyBtn');
+      btn.textContent = '✓ Tersalin! Silakan Paste di MikroTik';
+      setTimeout(() => btn.textContent = 'Copy Script Terminal', 2500);
+    }
+
+    loadRouters();
+    setInterval(loadRouters, 10000);
+  </script>
 </body>
 </html>
